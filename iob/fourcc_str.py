@@ -11,6 +11,9 @@ def fourcc_to_str(fourcc: int):
     ))
 
 def str_to_fourcc(s: str):
+    if len(s) != 4:
+        raise ValueError('Invalid fourcc string')
+
     return \
         ord(s[0]) << 0 | \
         ord(s[1]) << 8 | \
