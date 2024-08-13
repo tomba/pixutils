@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
-from PyQt5 import QtGui
+from PyQt6 import QtGui
 from .conv import data_to_rgb
 
 def rgb_to_pix(rgb):
