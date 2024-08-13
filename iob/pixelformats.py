@@ -79,6 +79,9 @@ class PixelFormats:
     def find_v4l2_fourcc(fourcc):
         return next(v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat) and v.v4l2_fourcc == fourcc)
 
+    def find_drm_fourcc(fourcc):
+        return next(v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat) and v.drm_fourcc == fourcc)
+
     @staticmethod
     def find_v4l2_fourcc_unsupported(fourcc):
         try:
