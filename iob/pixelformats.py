@@ -154,6 +154,16 @@ class PixelFormats:
         ( ( 4, 1 ), ),
     )
 
+    ARGB8888 = PixelFormat('ARGB8888',
+        'AR24',     # DRM_FORMAT_ARGB8888
+        'AR24',     # V4L2_PIX_FMT_ABGR32
+        32,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 4, 1 ), ),
+    )
+
     # YUV
 
     NV12 = PixelFormat('NV12',
