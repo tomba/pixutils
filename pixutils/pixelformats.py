@@ -71,7 +71,7 @@ class PixelFormat:
 #        return stride * ((height + vertSubSample - 1) // vertSubSample)
 
     def framesize(self, width, height, align: int = 1):
-        return sum([self.planesize(width, height, i, align) for i in range(len(self.planes))])
+        return sum(self.planesize(width, height, i, align) for i in range(len(self.planes)))
 
 
 class PixelFormats:
@@ -79,6 +79,7 @@ class PixelFormats:
     def find_v4l2_fourcc(fourcc):
         return next(v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat) and v.v4l2_fourcc == fourcc)
 
+    @staticmethod
     def find_drm_fourcc(fourcc):
         return next(v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat) and v.drm_fourcc == fourcc)
 
@@ -345,6 +346,3 @@ class MetaFormats:
 
     RPI_FE_CFG = MetaFormat('RPI_FE_CFG', 'RPFC', 1, 1)
     RPI_FE_STATS = MetaFormat('RPI_FE_STATS', 'RPFS', 1, 1)
-
-    # XXX deprecated rpi format
-    SENSOR_DATA = MetaFormat('SENSOR_DATA', 'SENS', 1, 1)
