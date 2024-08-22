@@ -21,12 +21,12 @@ class PixelFormatPlaneInfo(NamedTuple):
 
 class PixelFormat:
     def __init__(self, name: str,
-                 drm_fourcc: None | str, v4l2_fourcc: str,
+                 drm_fourcc: None | str, v4l2_fourcc: None | str,
                  bitsperpixel: int, colorencoding: PixelColorEncoding, packed: bool,
                  pixelspergroup: int, planes) -> None:
         self.name = name
         self.drm_fourcc = str_to_fourcc(drm_fourcc) if drm_fourcc else None
-        self.v4l2_fourcc = str_to_fourcc(v4l2_fourcc)
+        self.v4l2_fourcc = str_to_fourcc(v4l2_fourcc) if v4l2_fourcc else None
         self.bitsperpixel = bitsperpixel
         self.color = colorencoding
         self.packed = packed
@@ -97,7 +97,7 @@ class PixelFormats:
     def find_by_name(name):
         return next(v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat) and v.name == name)
 
-    # RGB
+    # RGB 16-bit, no alpha
 
     RGB565 = PixelFormat('RGB565',
         'RG16', 'RGBP',
@@ -107,6 +107,65 @@ class PixelFormats:
         1,
         ( ( 2, 1 ), ),
     )
+    XRGB1555 = PixelFormat('XRGB1555',
+        'XR15',     # DRM_FORMAT_XRGB1555
+        None,
+        16,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 2, 1 ), ),
+    )
+    RGBX4444 = PixelFormat('RGBX4444',
+        'RX12',     # DRM_FORMAT_RGBX4444
+        None,
+        16,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 2, 1 ), ),
+    )
+    XRGB4444 = PixelFormat('XRGB4444',
+        'XR12',     # DRM_FORMAT_XRGB4444
+        None,
+        16,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 2, 1 ), ),
+    )
+
+    # RGB 16-bit, alpha
+
+    ARGB1555 = PixelFormat('ARGB1555',
+        'AR15',     # DRM_FORMAT_ARGB1555
+        None,
+        16,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 2, 1 ), ),
+    )
+    RGBA4444 = PixelFormat('RGBA4444',
+        'RA12',     # DRM_FORMAT_RGBA4444
+        None,
+        16,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 2, 1 ), ),
+    )
+    ARGB4444 = PixelFormat('ARGB4444',
+        'AR12',     # DRM_FORMAT_ARGB4444
+        None,
+        16,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 2, 1 ), ),
+    )
+
+    # RGB 24-bit
 
     RGB888 = PixelFormat('RGB888',
         'RG24',     # DRM_FORMAT_RGB888
@@ -127,6 +186,8 @@ class PixelFormats:
         ( ( 3, 1 ), ),
     )
 
+    # RGB 32-bit, no alpha
+
     XRGB8888 = PixelFormat('XRGB8888',
         'XR24',     # DRM_FORMAT_XRGB8888
         'XR24',     # V4L2_PIX_FMT_XBGR32
@@ -145,6 +206,15 @@ class PixelFormats:
         1,
         ( ( 4, 1 ), ),
     )
+    RGBX8888 = PixelFormat('RGBX8888',
+        'RX24',     # DRM_FORMAT_RGBX8888
+        'RX24',     # V4L2_PIX_FMT_BGRX32
+        32,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 4, 1 ), ),
+    )
     XBGR2101010 = PixelFormat('XBGR2101010',
         'XB30',     # DRM_FORMAT_XBGR2101010
         'RX30',     # V4L2_PIX_FMT_RGBX1010102
@@ -155,9 +225,20 @@ class PixelFormats:
         ( ( 4, 1 ), ),
     )
 
+    # RGB 32-bit, alpha
+
     ARGB8888 = PixelFormat('ARGB8888',
         'AR24',     # DRM_FORMAT_ARGB8888
         'AR24',     # V4L2_PIX_FMT_ABGR32
+        32,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 4, 1 ), ),
+    )
+    RGBA8888 = PixelFormat('RGBA8888',
+        'RA24',     # DRM_FORMAT_RGBA8888
+        'RA24',     # V4L2_PIX_FMT_BGRA32
         32,
         PixelColorEncoding.RGB,
         False,
