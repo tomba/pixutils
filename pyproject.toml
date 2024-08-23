@@ -28,3 +28,7 @@ classifiers = [
 Homepage = "https://github.com/tomba/pixutils"
 Repository = "https://github.com/tomba/pixutils.git"
 "Bug Tracker" = "https://github.com/tomba/pixutils/issues"
+
+[project.optional-dependencies]
+conv = ["numpy"]
+qt = ["PyQt6"]
