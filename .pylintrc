@@ -91,13 +91,7 @@ disable=
         too-many-statements,
         too-many-instance-attributes,
         too-many-public-methods,
-# Below warnings should possibly be fixed
-        global-statement,
-        redefined-builtin,
-        superfluous-parens,
-        invalid-name,
         consider-using-f-string,
-        no-else-raise,
 
 
 # Enable the message, report, category or checker with the given id(s). You can

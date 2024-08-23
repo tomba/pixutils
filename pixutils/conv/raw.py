@@ -98,24 +98,24 @@ def convert_raw_packed(data, w, h, bytesperline, fmt: PixelFormat):
 
     data = data.astype(np.uint16) << 2
     for byte in range(4):
-        asd = ((data[:, 4::5] >> ((4 - byte) * 2)) & 0b11)
+        asd = (data[:, 4::5] >> ((4 - byte) * 2)) & 0b11
         data[:, byte::5] |= asd
     data = np.delete(data, np.s_[4::5], 1)
 
     idx = bayer_pattern.find('R')
-    assert(idx != -1)
+    assert idx != -1
     r0 = (idx % 2, idx // 2)
 
     idx = bayer_pattern.find('G')
-    assert(idx != -1)
+    assert idx != -1
     g0 = (idx % 2, idx // 2)
 
     idx = bayer_pattern.find('G', idx + 1)
-    assert(idx != -1)
+    assert idx != -1
     g1 = (idx % 2, idx // 2)
 
     idx = bayer_pattern.find('B')
-    assert(idx != -1)
+    assert idx != -1
     b0 = (idx % 2, idx // 2)
 
     rgb = demosaic(data, r0, g0, g1, b0)
@@ -148,19 +148,19 @@ def convert_raw(data, w, h, bytesperline, fmt: PixelFormat):
         raise RuntimeError('Bad bitspp:' + str(bitspp))
 
     idx = bayer_pattern.find('R')
-    assert(idx != -1)
+    assert idx != -1
     r0 = (idx % 2, idx // 2)
 
     idx = bayer_pattern.find('G')
-    assert(idx != -1)
+    assert idx != -1
     g0 = (idx % 2, idx // 2)
 
     idx = bayer_pattern.find('G', idx + 1)
-    assert(idx != -1)
+    assert idx != -1
     g1 = (idx % 2, idx // 2)
 
     idx = bayer_pattern.find('B')
-    assert(idx != -1)
+    assert idx != -1
     b0 = (idx % 2, idx // 2)
 
     rgb = demosaic(data, r0, g0, g1, b0)
