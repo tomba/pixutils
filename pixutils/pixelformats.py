@@ -440,6 +440,10 @@ class MetaFormats:
             s = fourcc_to_str(fourcc)
             return MetaFormat(f'Unsupported<{s}>', s, 0, 0)
 
+    @staticmethod
+    def find_by_name(name):
+        return next(v for v in MetaFormats.__dict__.values() if isinstance(v, MetaFormat) and v.name == name)
+
     GENERIC_8 = MetaFormat('GENERIC_8', 'MET8', 2, 2)
     GENERIC_CSI2_10 = MetaFormat('GENERIC_CSI2_10', 'MC1A', 4, 5)
     GENERIC_CSI2_12 = MetaFormat('GENERIC_CSI2_12', 'MC1C', 2, 3)
