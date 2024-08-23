@@ -21,17 +21,11 @@ def rgb_to_pix(rgb):
 
 
 def data_to_pix(fmt: PixelFormat, w, h, bytesperline, data):
-    print("SRC:", list(data[0:4]))
-
     if fmt == PixelFormats.MJPEG:
         pix = QtGui.QPixmap(w, h)
         pix.loadFromData(data)
     else:
         rgb = data_to_rgb(fmt, w, h, bytesperline, data)
-
-        print("RGB:", list(rgb[0,0]))
-        #print(rgb)
-
         pix = rgb_to_pix(rgb)
 
     return pix
