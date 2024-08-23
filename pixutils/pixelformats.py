@@ -236,6 +236,15 @@ class PixelFormats:
         1,
         ( ( 4, 1 ), ),
     )
+    ABGR8888 = PixelFormat('ABGR8888',
+        'AB24',     # DRM_FORMAT_ABGR8888
+        'AB24',     # V4L2_PIX_FMT_RGBA32
+        32,
+        PixelColorEncoding.RGB,
+        False,
+        1,
+        ( ( 4, 1 ), ),
+    )
     RGBA8888 = PixelFormat('RGBA8888',
         'RA24',     # DRM_FORMAT_RGBA8888
         'RA24',     # V4L2_PIX_FMT_BGRA32
@@ -390,6 +399,16 @@ class PixelFormats:
         False,
         2,
         ( ( 4, 1 ), ),
+    )
+
+    # Compressed formats
+    MJPEG = PixelFormat('MJPEG',
+        'MJPG', 'MJPG',
+        0,
+        PixelColorEncoding.YUV,
+        False,
+        1,
+        ( ( 1, 1 ), ),
     )
 
 
