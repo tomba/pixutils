@@ -4,6 +4,8 @@
 # XXX I have not been able to get PyQt6 imported to pylint
 # pylint: skip-file
 
+from __future__ import annotations
+
 from PyQt6 import QtGui
 from pixutils import PixelFormat
 from .conv import PixelFormats, data_to_rgb
@@ -20,12 +22,13 @@ def rgb_to_pix(rgb):
     return pix
 
 
-def data_to_pix(fmt: PixelFormat, w, h, bytesperline, data):
+def data_to_pix(fmt: PixelFormat, w, h, bytesperline, data,
+                options: None | dict = None):
     if fmt == PixelFormats.MJPEG:
         pix = QtGui.QPixmap(w, h)
         pix.loadFromData(data)
     else:
-        rgb = data_to_rgb(fmt, w, h, bytesperline, data)
+        rgb = data_to_rgb(fmt, w, h, bytesperline, data, options)
         pix = rgb_to_pix(rgb)
 
     return pix

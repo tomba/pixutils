@@ -3,16 +3,41 @@
 
 import numpy as np
 
-# https://web.archive.org/web/20180423091842/http://www.equasys.de/colorconversion.html
+YCBCR_VALUES = {
+    'bt601': {
+        'limited': {
+            'offsets': (-16, -128, -128),
+            'matrix': [
+                [1.1643854428931106, 1.1643854428931106, 1.1643854428931106],
+                [0.0, -0.3917753871976806, 2.01722743572137],
+                [1.596032654306859, -0.8129854276340887, 0.0]
+            ],
+        },
+        'full': {
+            'offsets': (0, -128, -128),
+            'matrix': [
+                [1.0, 1.0, 1.0],
+                [0.0, -0.3441367208361944, 1.7720149538414587],
+                [1.4019989318684671, -0.714152742809186, 0.0]
+            ],
+        },
+    },
+}
 
-def convert_ycbcr_bt601_limited_to_rgb(yuv):
-    offset = np.array([-16, -128, -128])
 
-    m = np.array([
-             [ 1.164, 1.164, 1.164 ],
-             [ 0, -0.392, 2.017 ],
-             [ 1.596, -0.813, 0 ],
-         ])
+def convert_ycbcr(yuv, options):
+    color_range = 'limited'
+    color_encoding = 'bt601'
+
+    if options:
+        color_range = options.get('range', color_range)
+        color_encoding = options.get('encoding', color_encoding)
+
+    conv_data = YCBCR_VALUES[color_encoding][color_range]
+
+    offset = np.array(conv_data['offsets'])
+
+    m = np.array(conv_data['matrix'])
 
     rgb = np.dot(yuv + offset, m)
 
@@ -21,41 +46,8 @@ def convert_ycbcr_bt601_limited_to_rgb(yuv):
 
     return rgb
 
-def convert_ycbcr_bt601_full_to_rgb(yuv):
-    offset = np.array([0, -128, -128])
 
-    m = np.array([
-             [ 1, 1, 1 ],
-             [ 0, -0.343, 1.765 ],
-             [ 1.4, -0.711, 0 ],
-         ])
-
-    rgb = np.dot(yuv + offset, m)
-
-    rgb = np.clip(rgb, 0, 255)
-    rgb = rgb.astype(np.uint8)
-
-    return rgb
-
-# https://gist.github.com/Quasimondo/c3590226c924a06b276d606f4f189639
-
-def convert_yuv444_to_rgb(yuv):
-    m = np.array([
-        [1.0, 1.0, 1.0],
-        [-0.000007154783816076815, -0.3441331386566162, 1.7720025777816772],
-        [1.4019975662231445, -0.7141380310058594, 0.00001542569043522235]
-    ])
-
-    rgb = np.dot(yuv, m)
-    rgb[:, :, 0] -= 179.45477266423404
-    rgb[:, :, 1] += 135.45870971679688
-    rgb[:, :, 2] -= 226.8183044444304
-    rgb = np.clip(rgb, 0, 255)
-    rgb = rgb.astype(np.uint8)
-
-    return rgb
-
-def convert_yuyv(data, w, h):
+def convert_yuyv(data, w, h, options):
     # YUV422
     yuyv = data.reshape((h, w // 2 * 4))
 
@@ -65,10 +57,10 @@ def convert_yuyv(data, w, h):
     yuv[:, :, 1] = yuyv[:, 1::4].repeat(2, axis=1)  # U
     yuv[:, :, 2] = yuyv[:, 3::4].repeat(2, axis=1)  # V
 
-    return convert_ycbcr_bt601_full_to_rgb(yuv)
+    return convert_ycbcr(yuv, options)
 
 
-def convert_uyvy(data, w, h):
+def convert_uyvy(data, w, h, options):
     # YUV422
     yuyv = data.reshape((h, w // 2 * 4))
 
@@ -78,9 +70,9 @@ def convert_uyvy(data, w, h):
     yuv[:, :, 1] = yuyv[:, 0::4].repeat(2, axis=1)  # U
     yuv[:, :, 2] = yuyv[:, 2::4].repeat(2, axis=1)  # V
 
-    return convert_ycbcr_bt601_full_to_rgb(yuv)
+    return convert_ycbcr(yuv, options)
 
-def convert_nv12(data, w, h):
+def convert_nv12(data, w, h, options):
     plane1 = data[:w * h]
     plane2 = data[w * h:]
 
@@ -93,7 +85,7 @@ def convert_nv12(data, w, h):
     yuv[:, :, 1] = uv[:, :, 0].repeat(2, axis=0).repeat(2, axis=1)  # U
     yuv[:, :, 2] = uv[:, :, 1].repeat(2, axis=0).repeat(2, axis=1)  # V
 
-    return convert_yuv444_to_rgb(yuv)
+    return convert_ycbcr(yuv, options)
 
 def convert_y8(data, w, h):
     y = data.reshape((h, w))
@@ -105,5 +97,3 @@ def convert_y8(data, w, h):
     yuv[:, :, 2] = y  # V
 
     return yuv
-
-    #return convert_yuv444_to_rgb(yuv)
