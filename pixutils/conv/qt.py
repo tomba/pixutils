@@ -5,7 +5,8 @@
 # pylint: skip-file
 
 from PyQt6 import QtGui
-from .conv import data_to_rgb
+from pixutils import PixelFormat
+from .conv import PixelFormats, data_to_rgb
 
 def rgb_to_pix(rgb):
     # QImage doesn't seem to like a numpy view
@@ -19,10 +20,10 @@ def rgb_to_pix(rgb):
     return pix
 
 
-def data_to_pix(fmt, w, h, bytesperline, data):
+def data_to_pix(fmt: PixelFormat, w, h, bytesperline, data):
     print("SRC:", list(data[0:4]))
 
-    if fmt == 'MJPEG':
+    if fmt == PixelFormats.MJPEG:
         pix = QtGui.QPixmap(w, h)
         pix.loadFromData(data)
     else:

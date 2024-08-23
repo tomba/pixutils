@@ -4,6 +4,8 @@
 from numpy.lib.stride_tricks import as_strided
 import numpy as np
 
+from pixutils import PixelFormat
+
 __all__ = [ 'convert_raw' ]
 
 # Debayering code from PiCamera documentation
@@ -72,15 +74,17 @@ def demosaic(data, r0, g0, g1, b0):
 
     return output
 
-def convert_raw_packed(data, w, h, bytesperline, fmt):
-    bayer_pattern = fmt[1:5]
+def convert_raw_packed(data, w, h, bytesperline, fmt: PixelFormat):
+    fmtname = fmt.name
 
-    packed = fmt.endswith("P")
+    bayer_pattern = fmtname[1:5]
+
+    packed = fmtname.endswith("P")
 
     if packed:
-        bitspp = int(fmt[5:-1])
+        bitspp = int(fmtname[5:-1])
     else:
-        bitspp = int(fmt[5:])
+        bitspp = int(fmtname[5:])
 
     if bytesperline:
         data = data.reshape((len(data) // bytesperline, bytesperline))
@@ -119,15 +123,17 @@ def convert_raw_packed(data, w, h, bytesperline, fmt):
 
     return rgb
 
-def convert_raw(data, w, h, bytesperline, fmt):
-    bayer_pattern = fmt[1:5]
+def convert_raw(data, w, h, bytesperline, fmt: PixelFormat):
+    fmtname = fmt.name
 
-    packed = fmt.endswith("P")
+    bayer_pattern = fmtname[1:5]
+
+    packed = fmtname.endswith("P")
 
     if packed:
-        bitspp = int(fmt[5:-1])
+        bitspp = int(fmtname[5:-1])
     else:
-        bitspp = int(fmt[5:])
+        bitspp = int(fmtname[5:])
 
     if packed:
         return convert_raw_packed(data, w, h, bytesperline, fmt)

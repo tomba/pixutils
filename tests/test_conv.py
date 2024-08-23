@@ -4,6 +4,7 @@ import os
 import unittest
 import numpy as np
 
+from pixutils import PixelFormats
 from pixutils.conv.conv import to_rgb
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -11,12 +12,12 @@ TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 class TestRGBConv(unittest.TestCase):
     def test_rgb(self):
         tests = [
-            ("BGR888", 2, 2, 0,
+            (PixelFormats.BGR888, 2, 2, 0,
              (1, 2, 3, 4, 5, 6,
               1, 2, 3, 4, 5, 6),
              (1, 2, 3, 4, 5, 6,
               1, 2, 3, 4, 5, 6))
-            #("RGB888", 64, 48, 0, "rgb888-in.raw", "rgb888-out.raw"),
+            #(PixelFormats.RGB888, 64, 48, 0, "rgb888-in.raw", "rgb888-out.raw"),
         ]
 
         for fmt, w, h, bytesperline, data_in, data_ref in tests:

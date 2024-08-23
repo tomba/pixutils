@@ -3,20 +3,22 @@
 
 import numpy as np
 
-def rgb_to_rgb(fmt, w, h, data):
-    if fmt == 'RGB888':
+from pixutils import PixelFormat, PixelFormats
+
+def rgb_to_rgb(fmt: PixelFormat, w, h, data):
+    if fmt == PixelFormats.RGB888:
         rgb = data.reshape((h, w, 3))
         rgb = np.flip(rgb, axis=2) # Flip the components
-    elif fmt == 'BGR888':
+    elif fmt == PixelFormats.BGR888:
         rgb = data.reshape((h, w, 3))
-    elif fmt in ['ARGB8888', 'XRGB8888']:
+    elif fmt in [PixelFormats.ARGB8888, PixelFormats.XRGB8888]:
         rgb = data.reshape((h, w, 4))
         rgb = np.delete(rgb, np.s_[3::4], axis=2) # drop alpha component
         rgb = np.flip(rgb, axis=2) # Flip the components
-    elif fmt in ['ABGR8888', 'XBGR8888']:
+    elif fmt in [PixelFormats.ABGR8888, PixelFormats.XBGR8888]:
         rgb = data.reshape((h, w, 4))
         rgb = np.delete(rgb, np.s_[3::4], axis=2) # drop alpha component
-    elif fmt == 'XBGR2101010':
+    elif fmt == PixelFormats.XBGR2101010:
         rgb = data.reshape((h, w * 4)) #.astype(np.uint16)
 
         print(rgb.shape, rgb.dtype)
@@ -41,6 +43,6 @@ def rgb_to_rgb(fmt, w, h, data):
         #rgb = np.delete(rgb, np.s_[3::4], axis=2) # drop alpha component
         #rgb = np.flip(rgb, axis=2) # Flip the components
     else:
-        raise RuntimeError('Unsupported format ' + fmt)
+        raise RuntimeError(f'Unsupported format {fmt}')
 
     return rgb
