@@ -119,7 +119,7 @@ def convert_raw_packed(data, w, h, bytesperline, fmt: PixelFormat):
     b0 = (idx % 2, idx // 2)
 
     rgb = demosaic(data, r0, g0, g1, b0)
-    rgb = (rgb >> (bitspp - 8)).astype(np.uint8)
+    rgb = (rgb >> (bitspp - 8)).astype(np.uint8) # pyright: ignore [reportOperatorIssue]
 
     return rgb
 
@@ -164,6 +164,6 @@ def convert_raw(data, w, h, bytesperline, fmt: PixelFormat):
     b0 = (idx % 2, idx // 2)
 
     rgb = demosaic(data, r0, g0, g1, b0)
-    rgb = (rgb >> (bitspp - 8)).astype(np.uint8)
+    rgb = (rgb >> (bitspp - 8)).astype(np.uint8) # pyright: ignore [reportOperatorIssue]
 
     return rgb
