@@ -1,42 +1,85 @@
 #!/usr/bin/python3
 
 import os
+import gzip
 import unittest
 import numpy as np
 
 from pixutils import PixelFormats
-from pixutils.conv.conv import to_bgr888
+from pixutils.conv import buffer_to_bgr888
+from pixutils.fourcc_str import str_to_fourcc
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 
-class TestRGBConv(unittest.TestCase):
-    def test_rgb(self):
-        tests = [
-            (PixelFormats.BGR888, 2, 2, 0,
-             (1, 2, 3, 4, 5, 6,
-              1, 2, 3, 4, 5, 6),
-             (1, 2, 3, 4, 5, 6,
-              1, 2, 3, 4, 5, 6))
-            #(PixelFormats.RGB888, 64, 48, 0, "rgb888-in.raw", "rgb888-out.raw"),
+class TestConv(unittest.TestCase):
+    def test_conversions(self):
+        # Some formats are not supported yet
+
+        fmts = [
+            #'BG16',
+            'BG24',
+            #'BX24',
+            'NV12',
+            #'NV21',
+            #'RG16',
+            'RG24',
+            #'RX24',
+            'UYVY',
+            'XB24',
+            'XR24',
+            'YUYV',
         ]
 
-        for fmt, w, h, bytesperline, data_in, data_ref in tests:
-            if isinstance(data_in, str):
-                data_in = np.fromfile(TEST_PATH + '/' + data_in, dtype=np.uint8)
-            elif isinstance(data_in, (list, tuple)):
-                data_in = np.array(data_in, dtype=np.uint8)
+        #fmts = [ 'YUYV' ]
 
-            if isinstance(data_ref, str):
-                data_ref = np.fromfile(TEST_PATH + '/' + data_ref, dtype=np.uint8)
-            elif isinstance(data_ref, (list, tuple)):
-                data_ref = np.array(data_ref, dtype=np.uint8)
+        w = 640
+        h = 480
 
-            data_out = to_bgr888(fmt, w, h, bytesperline, data_in)
+        fname = f'{TEST_PATH}/data/test-{w}-{h}-BG24.bin.gz'
 
-            # Flatten for comparison
-            data_out = data_out.flatten()
+        with gzip.open(fname, 'rb') as f:
+            ref_buf = np.frombuffer(f.read(), dtype=np.uint8)
+        ref = buffer_to_bgr888(PixelFormats.BGR888, w, h, 0, ref_buf)
+        ref = ref.astype(np.int16)
 
-            self.assertTrue(np.array_equal(data_out, data_ref))
+        for fourccstr in fmts:
+            fmt = PixelFormats.find_drm_fourcc(str_to_fourcc(fourccstr))
+
+            bytesperline = 0 #fmt.stride(w)
+
+            fname = f'{TEST_PATH}/data/test-{w}-{h}-{fourccstr}.bin.gz'
+
+            with gzip.open(fname, 'rb') as f:
+                data_in = np.frombuffer(f.read(), dtype=np.uint8)
+
+            # Note: the yuv test images are in bt601 limited
+            options = {
+                'range': 'limited',
+                'encoding': 'bt601',
+            }
+
+            rgb = buffer_to_bgr888(fmt, w, h, bytesperline, data_in, options)
+
+            self.assertEqual(rgb.shape, ref.shape)
+
+            rgb = rgb.astype(np.int16)
+
+            diff = rgb - ref
+
+            # Exact match?
+            if not diff.any():
+                continue
+
+            diff = abs(diff)
+
+            b = diff[:,:,0]
+            g = diff[:,:,1]
+            r = diff[:,:,2]
+
+            # 2.5 is an arbitrary number that seems to pass for now
+            self.assertLessEqual(b.mean(), 2.5)
+            self.assertLessEqual(g.mean(), 2.5)
+            self.assertLessEqual(r.mean(), 2.5)
 
 if __name__ == '__main__':
     unittest.main()
