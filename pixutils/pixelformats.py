@@ -49,7 +49,7 @@ class PixelFormat:
         # ceil(stride / align) * align
         return (stride + align - 1) // align * align
 
-    def planesize(self, width, height, plane, align: int = 1):
+    def planesize(self, width, height, plane: int = 0, align: int = 1):
         stride = self.stride(width, plane, align)
         if stride == 0:
             return 0
