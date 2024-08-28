@@ -75,27 +75,28 @@ class PixelFormat:
 
 
 class PixelFormats:
-    @staticmethod
-    def find_v4l2_fourcc(fourcc):
-        return next(v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat) and v.v4l2_fourcc == fourcc)
+    __FMT_LIST: list[PixelFormat] = []
 
     @staticmethod
-    def find_drm_fourcc(fourcc):
-        return next(v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat) and v.drm_fourcc == fourcc)
+    def __init_fmt_list():
+        # Perhaps there is some better way to handle this...
+        if not PixelFormats.__FMT_LIST:
+            PixelFormats.__FMT_LIST = [v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat)]
 
     @staticmethod
-    def find_v4l2_fourcc_unsupported(fourcc):
-        try:
-            return PixelFormats.find_v4l2_fourcc(fourcc)
-        except StopIteration:
-            s = fourcc_to_str(fourcc)
-            return PixelFormat(f'Unsupported<{s}>', None, s,
-                               0, PixelColorEncoding.UNDEFINED, False,
-                               0, [])
+    def find_v4l2_fourcc(fourcc: int):
+        PixelFormats.__init_fmt_list()
+        return next(f for f in PixelFormats.__FMT_LIST if f.v4l2_fourcc == fourcc)
+
+    @staticmethod
+    def find_drm_fourcc(fourcc: int):
+        PixelFormats.__init_fmt_list()
+        return next(f for f in PixelFormats.__FMT_LIST if f.drm_fourcc == fourcc)
 
     @staticmethod
     def find_by_name(name):
-        return next(v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat) and v.name == name)
+        PixelFormats.__init_fmt_list()
+        return next(f for f in PixelFormats.__FMT_LIST if f.name == name)
 
     # RGB 16-bit, no alpha
 

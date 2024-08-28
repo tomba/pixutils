@@ -28,21 +28,23 @@ class MetaFormat:
 
 
 class MetaFormats:
-    @staticmethod
-    def find_v4l2_fourcc(fourcc):
-        return next(v for v in MetaFormats.__dict__.values() if isinstance(v, MetaFormat) and v.v4l2_fourcc == fourcc)
+    __FMT_LIST: list[MetaFormat] = []
 
     @staticmethod
-    def find_v4l2_fourcc_unsupported(fourcc):
-        try:
-            return MetaFormats.find_v4l2_fourcc(fourcc)
-        except StopIteration:
-            s = fourcc_to_str(fourcc)
-            return MetaFormat(f'Unsupported<{s}>', s, 0, 0)
+    def __init_fmt_list():
+        # Perhaps there is some better way to handle this...
+        if not MetaFormats.__FMT_LIST:
+            MetaFormats.__FMT_LIST = [v for v in MetaFormats.__dict__.values() if isinstance(v, MetaFormat)]
+
+    @staticmethod
+    def find_v4l2_fourcc(fourcc):
+        MetaFormats.__init_fmt_list()
+        return next(f for f in MetaFormats.__FMT_LIST if f.v4l2_fourcc == fourcc)
 
     @staticmethod
     def find_by_name(name):
-        return next(v for v in MetaFormats.__dict__.values() if isinstance(v, MetaFormat) and v.name == name)
+        MetaFormats.__init_fmt_list()
+        return next(f for f in MetaFormats.__FMT_LIST if f.name == name)
 
     GENERIC_8 = MetaFormat('GENERIC_8', 'MET8', 2, 2)
     GENERIC_CSI2_10 = MetaFormat('GENERIC_CSI2_10', 'MC1A', 4, 5)
