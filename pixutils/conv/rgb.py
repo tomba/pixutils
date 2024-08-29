@@ -44,6 +44,6 @@ def rgb_to_bgr888(fmt: PixelFormat, w, h, data: npt.NDArray[np.uint8]):
         #rgb = np.delete(rgb, np.s_[3::4], axis=2) # drop alpha component
         #rgb = np.flip(rgb, axis=2) # Flip the components
     else:
-        raise RuntimeError(f'Unsupported format {fmt}')
+        raise RuntimeError(f'Unsupported RGB format {fmt}')
 
     return rgb

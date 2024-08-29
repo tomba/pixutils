@@ -3,6 +3,7 @@
 
 import numpy as np
 import numpy.typing as npt
+from pixutils import PixelFormats
 
 YCBCR_VALUES = {
     'bt601': {
@@ -98,3 +99,18 @@ def y8_to_bgr888(data, w, h):
     yuv[:, :, 2] = y  # V
 
     return yuv
+
+def yuv_to_bgr888(arr, w, h, fmt, options):
+    if fmt == PixelFormats.Y8:
+        return y8_to_bgr888(arr, w, h)
+
+    if fmt == PixelFormats.YUYV:
+        return yuyv_to_bgr888(arr, w, h, options)
+
+    if fmt == PixelFormats.UYVY:
+        return uyvy_to_bgr888(arr, w, h, options)
+
+    if fmt == PixelFormats.NV12:
+        return nv12_to_bgr888(arr, w, h, options)
+
+    raise RuntimeError(f'Unsupported YUV format {fmt}')

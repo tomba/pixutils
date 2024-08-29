@@ -6,30 +6,22 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from pixutils import PixelFormat, PixelFormats
+from pixutils import PixelFormat
+from pixutils.pixelformats import PixelColorEncoding
 
-from .yuv import y8_to_bgr888, yuyv_to_bgr888, uyvy_to_bgr888, nv12_to_bgr888
+from .yuv import yuv_to_bgr888
 from .rgb import rgb_to_bgr888
 from .raw import raw_to_bgr888
 
 def to_bgr888(fmt: PixelFormat, w, h, bytesperline, arr: npt.NDArray[np.uint8],
               options: None | dict = None):
-    if fmt == PixelFormats.Y8:
-        return y8_to_bgr888(arr, w, h)
+    if fmt.color == PixelColorEncoding.YUV:
+        return yuv_to_bgr888(arr, w, h, fmt, options)
 
-    if fmt == PixelFormats.YUYV:
-        return yuyv_to_bgr888(arr, w, h, options)
-
-    if fmt == PixelFormats.UYVY:
-        return uyvy_to_bgr888(arr, w, h, options)
-
-    if fmt == PixelFormats.NV12:
-        return nv12_to_bgr888(arr, w, h, options)
-
-    if fmt.name.startswith('S'):
+    if fmt.color == PixelColorEncoding.RAW:
         return raw_to_bgr888(arr, w, h, bytesperline, fmt)
 
-    if 'RGB' in fmt.name or 'BGR' in fmt.name:
+    if fmt.color == PixelColorEncoding.RGB:
         return rgb_to_bgr888(fmt, w, h, arr)
 
     raise RuntimeError(f'Unsupported format {fmt}')
