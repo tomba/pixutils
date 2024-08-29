@@ -5,9 +5,8 @@ import gzip
 import unittest
 import numpy as np
 
-from pixutils import PixelFormats
+from pixutils.formats import PixelFormats, str_to_fourcc
 from pixutils.conv import buffer_to_bgr888
-from pixutils.fourcc_str import str_to_fourcc
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 

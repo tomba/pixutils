@@ -3,7 +3,8 @@
 
 import numpy as np
 import numpy.typing as npt
-from pixutils import PixelFormats
+
+from pixutils.formats import PixelFormats
 
 YCBCR_VALUES = {
     'bt601': {

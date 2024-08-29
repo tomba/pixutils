@@ -7,8 +7,8 @@
 from __future__ import annotations
 
 from PyQt6 import QtGui
-from pixutils import PixelFormat
-from .conv import PixelFormats, buffer_to_bgr888
+from pixutils.formats import PixelFormat, PixelFormats
+from .conv import buffer_to_bgr888
 
 def bgr888_to_pix(rgb):
     # QImage doesn't seem to like a numpy view

@@ -6,8 +6,7 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from pixutils import PixelFormat
-from pixutils.pixelformats import PixelColorEncoding
+from pixutils.formats import PixelFormat, PixelColorEncoding
 
 from .yuv import yuv_to_bgr888
 from .rgb import rgb_to_bgr888

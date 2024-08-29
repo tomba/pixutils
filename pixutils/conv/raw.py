@@ -5,7 +5,7 @@ from numpy.lib.stride_tricks import as_strided
 import numpy as np
 import numpy.typing as npt
 
-from pixutils import PixelFormat
+from pixutils.formats import PixelFormat
 
 __all__ = [ 'raw_to_bgr888' ]
 
