@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
-# XXX I have not been able to get PyQt6 imported to pylint
-# pylint: skip-file
-
 from __future__ import annotations
 
 from PyQt6 import QtGui
