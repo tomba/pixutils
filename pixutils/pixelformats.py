@@ -3,7 +3,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import NamedTuple
 
-from .fourcc_str import str_to_fourcc, fourcc_to_str
+from .fourcc_str import str_to_fourcc
 
 __all__ = [ 'PixelColorEncoding', 'PixelFormat', 'PixelFormats' ]
 
