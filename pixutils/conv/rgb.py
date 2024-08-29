@@ -2,10 +2,11 @@
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
 import numpy as np
+import numpy.typing as npt
 
 from pixutils import PixelFormat, PixelFormats
 
-def rgb_to_rgb(fmt: PixelFormat, w, h, data):
+def rgb_to_bgr888(fmt: PixelFormat, w, h, data: npt.NDArray[np.uint8]):
     if fmt == PixelFormats.RGB888:
         rgb = data.reshape((h, w, 3))
         rgb = np.flip(rgb, axis=2) # Flip the components

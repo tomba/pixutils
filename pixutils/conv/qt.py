@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from PyQt6 import QtGui
 from pixutils import PixelFormat
-from .conv import PixelFormats, data_to_rgb
+from .conv import PixelFormats, buffer_to_bgr888
 
-def rgb_to_pix(rgb):
+def bgr888_to_pix(rgb):
     # QImage doesn't seem to like a numpy view
     if rgb.base is not None:
         rgb = rgb.copy()
@@ -22,13 +22,13 @@ def rgb_to_pix(rgb):
     return pix
 
 
-def data_to_pix(fmt: PixelFormat, w, h, bytesperline, data,
-                options: None | dict = None):
+def buffer_to_pix(fmt: PixelFormat, w, h, bytesperline, buffer,
+                  options: None | dict = None):
     if fmt == PixelFormats.MJPEG:
         pix = QtGui.QPixmap(w, h)
-        pix.loadFromData(data)
+        pix.loadFromData(buffer)
     else:
-        rgb = data_to_rgb(fmt, w, h, bytesperline, data, options)
-        pix = rgb_to_pix(rgb)
+        rgb = buffer_to_bgr888(fmt, w, h, bytesperline, buffer, options)
+        pix = bgr888_to_pix(rgb)
 
     return pix

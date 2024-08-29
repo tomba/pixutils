@@ -5,7 +5,7 @@ import unittest
 import numpy as np
 
 from pixutils import PixelFormats
-from pixutils.conv.conv import to_rgb
+from pixutils.conv.conv import to_bgr888
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -31,7 +31,7 @@ class TestRGBConv(unittest.TestCase):
             elif isinstance(data_ref, (list, tuple)):
                 data_ref = np.array(data_ref, dtype=np.uint8)
 
-            data_out = to_rgb(fmt, w, h, bytesperline, data_in)
+            data_out = to_bgr888(fmt, w, h, bytesperline, data_in)
 
             # Flatten for comparison
             data_out = data_out.flatten()

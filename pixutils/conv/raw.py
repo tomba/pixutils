@@ -3,14 +3,15 @@
 
 from numpy.lib.stride_tricks import as_strided
 import numpy as np
+import numpy.typing as npt
 
 from pixutils import PixelFormat
 
-__all__ = [ 'convert_raw' ]
+__all__ = [ 'raw_to_bgr888' ]
 
 # Debayering code from PiCamera documentation
 
-def demosaic(data, r0, g0, g1, b0):
+def demosaic(data: npt.NDArray[np.uint16], r0, g0, g1, b0):
     # Separate the components from the Bayer data to RGB planes
 
     rgb = np.zeros(data.shape + (3,), dtype=data.dtype)
@@ -74,7 +75,7 @@ def demosaic(data, r0, g0, g1, b0):
 
     return output
 
-def convert_raw_packed(data, w, h, bytesperline, fmt: PixelFormat):
+def raw_packed_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: PixelFormat):
     fmtname = fmt.name
 
     bayer_pattern = fmtname[1:5]
@@ -96,11 +97,11 @@ def convert_raw_packed(data, w, h, bytesperline, fmt: PixelFormat):
     if extra:
         data = np.delete(data, np.s_[-extra:], 1)
 
-    data = data.astype(np.uint16) << 2
+    arr16 = data.astype(np.uint16) << np.uint16(2)
     for byte in range(4):
-        asd = (data[:, 4::5] >> ((4 - byte) * 2)) & 0b11
-        data[:, byte::5] |= asd
-    data = np.delete(data, np.s_[4::5], 1)
+        asd = (arr16[:, 4::5] >> ((4 - byte) * 2)) & 0b11
+        arr16[:, byte::5] |= asd
+    arr16 = np.delete(arr16, np.s_[4::5], 1)
 
     idx = bayer_pattern.find('R')
     assert idx != -1
@@ -118,12 +119,12 @@ def convert_raw_packed(data, w, h, bytesperline, fmt: PixelFormat):
     assert idx != -1
     b0 = (idx % 2, idx // 2)
 
-    rgb = demosaic(data, r0, g0, g1, b0)
+    rgb = demosaic(arr16, r0, g0, g1, b0)
     rgb = (rgb >> (bitspp - 8)).astype(np.uint8) # pyright: ignore [reportOperatorIssue]
 
     return rgb
 
-def convert_raw(data, w, h, bytesperline, fmt: PixelFormat):
+def raw_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: PixelFormat):
     fmtname = fmt.name
 
     bayer_pattern = fmtname[1:5]
@@ -136,14 +137,14 @@ def convert_raw(data, w, h, bytesperline, fmt: PixelFormat):
         bitspp = int(fmtname[5:])
 
     if packed:
-        return convert_raw_packed(data, w, h, bytesperline, fmt)
+        return raw_packed_to_bgr888(data, w, h, bytesperline, fmt)
 
     if bitspp == 8:
-        data = data.reshape((h, w))
-        data = data.astype(np.uint16)
+        arr16 = data.reshape((h, w))
+        arr16 = arr16.astype(np.uint16)
     elif bitspp in [10, 12, 16]:
-        data = data.view(np.uint16)
-        data = data.reshape((h, w))
+        arr16 = data.view(np.uint16)
+        arr16 = arr16.reshape((h, w))
     else:
         raise RuntimeError('Bad bitspp:' + str(bitspp))
 
@@ -163,7 +164,7 @@ def convert_raw(data, w, h, bytesperline, fmt: PixelFormat):
     assert idx != -1
     b0 = (idx % 2, idx // 2)
 
-    rgb = demosaic(data, r0, g0, g1, b0)
+    rgb = demosaic(arr16, r0, g0, g1, b0)
     rgb = (rgb >> (bitspp - 8)).astype(np.uint8) # pyright: ignore [reportOperatorIssue]
 
     return rgb

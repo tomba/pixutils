@@ -4,37 +4,38 @@
 from __future__ import annotations
 
 import numpy as np
+import numpy.typing as npt
 
 from pixutils import PixelFormat, PixelFormats
 
-from .yuv import convert_y8, convert_yuyv, convert_uyvy, convert_nv12
-from .rgb import rgb_to_rgb
-from .raw import convert_raw
+from .yuv import y8_to_bgr888, yuyv_to_bgr888, uyvy_to_bgr888, nv12_to_bgr888
+from .rgb import rgb_to_bgr888
+from .raw import raw_to_bgr888
 
-def to_rgb(fmt: PixelFormat, w, h, bytesperline, data,
-           options: None | dict = None):
+def to_bgr888(fmt: PixelFormat, w, h, bytesperline, arr: npt.NDArray[np.uint8],
+              options: None | dict = None):
     if fmt == PixelFormats.Y8:
-        return convert_y8(data, w, h)
+        return y8_to_bgr888(arr, w, h)
 
     if fmt == PixelFormats.YUYV:
-        return convert_yuyv(data, w, h, options)
+        return yuyv_to_bgr888(arr, w, h, options)
 
     if fmt == PixelFormats.UYVY:
-        return convert_uyvy(data, w, h, options)
+        return uyvy_to_bgr888(arr, w, h, options)
 
     if fmt == PixelFormats.NV12:
-        return convert_nv12(data, w, h, options)
+        return nv12_to_bgr888(arr, w, h, options)
 
     if fmt.name.startswith('S'):
-        return convert_raw(data, w, h, bytesperline, fmt)
+        return raw_to_bgr888(arr, w, h, bytesperline, fmt)
 
     if 'RGB' in fmt.name or 'BGR' in fmt.name:
-        return rgb_to_rgb(fmt, w, h, data)
+        return rgb_to_bgr888(fmt, w, h, arr)
 
     raise RuntimeError(f'Unsupported format {fmt}')
 
-def data_to_rgb(fmt: PixelFormat, w, h, bytesperline, data,
-                options: None | dict = None):
-    data = np.frombuffer(data, dtype=np.uint8)
-    rgb = to_rgb(fmt, w, h, bytesperline, data, options)
+def buffer_to_bgr888(fmt: PixelFormat, w, h, bytesperline, buffer,
+                     options: None | dict = None):
+    arr = np.frombuffer(buffer, dtype=np.uint8)
+    rgb = to_bgr888(fmt, w, h, bytesperline, arr, options)
     return rgb

@@ -2,6 +2,7 @@
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
 import numpy as np
+import numpy.typing as npt
 
 YCBCR_VALUES = {
     'bt601': {
@@ -25,7 +26,7 @@ YCBCR_VALUES = {
 }
 
 
-def convert_ycbcr(yuv, options):
+def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options) -> npt.NDArray[np.uint8]:
     color_range = 'limited'
     color_encoding = 'bt601'
 
@@ -47,7 +48,7 @@ def convert_ycbcr(yuv, options):
     return rgb
 
 
-def convert_yuyv(data, w, h, options):
+def yuyv_to_bgr888(data, w, h, options):
     # YUV422
     yuyv = data.reshape((h, w // 2 * 4))
 
@@ -57,10 +58,10 @@ def convert_yuyv(data, w, h, options):
     yuv[:, :, 1] = yuyv[:, 1::4].repeat(2, axis=1)  # U
     yuv[:, :, 2] = yuyv[:, 3::4].repeat(2, axis=1)  # V
 
-    return convert_ycbcr(yuv, options)
+    return ycbcr_to_bgr888(yuv, options)
 
 
-def convert_uyvy(data, w, h, options):
+def uyvy_to_bgr888(data, w, h, options):
     # YUV422
     yuyv = data.reshape((h, w // 2 * 4))
 
@@ -70,9 +71,9 @@ def convert_uyvy(data, w, h, options):
     yuv[:, :, 1] = yuyv[:, 0::4].repeat(2, axis=1)  # U
     yuv[:, :, 2] = yuyv[:, 2::4].repeat(2, axis=1)  # V
 
-    return convert_ycbcr(yuv, options)
+    return ycbcr_to_bgr888(yuv, options)
 
-def convert_nv12(data, w, h, options):
+def nv12_to_bgr888(data, w, h, options):
     plane1 = data[:w * h]
     plane2 = data[w * h:]
 
@@ -85,14 +86,14 @@ def convert_nv12(data, w, h, options):
     yuv[:, :, 1] = uv[:, :, 0].repeat(2, axis=0).repeat(2, axis=1)  # U
     yuv[:, :, 2] = uv[:, :, 1].repeat(2, axis=0).repeat(2, axis=1)  # V
 
-    return convert_ycbcr(yuv, options)
+    return ycbcr_to_bgr888(yuv, options)
 
-def convert_y8(data, w, h):
+def y8_to_bgr888(data, w, h):
     y = data.reshape((h, w))
 
     # YUV444
     yuv = np.zeros((h, w, 3), dtype=np.uint8)
-    yuv[:, :, 0] = y #yuyv[:, 0::2]                    # Y
+    yuv[:, :, 0] = y  # Y
     yuv[:, :, 1] = y  # U
     yuv[:, :, 2] = y  # V
 
