@@ -8,7 +8,6 @@ import gzip
 import sys
 
 import numpy as np
-from PyQt6.QtCore import Qt
 from PyQt6 import QtWidgets
 
 from pixutils.formats import PixelFormats, str_to_fourcc
@@ -18,7 +17,7 @@ from pixutils.conv.qt import bgr888_to_pix
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 
 def main():
-    qApp = QtWidgets.QApplication(sys.argv)
+    qapp = QtWidgets.QApplication(sys.argv)
 
     # Some formats are not supported yet
 
@@ -112,7 +111,7 @@ def main():
         widget.setLayout(layout)
         widget.showMaximized()
 
-        qApp.exec()
+        qapp.exec()
 
 if __name__ == '__main__':
     main()
