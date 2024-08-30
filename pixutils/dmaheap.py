@@ -27,7 +27,7 @@ class DMAHeap:
         weakref.finalize(self, os.close, self.fd)
 
     def alloc(self, length: int):
-         # pylint: disable=attribute-defined-outside-init
+        # pylint: disable=attribute-defined-outside-init
         buf_data = struct_dma_heap_allocation_data()
         buf_data.len = length
         buf_data.fd_flags = os.O_CLOEXEC | os.O_RDWR
