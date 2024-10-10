@@ -254,6 +254,14 @@ class PixelFormats:
         ( ( 2, 1 ), ( 2, 2 ), ),
     )
 
+    NV16 = PixelFormat('NV16',
+        'NV16', 'NM16',
+        PixelColorEncoding.YUV,
+        False,
+        2,
+        ( ( 2, 1 ), ( 2, 1 ), ),
+    )
+
     YUYV = PixelFormat('YUYV',
         'YUYV', 'YUYV',
         PixelColorEncoding.YUV,
