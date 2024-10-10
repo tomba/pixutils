@@ -98,6 +98,11 @@ class PixelFormats:
         PixelFormats.__init_fmt_list()
         return next(f for f in PixelFormats.__FMT_LIST if f.name == name)
 
+    @staticmethod
+    def get_formats():
+        PixelFormats.__init_fmt_list()
+        return PixelFormats.__FMT_LIST
+
     # RGB 16-bit, no alpha
 
     RGB565 = PixelFormat('RGB565',
