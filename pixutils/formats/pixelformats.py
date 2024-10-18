@@ -359,7 +359,7 @@ class PixelFormats:
         ( ( 4, ), ),
     )
 
-    # Y8
+    # Grey formats
 
     Y8 = PixelFormat('Y8',
         None, 'GREY',
@@ -367,6 +367,38 @@ class PixelFormats:
         False,
         ( 1, 1 ),
         ( ( 1, ), ),
+    )
+
+    Y10 = PixelFormat('Y10',
+        None, 'Y10 ',
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 2, 1 ), ),
+    )
+
+    Y10P = PixelFormat('Y10P',
+        None, 'Y10P',
+        PixelColorEncoding.YUV,
+        True,
+        ( 4, 1 ),
+        ( ( 5, 4 ), ),
+    )
+
+    Y12 = PixelFormat('Y12',
+        None, 'Y12 ',
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 2, 1 ), ),
+    )
+
+    Y12P = PixelFormat('Y12P',
+        None, 'Y12P',
+        PixelColorEncoding.YUV,
+        True,
+        ( 2, 1 ),
+        ( ( 3, 2 ), ),
     )
 
     # RAW
