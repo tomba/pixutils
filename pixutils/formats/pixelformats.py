@@ -401,7 +401,7 @@ class PixelFormats:
         ( ( 3, 2 ), ),
     )
 
-    # RAW
+    # RAW Bayer formats
 
     SBGGR8 = PixelFormat('SBGGR8',
         None, 'BA81',
@@ -435,6 +435,29 @@ class PixelFormats:
         ( ( 1, 1 ), ),
     )
 
+    SBGGR10 = PixelFormat('SBGGR10',
+        None, 'BG10',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
+
+    SGBRG10 = PixelFormat('SGBRG10',
+        None, 'GB10',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
+
+    SGRBG10 = PixelFormat('SGRBG10',
+        None, 'BA10',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
 
     SRGGB10 = PixelFormat('SRGGB10',
         None, 'RG10',
@@ -444,12 +467,28 @@ class PixelFormats:
         ( ( 4, 2 ), ),
     )
 
-    SBGGR10 = PixelFormat('SBGGR10',
-        None, 'BG10',
+    SBGGR10P = PixelFormat('SBGGR10P',
+        None, 'pBAA',
         PixelColorEncoding.RAW,
-        False,
-        ( 2, 2 ),
-        ( ( 4, 2 ), ),
+        True,
+        ( 4, 2 ),
+        ( ( 5, 4 ), ),
+    )
+
+    SGBRG10P = PixelFormat('SGBRG10P',
+        None, 'pGAA',
+        PixelColorEncoding.RAW,
+        True,
+        ( 4, 2 ),
+        ( ( 5, 4 ), ),
+    )
+
+    SGRBG10P = PixelFormat('SGRBG10P',
+        None, 'pgAA',
+        PixelColorEncoding.RAW,
+        True,
+        ( 4, 2 ),
+        ( ( 5, 4 ), ),
     )
 
     SRGGB10P = PixelFormat('SRGGB10P',
@@ -460,12 +499,68 @@ class PixelFormats:
         ( ( 5, 4 ), ),
     )
 
+    SBGGR12 = PixelFormat('SBGGR12',
+        None, 'BG12',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
+
+    SGBRG12 = PixelFormat('SGBRG12',
+        None, 'GB12',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
+
+    SGRBG12 = PixelFormat('SGRBG12',
+        None, 'BA12',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
+
     SRGGB12 = PixelFormat('SRGGB12',
         None, 'RG12',
         PixelColorEncoding.RAW,
         False,
         ( 2, 2 ),
         ( ( 4, 2 ), ),
+    )
+
+    SBGGR12P = PixelFormat('SBGGR12P',
+        None, 'pBCC',
+        PixelColorEncoding.RAW,
+        True,
+        ( 2, 2 ),
+        ( ( 3, 2 ), ),
+    )
+
+    SGBRG12P = PixelFormat('SGBRG12P',
+        None, 'pGCC',
+        PixelColorEncoding.RAW,
+        True,
+        ( 2, 2 ),
+        ( ( 3, 2 ), ),
+    )
+
+    SGRBG12P = PixelFormat('SGRBG12P',
+        None, 'pgCC',
+        PixelColorEncoding.RAW,
+        True,
+        ( 2, 2 ),
+        ( ( 3, 2 ), ),
+    )
+
+    SRGGB12P = PixelFormat('SRGGB12P',
+        None, 'pRCC',
+        PixelColorEncoding.RAW,
+        True,
+        ( 2, 2 ),
+        ( ( 3, 2 ), ),
     )
 
     SRGGB16 = PixelFormat('SRGGB16',
