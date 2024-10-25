@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
+from math import ceil
 from typing import NamedTuple
 
 from .fourcc_str import str_to_fourcc
@@ -16,20 +17,23 @@ class PixelColorEncoding(Enum):
 
 
 class PixelFormatPlaneInfo(NamedTuple):
+    # plane's horizontal bytes in a line in a group
     bytespergroup: int
-    verticalsubsampling: int
+    # plane's lines in a group
+    linespergroup: int
 
 
 class PixelFormat:
     def __init__(self, name: str,
                  drm_fourcc: None | str, v4l2_fourcc: None | str,
                  colorencoding: PixelColorEncoding, packed: bool,
-                 pixelspergroup: int, planes) -> None:
+                 pixelspergroup: tuple[int, int], planes) -> None:
         self.name = name
         self.drm_fourcc = str_to_fourcc(drm_fourcc) if drm_fourcc else None
         self.v4l2_fourcc = str_to_fourcc(v4l2_fourcc) if v4l2_fourcc else None
         self.color = colorencoding
         self.packed = packed
+        # pixel group size (width-in-pixels, height-in-lines)
         self.pixelspergroup = pixelspergroup
         self.planes = [PixelFormatPlaneInfo(*p) for p in planes]
 
@@ -43,24 +47,20 @@ class PixelFormat:
         if plane >= len(self.planes):
             raise RuntimeError()
 
-        # ceil(width / pixelsPerGroup) * bytesPerGroup
-        stride = (width + self.pixelspergroup - 1) // self.pixelspergroup * self.planes[plane].bytespergroup
+        stride = int(ceil(width / self.pixelspergroup[0])) * self.planes[plane].bytespergroup
 
-        # ceil(stride / align) * align
-        return (stride + align - 1) // align * align
+        return int(ceil((stride / align))) * align
 
     def planesize(self, width: int, height: int, plane: int = 0, align: int = 1):
         stride = self.stride(width, plane, align)
         if stride == 0:
             return 0
 
-        #return self.planeSize(height, plane, stride)
+        linespergroup = self.planes[plane].linespergroup
 
-        vertsubsample = self.planes[plane].verticalsubsampling
+        assert self.pixelspergroup[1] % linespergroup == 0
 
-        # stride * ceil(height / verticalSubSampling)
-        return stride * ((height + vertsubsample - 1) // vertsubsample)
-
+        return stride * int(ceil(height / (self.pixelspergroup[1] // linespergroup)))
 
 #    def planesize(self, height, plane, stride):
 #        vertSubSample = self.planes[plane].verticalSubSampling
@@ -109,7 +109,7 @@ class PixelFormats:
         'RG16', 'RGBP',
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 2, 1 ), ),
     )
     XRGB1555 = PixelFormat('XRGB1555',
@@ -117,7 +117,7 @@ class PixelFormats:
         None,
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 2, 1 ), ),
     )
     RGBX4444 = PixelFormat('RGBX4444',
@@ -125,7 +125,7 @@ class PixelFormats:
         None,
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 2, 1 ), ),
     )
     XRGB4444 = PixelFormat('XRGB4444',
@@ -133,7 +133,7 @@ class PixelFormats:
         None,
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 2, 1 ), ),
     )
 
@@ -144,7 +144,7 @@ class PixelFormats:
         None,
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 2, 1 ), ),
     )
     RGBA4444 = PixelFormat('RGBA4444',
@@ -152,7 +152,7 @@ class PixelFormats:
         None,
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 2, 1 ), ),
     )
     ARGB4444 = PixelFormat('ARGB4444',
@@ -160,7 +160,7 @@ class PixelFormats:
         None,
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 2, 1 ), ),
     )
 
@@ -171,7 +171,7 @@ class PixelFormats:
         'BGR3',     # V4L2_PIX_FMT_BGR24
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 3, 1 ), ),
     )
     BGR888 = PixelFormat('BGR888',
@@ -179,7 +179,7 @@ class PixelFormats:
         'RGB3',     # V4L2_PIX_FMT_RGB24
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 3, 1 ), ),
     )
 
@@ -190,7 +190,7 @@ class PixelFormats:
         'XR24',     # V4L2_PIX_FMT_XBGR32
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 4, 1 ), ),
     )
     XBGR8888 = PixelFormat('XBGR8888',
@@ -198,7 +198,7 @@ class PixelFormats:
         'XB24',     # V4L2_PIX_FMT_RGBX32
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 4, 1 ), ),
     )
     RGBX8888 = PixelFormat('RGBX8888',
@@ -206,7 +206,7 @@ class PixelFormats:
         'RX24',     # V4L2_PIX_FMT_BGRX32
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 4, 1 ), ),
     )
     XBGR2101010 = PixelFormat('XBGR2101010',
@@ -214,7 +214,7 @@ class PixelFormats:
         'RX30',     # V4L2_PIX_FMT_RGBX1010102
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 4, 1 ), ),
     )
 
@@ -225,7 +225,7 @@ class PixelFormats:
         'AR24',     # V4L2_PIX_FMT_ABGR32
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 4, 1 ), ),
     )
     ABGR8888 = PixelFormat('ABGR8888',
@@ -233,7 +233,7 @@ class PixelFormats:
         'AB24',     # V4L2_PIX_FMT_RGBA32
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 4, 1 ), ),
     )
     RGBA8888 = PixelFormat('RGBA8888',
@@ -241,7 +241,7 @@ class PixelFormats:
         'RA24',     # V4L2_PIX_FMT_BGRA32
         PixelColorEncoding.RGB,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 4, 1 ), ),
     )
 
@@ -251,15 +251,15 @@ class PixelFormats:
         'NV12', 'NM12',
         PixelColorEncoding.YUV,
         False,
-        2,
-        ( ( 2, 1 ), ( 2, 2 ), ),
+        ( 2, 2 ),
+        ( ( 2, 2 ), ( 2, 1 ), ),
     )
 
     NV16 = PixelFormat('NV16',
         'NV16', 'NM16',
         PixelColorEncoding.YUV,
         False,
-        2,
+        ( 2, 1 ),
         ( ( 2, 1 ), ( 2, 1 ), ),
     )
 
@@ -267,7 +267,7 @@ class PixelFormats:
         'YUYV', 'YUYV',
         PixelColorEncoding.YUV,
         False,
-        2,
+        ( 2, 1 ),
         ( ( 4, 1 ), ),
     )
 
@@ -275,7 +275,7 @@ class PixelFormats:
         'UYVY', 'UYVY',
         PixelColorEncoding.YUV,
         False,
-        2,
+        ( 2, 1 ),
         ( ( 4, 1 ), ),
     )
 
@@ -286,7 +286,7 @@ class PixelFormats:
         'YUV3',     # V4L2_PIX_FMT_YUV24
         PixelColorEncoding.YUV,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 3, 1 ), ),
     )
 
@@ -295,7 +295,7 @@ class PixelFormats:
         'YUVX',     # V4L2_PIX_FMT_YUVX32
         PixelColorEncoding.YUV,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 4, 1 ), ),
     )
 
@@ -305,7 +305,7 @@ class PixelFormats:
         None, 'GREY',
         PixelColorEncoding.YUV,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 1, 1 ), ),
     )
 
@@ -315,32 +315,32 @@ class PixelFormats:
         None, 'BA81',
         PixelColorEncoding.RAW,
         False,
-        2,
-        ( ( 2, 1 ), ),
+        ( 2, 2 ),
+        ( ( 2, 2 ), ),
     )
 
     SGBRG8 = PixelFormat('SGBRG8',
         None, 'GBRG',
         PixelColorEncoding.RAW,
         False,
-        2,
-        ( ( 2, 1 ), ),
+        ( 2, 2 ),
+        ( ( 2, 2 ), ),
     )
 
     SGRBG8 = PixelFormat('SGRBG8',
         None, 'GRBG',
         PixelColorEncoding.RAW,
         False,
-        2,
-        ( ( 2, 1 ), ),
+        ( 2, 2 ),
+        ( ( 2, 2 ), ),
     )
 
     SRGGB8 = PixelFormat('SRGGB8',
         None, 'RGGB',
         PixelColorEncoding.RAW,
         False,
-        2,
-        ( ( 2, 1 ), ),
+        ( 2, 2 ),
+        ( ( 2, 2 ), ),
     )
 
 
@@ -348,40 +348,40 @@ class PixelFormats:
         None, 'RG10',
         PixelColorEncoding.RAW,
         False,
-        2,
-        ( ( 4, 1 ), ),
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
     )
 
     SBGGR10 = PixelFormat('SBGGR10',
         None, 'BG10',
         PixelColorEncoding.RAW,
         False,
-        2,
-        ( ( 4, 1 ), ),
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
     )
 
     SRGGB10P = PixelFormat('SRGGB10P',
         None, 'pRAA',
         PixelColorEncoding.RAW,
         True,
-        4,
-        ( ( 5, 1 ), ),
+        ( 4, 2 ),
+        ( ( 5, 2 ), ),
     )
 
     SRGGB12 = PixelFormat('SRGGB12',
         None, 'RG12',
         PixelColorEncoding.RAW,
         False,
-        2,
-        ( ( 4, 1 ), ),
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
     )
 
     SRGGB16 = PixelFormat('SRGGB16',
         None, 'RG16',
         PixelColorEncoding.RAW,
         False,
-        2,
-        ( ( 4, 1 ), ),
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
     )
 
     # Compressed formats
@@ -389,6 +389,6 @@ class PixelFormats:
         'MJPG', 'MJPG',
         PixelColorEncoding.YUV,
         False,
-        1,
+        ( 1, 1 ),
         ( ( 1, 1 ), ),
     )
