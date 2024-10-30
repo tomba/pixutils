@@ -1,34 +1,33 @@
 [build-system]
-requires = ["setuptools >= 61.0"]
-build-backend = "setuptools.build_meta"
+requires = ['setuptools >= 61.0']
+build-backend = 'setuptools.build_meta'
 
 [project]
-name = "pixutils"
-version = "0.1"
-dependencies = [
-]
-requires-python = ">=3.8"
+name = 'pixutils'
+version = '0.1'
+dependencies = []
+requires-python = '>=3.8'
 authors = [
-  {name = "Tomi Valkeinen", email = "tomi.valkeinen@ideasonboard.com"},
+  { name = 'Tomi Valkeinen', email = 'tomi.valkeinen@ideasonboard.com' },
 ]
 maintainers = [
-  {name = "Tomi Valkeinen", email = "tomi.valkeinen@ideasonboard.com"},
+  { name = 'Tomi Valkeinen', email = 'tomi.valkeinen@ideasonboard.com' },
 ]
-description = "Python pixutils"
-readme = "README.md"
-license = {file = "LICENSE.md"}
-keywords = ["linux", "kms", "drm", "v4l2"]
+description = 'Python pixutils'
+readme = 'README.md'
+license = { file = 'LICENSE.md' }
+keywords = ['linux', 'kms', 'drm', 'v4l2']
 classifiers = [
-  "Programming Language :: Python",
-  "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
-  "Development Status :: 4 - Beta",
+  'Programming Language :: Python',
+  'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+  'Development Status :: 4 - Beta',
 ]
 
 [project.urls]
-Homepage = "https://github.com/tomba/pixutils"
-Repository = "https://github.com/tomba/pixutils.git"
-"Bug Tracker" = "https://github.com/tomba/pixutils/issues"
+Homepage = 'https://github.com/tomba/pixutils'
+Repository = 'https://github.com/tomba/pixutils.git'
+'Bug Tracker' = 'https://github.com/tomba/pixutils/issues'
 
 [project.optional-dependencies]
-conv = ["numpy"]
-qt = ["PyQt6"]
+conv = ['numpy']
+qt = ['PyQt6']
