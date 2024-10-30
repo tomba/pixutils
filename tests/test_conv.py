@@ -10,6 +10,7 @@ from pixutils.conv import buffer_to_bgr888
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 
+
 class TestConv(unittest.TestCase):
     def test_conversions(self):
         # Some formats are not supported yet
@@ -29,7 +30,7 @@ class TestConv(unittest.TestCase):
             'YUYV',
         ]
 
-        #fmts = [ 'YUYV' ]
+        # fmts = [ 'YUYV' ]
 
         w = 640
         h = 480
@@ -44,7 +45,7 @@ class TestConv(unittest.TestCase):
         for fourccstr in fmts:
             fmt = PixelFormats.find_drm_fourcc(str_to_fourcc(fourccstr))
 
-            bytesperline = 0 #fmt.stride(w)
+            bytesperline = 0  # fmt.stride(w)
 
             fname = f'{TEST_PATH}/data/test-{w}-{h}-{fourccstr}.bin.gz'
 
@@ -71,14 +72,15 @@ class TestConv(unittest.TestCase):
 
             diff = abs(diff)
 
-            b = diff[:,:,0]
-            g = diff[:,:,1]
-            r = diff[:,:,2]
+            b = diff[:, :, 0]
+            g = diff[:, :, 1]
+            r = diff[:, :, 2]
 
             # 2.5 is an arbitrary number that seems to pass for now
             self.assertLessEqual(b.mean(), 2.5)
             self.assertLessEqual(g.mean(), 2.5)
             self.assertLessEqual(r.mean(), 2.5)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,6 +2,7 @@
 
 from pixutils.formats import PixelFormats, fourcc_to_str
 
+
 def main():
     for fmt in PixelFormats.get_formats():
         if fmt.drm_fourcc:
@@ -14,9 +15,13 @@ def main():
         else:
             v4l2_fourcc = '    '
 
-        planes = [f'bytespergroup:{p.bytespergroup} vsub:{p.verticalsubsampling}' for p in fmt.planes]
+        planes = [
+            f'bytespergroup:{p.bytespergroup} vsub:{p.verticalsubsampling}' for p in fmt.planes
+        ]
 
-        print(f'{fmt.name:15} {drm_fourcc:4} {v4l2_fourcc:4} pixelspergroup:{fmt.pixelspergroup} {planes}')
+        print(
+            f'{fmt.name:15} {drm_fourcc:4} {v4l2_fourcc:4} pixelspergroup:{fmt.pixelspergroup} {planes}'
+        )
 
 
 if __name__ == '__main__':
