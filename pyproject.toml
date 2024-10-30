@@ -31,3 +31,19 @@ Repository = 'https://github.com/tomba/pixutils.git'
 [project.optional-dependencies]
 conv = ['numpy']
 qt = ['PyQt6']
+
+[tool.setuptools]
+packages = ['v4l2', 'v4l2.uapi']
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ['E4', 'E7', 'E9', 'F', 'FA100', 'FA102']
+ignore = ['E741']
+
+[tool.ruff.lint.per-file-ignores]
+'__init__.py' = ['F401', 'F403']
+
+[tool.ruff.format]
+quote-style = 'single'
