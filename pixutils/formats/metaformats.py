@@ -21,7 +21,7 @@ class MetaFormat:
         # ceil(stride / align) * align
         return (stride + align - 1) // align * align
 
-    def buffersize(self, width, height, align: int = 1):
+    def buffersize(self, width: int, height: int, align: int = 1):
         stride = self.stride(width, align)
         if stride == 0:
             return 0
