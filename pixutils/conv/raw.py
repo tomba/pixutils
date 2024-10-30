@@ -7,18 +7,19 @@ import numpy.typing as npt
 
 from pixutils.formats import PixelFormat
 
-__all__ = [ 'raw_to_bgr888' ]
+__all__ = ['raw_to_bgr888']
 
 # Debayering code from PiCamera documentation
+
 
 def demosaic(data: npt.NDArray[np.uint16], r0, g0, g1, b0):
     # Separate the components from the Bayer data to RGB planes
 
     rgb = np.zeros(data.shape + (3,), dtype=data.dtype)
-    rgb[1::2, 0::2, 0] = data[r0[1]::2, r0[0]::2]  # Red
-    rgb[0::2, 0::2, 1] = data[g0[1]::2, g0[0]::2]  # Green
-    rgb[1::2, 1::2, 1] = data[g1[1]::2, g1[0]::2]  # Green
-    rgb[0::2, 1::2, 2] = data[b0[1]::2, b0[0]::2]  # Blue
+    rgb[1::2, 0::2, 0] = data[r0[1] :: 2, r0[0] :: 2]  # Red
+    rgb[0::2, 0::2, 1] = data[g0[1] :: 2, g0[0] :: 2]  # Green
+    rgb[1::2, 1::2, 1] = data[g1[1] :: 2, g1[0] :: 2]  # Green
+    rgb[0::2, 1::2, 2] = data[b0[1] :: 2, b0[0] :: 2]  # Blue
 
     # Below we present a fairly naive de-mosaic method that simply
     # calculates the weighted average of a pixel based on the pixels
@@ -42,16 +43,24 @@ def demosaic(data: npt.NDArray[np.uint16], r0, g0, g1, b0):
     borders = (window[0] - 1, window[1] - 1)
     border = (borders[0] // 2, borders[1] // 2)
 
-    rgb = np.pad(rgb, [
-        (border[0], border[0]),
-        (border[1], border[1]),
-        (0, 0),
-    ], 'constant')
-    bayer = np.pad(bayer, [
-        (border[0], border[0]),
-        (border[1], border[1]),
-        (0, 0),
-    ], 'constant')
+    rgb = np.pad(
+        rgb,
+        [
+            (border[0], border[0]),
+            (border[1], border[1]),
+            (0, 0),
+        ],
+        'constant',
+    )
+    bayer = np.pad(
+        bayer,
+        [
+            (border[0], border[0]),
+            (border[1], border[1]),
+            (0, 0),
+        ],
+        'constant',
+    )
 
     # For each plane in the RGB data, we use a nifty numpy trick
     # (as_strided) to construct a view over the plane of 3x3 matrices. We do
@@ -63,24 +72,29 @@ def demosaic(data: npt.NDArray[np.uint16], r0, g0, g1, b0):
         p = rgb[..., plane]
         b = bayer[..., plane]
 
-        pview = as_strided(p, shape=(
-            p.shape[0] - borders[0],
-            p.shape[1] - borders[1]) + window, strides=p.strides * 2)
-        bview = as_strided(b, shape=(
-            b.shape[0] - borders[0],
-            b.shape[1] - borders[1]) + window, strides=b.strides * 2)
+        pview = as_strided(
+            p,
+            shape=(p.shape[0] - borders[0], p.shape[1] - borders[1]) + window,
+            strides=p.strides * 2,
+        )
+        bview = as_strided(
+            b,
+            shape=(b.shape[0] - borders[0], b.shape[1] - borders[1]) + window,
+            strides=b.strides * 2,
+        )
         psum = np.einsum('ijkl->ij', pview)
         bsum = np.einsum('ijkl->ij', bview)
         output[..., plane] = psum // bsum
 
     return output
 
+
 def raw_packed_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: PixelFormat):
     fmtname = fmt.name
 
     bayer_pattern = fmtname[1:5]
 
-    packed = fmtname.endswith("P")
+    packed = fmtname.endswith('P')
 
     if packed:
         bitspp = int(fmtname[5:-1])
@@ -120,16 +134,17 @@ def raw_packed_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: P
     b0 = (idx % 2, idx // 2)
 
     rgb = demosaic(arr16, r0, g0, g1, b0)
-    rgb = (rgb >> (bitspp - 8)).astype(np.uint8) # pyright: ignore [reportOperatorIssue]
+    rgb = (rgb >> (bitspp - 8)).astype(np.uint8)  # pyright: ignore [reportOperatorIssue]
 
     return rgb
+
 
 def raw_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: PixelFormat):
     fmtname = fmt.name
 
     bayer_pattern = fmtname[1:5]
 
-    packed = fmtname.endswith("P")
+    packed = fmtname.endswith('P')
 
     if packed:
         bitspp = int(fmtname[5:-1])
@@ -165,6 +180,6 @@ def raw_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: PixelFor
     b0 = (idx % 2, idx // 2)
 
     rgb = demosaic(arr16, r0, g0, g1, b0)
-    rgb = (rgb >> (bitspp - 8)).astype(np.uint8) # pyright: ignore [reportOperatorIssue]
+    rgb = (rgb >> (bitspp - 8)).astype(np.uint8)  # pyright: ignore [reportOperatorIssue]
 
     return rgb

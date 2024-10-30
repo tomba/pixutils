@@ -16,6 +16,7 @@ from pixutils.conv.qt import bgr888_to_pix
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 
+
 def main():
     qapp = QtWidgets.QApplication(sys.argv)
 
@@ -36,7 +37,7 @@ def main():
         'YUYV',
     ]
 
-    #fmts = [ 'YUYV' ]
+    # fmts = [ 'YUYV' ]
 
     w = 640
     h = 480
@@ -57,7 +58,7 @@ def main():
 
         print(f'Showing {fmt} ({fourccstr})')
 
-        bytesperline = 0 #fmt.stride(w)
+        bytesperline = 0  # fmt.stride(w)
 
         fname = f'{TEST_PATH}/data/test-{w}-{h}-{fourccstr}.bin.gz'
 
@@ -84,9 +85,9 @@ def main():
 
         diff = abs(diff)
 
-        b = diff[:,:,0]
-        g = diff[:,:,1]
-        r = diff[:,:,2]
+        b = diff[:, :, 0]
+        g = diff[:, :, 1]
+        r = diff[:, :, 2]
 
         print('  min()  {:5} {:5} {:5}'.format(b.min(), g.min(), r.min()))
         print('  max()  {:5} {:5} {:5}'.format(b.max(), g.max(), r.max()))
@@ -112,6 +113,7 @@ def main():
         widget.showMaximized()
 
         qapp.exec()
+
 
 if __name__ == '__main__':
     main()

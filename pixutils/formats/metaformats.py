@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from .fourcc_str import str_to_fourcc
 
-__all__ = [ 'MetaFormat', 'MetaFormats' ]
+__all__ = ['MetaFormat', 'MetaFormats']
 
 
 class MetaFormat:
-    def __init__(self, name: str, v4l2_fourcc: str, pixelspergroup: int, bytespergroup: int) -> None:
+    def __init__(
+        self, name: str, v4l2_fourcc: str, pixelspergroup: int, bytespergroup: int
+    ) -> None:
         self.name = name
         self.v4l2_fourcc = str_to_fourcc(v4l2_fourcc)
         self.pixelspergroup = pixelspergroup
@@ -34,7 +36,9 @@ class MetaFormats:
     def __init_fmt_list():
         # Perhaps there is some better way to handle this...
         if not MetaFormats.__FMT_LIST:
-            MetaFormats.__FMT_LIST = [v for v in MetaFormats.__dict__.values() if isinstance(v, MetaFormat)]
+            MetaFormats.__FMT_LIST = [
+                v for v in MetaFormats.__dict__.values() if isinstance(v, MetaFormat)
+            ]
 
     @staticmethod
     def find_v4l2_fourcc(fourcc):
