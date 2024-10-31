@@ -5,7 +5,8 @@ from typing import NamedTuple
 
 from .fourcc_str import str_to_fourcc
 
-__all__ = [ 'PixelColorEncoding', 'PixelFormat', 'PixelFormats' ]
+__all__ = ['PixelColorEncoding', 'PixelFormat', 'PixelFormats']
+
 
 class PixelColorEncoding(Enum):
     RGB = 0

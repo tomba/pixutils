@@ -6,6 +6,7 @@ import numpy.typing as npt
 
 from pixutils.formats import PixelFormat, PixelFormats
 
+
 def rgb_to_bgr888(fmt: PixelFormat, w, h, data: npt.NDArray[np.uint8]):
     if fmt == PixelFormats.RGB888:
         rgb = data.reshape((h, w, 3))

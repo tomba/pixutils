@@ -7,9 +7,10 @@ import numpy.typing as npt
 
 from pixutils.formats import PixelFormat
 
-__all__ = [ 'raw_to_bgr888' ]
+__all__ = ['raw_to_bgr888']
 
 # Debayering code from PiCamera documentation
+
 
 def demosaic(data: npt.NDArray[np.uint16], r0, g0, g1, b0):
     # Separate the components from the Bayer data to RGB planes
@@ -75,12 +76,13 @@ def demosaic(data: npt.NDArray[np.uint16], r0, g0, g1, b0):
 
     return output
 
+
 def raw_packed_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: PixelFormat):
     fmtname = fmt.name
 
     bayer_pattern = fmtname[1:5]
 
-    packed = fmtname.endswith("P")
+    packed = fmtname.endswith('P')
 
     if packed:
         bitspp = int(fmtname[5:-1])
@@ -124,12 +126,13 @@ def raw_packed_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: P
 
     return rgb
 
+
 def raw_to_bgr888(data: npt.NDArray[np.uint8], w, h, bytesperline, fmt: PixelFormat):
     fmtname = fmt.name
 
     bayer_pattern = fmtname[1:5]
 
-    packed = fmtname.endswith("P")
+    packed = fmtname.endswith('P')
 
     if packed:
         bitspp = int(fmtname[5:-1])

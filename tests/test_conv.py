@@ -10,6 +10,7 @@ from pixutils.conv import buffer_to_bgr888
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 
+
 class TestConv(unittest.TestCase):
     def test_conversions(self):
         # Some formats are not supported yet
@@ -79,6 +80,7 @@ class TestConv(unittest.TestCase):
             self.assertLessEqual(b.mean(), 2.5)
             self.assertLessEqual(g.mean(), 2.5)
             self.assertLessEqual(r.mean(), 2.5)
+
 
 if __name__ == '__main__':
     unittest.main()
