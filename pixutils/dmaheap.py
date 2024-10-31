@@ -6,7 +6,7 @@ import weakref
 
 from pixutils.ioctl import IOWR
 
-__all__ = [ 'DMAHeap', 'DMAHeapBuffer' ]
+__all__ = ['DMAHeap', 'DMAHeapBuffer']
 
 # pylint: disable=invalid-name
 class struct_dma_heap_allocation_data(ctypes.Structure):
@@ -19,6 +19,7 @@ class struct_dma_heap_allocation_data(ctypes.Structure):
 DMA_HEAP_IOC_MAGIC = 'H'
 
 DMA_HEAP_IOCTL_ALLOC = IOWR(DMA_HEAP_IOC_MAGIC, 0x0, struct_dma_heap_allocation_data)
+
 
 class DMAHeap:
     def __init__(self, name: str):
@@ -34,6 +35,7 @@ class DMAHeap:
         fcntl.ioctl(self.fd, DMA_HEAP_IOCTL_ALLOC, buf_data, True)
 
         return DMAHeapBuffer(buf_data.fd, buf_data.len)
+
 
 class DMAHeapBuffer:
     def __init__(self, fd: int, length: int):

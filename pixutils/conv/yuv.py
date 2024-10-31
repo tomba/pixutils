@@ -13,7 +13,7 @@ YCBCR_VALUES = {
             'matrix': [
                 [1.1643854428931106, 1.1643854428931106, 1.1643854428931106],
                 [0.0, -0.3917753871976806, 2.01722743572137],
-                [1.596032654306859, -0.8129854276340887, 0.0]
+                [1.596032654306859, -0.8129854276340887, 0.0],
             ],
         },
         'full': {
@@ -21,7 +21,7 @@ YCBCR_VALUES = {
             'matrix': [
                 [1.0, 1.0, 1.0],
                 [0.0, -0.3441367208361944, 1.7720149538414587],
-                [1.4019989318684671, -0.714152742809186, 0.0]
+                [1.4019989318684671, -0.714152742809186, 0.0],
             ],
         },
     },
@@ -75,6 +75,7 @@ def uyvy_to_bgr888(data, w, h, options):
 
     return ycbcr_to_bgr888(yuv, options)
 
+
 def nv12_to_bgr888(data, w, h, options):
     plane1 = data[:w * h]
     plane2 = data[w * h:]
@@ -90,6 +91,7 @@ def nv12_to_bgr888(data, w, h, options):
 
     return ycbcr_to_bgr888(yuv, options)
 
+
 def y8_to_bgr888(data, w, h):
     y = data.reshape((h, w))
 
@@ -100,6 +102,7 @@ def y8_to_bgr888(data, w, h):
     yuv[:, :, 2] = y  # V
 
     return yuv
+
 
 def yuv_to_bgr888(arr, w, h, fmt, options):
     if fmt == PixelFormats.Y8:

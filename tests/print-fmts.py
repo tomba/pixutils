@@ -2,6 +2,7 @@
 
 from pixutils.formats import PixelFormats, fourcc_to_str
 
+
 def main():
     for fmt in PixelFormats.get_formats():
         if fmt.drm_fourcc:

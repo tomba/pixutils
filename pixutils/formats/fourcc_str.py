@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-__all__ = [ 'fourcc_to_str', 'str_to_fourcc' ]
+__all__ = ['fourcc_to_str', 'str_to_fourcc']
+
 
 def fourcc_to_str(fourcc: int):
     return ''.join((

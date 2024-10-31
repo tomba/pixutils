@@ -16,6 +16,7 @@ from pixutils.conv.qt import bgr888_to_pix
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 
+
 def main():
     qapp = QtWidgets.QApplication(sys.argv)
 
@@ -112,6 +113,7 @@ def main():
         widget.showMaximized()
 
         qapp.exec()
+
 
 if __name__ == '__main__':
     main()

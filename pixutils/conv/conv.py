@@ -12,6 +12,7 @@ from .yuv import yuv_to_bgr888
 from .rgb import rgb_to_bgr888
 from .raw import raw_to_bgr888
 
+
 def to_bgr888(fmt: PixelFormat, w, h, bytesperline, arr: npt.NDArray[np.uint8],
               options: None | dict = None):
     if fmt.color == PixelColorEncoding.YUV:
@@ -25,8 +26,8 @@ def to_bgr888(fmt: PixelFormat, w, h, bytesperline, arr: npt.NDArray[np.uint8],
 
     raise RuntimeError(f'Unsupported format {fmt}')
 
-def buffer_to_bgr888(fmt: PixelFormat, w, h, bytesperline, buffer,
-                     options: None | dict = None):
+
+def buffer_to_bgr888(fmt: PixelFormat, w, h, bytesperline, buffer, options: None | dict = None):
     arr = np.frombuffer(buffer, dtype=np.uint8)
     rgb = to_bgr888(fmt, w, h, bytesperline, arr, options)
     return rgb

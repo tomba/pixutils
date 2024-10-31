@@ -4,9 +4,11 @@ import unittest
 import pixutils
 import pixutils.formats
 
+
 class TestDummy(unittest.TestCase):
     def test_dummy(self):
         self.assertEqual(pixutils.formats.PixelFormats.RGB888.name, 'RGB888')
+
 
 class TestFourcc(unittest.TestCase):
     def test_fourcc(self):
@@ -16,6 +18,7 @@ class TestFourcc(unittest.TestCase):
             pixutils.formats.fourcc_str.str_to_fourcc('ABCDE')
         with self.assertRaises(ValueError):
             pixutils.formats.fourcc_str.str_to_fourcc('ABC')
+
 
 if __name__ == '__main__':
     unittest.main()

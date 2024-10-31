@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from .fourcc_str import str_to_fourcc
 
-__all__ = [ 'MetaFormat', 'MetaFormats' ]
+__all__ = ['MetaFormat', 'MetaFormats']
 
 
 class MetaFormat:

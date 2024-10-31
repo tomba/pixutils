@@ -10,6 +10,7 @@ from PyQt6 import QtGui
 from pixutils.formats import PixelFormat, PixelFormats
 from .conv import buffer_to_bgr888
 
+
 def bgr888_to_pix(rgb):
     # QImage doesn't seem to like a numpy view
     if rgb.base is not None:
@@ -22,8 +23,7 @@ def bgr888_to_pix(rgb):
     return pix
 
 
-def buffer_to_pix(fmt: PixelFormat, w, h, bytesperline, buffer,
-                  options: None | dict = None):
+def buffer_to_pix(fmt: PixelFormat, w, h, bytesperline, buffer, options: None | dict = None):
     if fmt == PixelFormats.MJPEG:
         pix = QtGui.QPixmap(w, h)
         pix.loadFromData(buffer)
