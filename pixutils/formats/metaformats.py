@@ -12,6 +12,12 @@ class MetaFormat:
         self.pixelspergroup = pixelspergroup
         self.bytespergroup = bytespergroup
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f'MetaFormat({self.name})'
+
     def stride(self, width: int, align: int = 1):
         # ceil(width / pixelsPerGroup) * bytesPerGroup
         stride = (width + self.pixelspergroup - 1) // self.pixelspergroup * self.bytespergroup
