@@ -49,7 +49,7 @@ class PixelFormat:
 
         stride = int(ceil(width / self.pixelspergroup[0])) * self.planes[plane].bytespergroup
 
-        return int(ceil((stride / align))) * align
+        return int(ceil(stride / align)) * align
 
     def planesize(self, width: int, height: int, plane: int = 0, align: int = 1):
         stride = self.stride(width, plane, align)
