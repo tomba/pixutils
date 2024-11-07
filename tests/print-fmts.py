@@ -17,7 +17,7 @@ def main():
 
         planes = [f'bytespergroup:{p.bytespergroup} linespergroup:{p.linespergroup}' for p in fmt.planes]
 
-        print(f'{fmt.name:15} {drm_fourcc:4} {v4l2_fourcc:4} pixelspergroup:{fmt.pixelspergroup} {planes}')
+        print(f'{fmt.name:15} {drm_fourcc:4} {v4l2_fourcc:4} group_size:{fmt.group_size} {planes}')
 
 
 if __name__ == '__main__':
