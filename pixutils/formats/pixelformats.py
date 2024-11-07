@@ -21,6 +21,9 @@ class PixelFormatPlaneInfo(NamedTuple):
     bytespergroup: int
     # plane's lines in a group
     linespergroup: int
+    # subsampling
+    hsub: int
+    vsub: int
 
 
 class PixelFormat:
@@ -35,7 +38,13 @@ class PixelFormat:
         self.packed = packed
         # pixel group size (width-in-pixels, height-in-lines)
         self.group_size = group_size
-        self.planes = [PixelFormatPlaneInfo(*p) for p in planes]
+
+        def adjust_p(p):
+            if len(p) == 2:
+                return (p[0], p[1], 1, 1)
+            return p
+
+        self.planes = [PixelFormatPlaneInfo(*adjust_p(p)) for p in planes]
 
     def __str__(self):
         return self.name
@@ -277,6 +286,15 @@ class PixelFormats:
         False,
         ( 2, 1 ),
         ( ( 4, 1 ), ),
+    )
+
+    XV15 = PixelFormat('XV15',
+        'XV15', None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 6, 2 ),
+        ( ( 8, 2, 1, 1, ),
+          ( 8, 1, 2, 2, ), ),
     )
 
     # YUV 4:4:4
