@@ -27,14 +27,14 @@ class PixelFormat:
     def __init__(self, name: str,
                  drm_fourcc: None | str, v4l2_fourcc: None | str,
                  colorencoding: PixelColorEncoding, packed: bool,
-                 pixelspergroup: tuple[int, int], planes) -> None:
+                 group_size: tuple[int, int], planes) -> None:
         self.name = name
         self.drm_fourcc = str_to_fourcc(drm_fourcc) if drm_fourcc else None
         self.v4l2_fourcc = str_to_fourcc(v4l2_fourcc) if v4l2_fourcc else None
         self.color = colorencoding
         self.packed = packed
         # pixel group size (width-in-pixels, height-in-lines)
-        self.pixelspergroup = pixelspergroup
+        self.group_size = group_size
         self.planes = [PixelFormatPlaneInfo(*p) for p in planes]
 
     def __str__(self):
@@ -47,7 +47,7 @@ class PixelFormat:
         if plane >= len(self.planes):
             raise RuntimeError()
 
-        stride = int(ceil(width / self.pixelspergroup[0])) * self.planes[plane].bytespergroup
+        stride = int(ceil(width / self.group_size[0])) * self.planes[plane].bytespergroup
 
         return int(ceil(stride / align)) * align
 
@@ -58,9 +58,9 @@ class PixelFormat:
 
         linespergroup = self.planes[plane].linespergroup
 
-        assert self.pixelspergroup[1] % linespergroup == 0
+        assert self.group_size[1] % linespergroup == 0
 
-        return stride * int(ceil(height / (self.pixelspergroup[1] // linespergroup)))
+        return stride * int(ceil(height / (self.group_size[1] // linespergroup)))
 
 #    def planesize(self, height, plane, stride):
 #        vertSubSample = self.planes[plane].verticalSubSampling
