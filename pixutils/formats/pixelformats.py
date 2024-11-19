@@ -65,6 +65,29 @@ class PixelFormat:
     def framesize(self, width: int, height: int, align: int = 1):
         return sum(self.planesize(width, height, i, align) for i in range(len(self.planes)))
 
+    def dumb_size(self, width: int, height: int, plane: int = 0):
+        """
+        Helper function mainly for DRM dumb framebuffer
+        Returns (width, height, bitspp) tuple which results in a suitable plane
+        size.
+
+        DRM_IOCTL_MODE_CREATE_DUMB takes a 'bpp' (bits-per-pixel) argument,
+        which is then used with the width and height to allocate the buffer.
+        This doesn't work for pixel formats where the average bits-per-pixel
+        is not an integer (e.g. XV15)
+
+        So, we instead use the number of bits per (horizontal) pixel group as
+        the 'bpp' argument, and adjust the width accordingly.
+        """
+
+        pi = self.planes[plane]
+
+        width = int(ceil(width / self.group_size[0]))
+        height = int(ceil(height / self.group_size[1])) * pi.linespergroup
+        bitspp = pi.bytespergroup * 8
+
+        return width, height, bitspp
+
 
 class PixelFormats:
     __FMT_LIST: list[PixelFormat] = []
