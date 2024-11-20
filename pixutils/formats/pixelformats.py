@@ -62,14 +62,6 @@ class PixelFormat:
 
         return stride * int(ceil(height / (self.group_size[1] // linespergroup)))
 
-#    def planesize(self, height, plane, stride):
-#        vertSubSample = self.planes[plane].verticalSubSampling
-#        if vertSubSample == 0:
-#            return 0
-#
-#        # stride * ceil(height / verticalSubSampling)
-#        return stride * ((height + vertSubSample - 1) // vertSubSample)
-
     def framesize(self, width: int, height: int, align: int = 1):
         return sum(self.planesize(width, height, i, align) for i in range(len(self.planes)))
 
