@@ -627,7 +627,7 @@ class PixelFormats:
     # Grey formats
 
     Y8 = PixelFormat('Y8',
-        None, 'GREY',
+        'GREY', 'GREY',
         PixelColorEncoding.YUV,
         False,
         ( 1, 1 ),
@@ -664,6 +664,14 @@ class PixelFormats:
         True,
         ( 2, 1 ),
         ( ( 3, 2 ), ),
+    )
+
+    Y10_LE32 = PixelFormat('Y10_P32',
+        'YPA4', None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 3, 1 ),
+        ( ( 4, 3, ), ),
     )
 
     # RAW Bayer formats
