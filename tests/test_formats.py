@@ -34,6 +34,16 @@ TEST_DATA = [
              width=1920, height=1080,
              strides=[1920*1, 1920*2//2], sizes=[1920*1*1080, 1920*2//2 * 1080//1]),
 
+    TestData(format=PixelFormats.XV15,
+             width=1920, height=1080,
+             strides=[1920 // 3 * 4, 1920 // 3 * 8 // 2],
+             sizes=[1920 // 3 * 4 * 1080, 1920 // 3 * 8 // 2 * 1080 // 2]),
+
+    TestData(format=PixelFormats.XV20,
+             width=1920, height=1080,
+             strides=[1920 // 3 * 4, 1920 // 3 * 8 // 2],
+             sizes=[1920 // 3 * 4 * 1080, 1920 // 3 * 8 // 2 * 1080 // 1]),
+
     TestData(format=PixelFormats.SBGGR8,
              width=1920, height=1080,
              strides=[1920*1], sizes=[1920*1*1080]),

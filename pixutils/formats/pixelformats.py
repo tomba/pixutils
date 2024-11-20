@@ -339,6 +339,24 @@ class PixelFormats:
         ( ( 4, 2, 1, 1 ), ),
     )
 
+    XV15 = PixelFormat('XV15',
+        'XV15', None,
+        PixelColorEncoding.YUV,
+        False,
+        (6, 2),
+        ( ( 4, 3, 1, 1, ),
+          ( 8, 3, 2, 2, ), ),
+    )
+
+    XV20 = PixelFormat('XV20',
+        'XV20', None,
+        PixelColorEncoding.YUV,
+        False,
+        (6, 2),
+        ( ( 4, 3, 1, 1, ),
+          ( 8, 3, 2, 1, ), ),
+    )
+
     # YUV 4:4:4
 
     VUY888 = PixelFormat('VUY888',
