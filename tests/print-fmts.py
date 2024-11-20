@@ -15,9 +15,9 @@ def main():
         else:
             v4l2_fourcc = '    '
 
-        planes = [f'bytespergroup:{p.bytespergroup} linespergroup:{p.linespergroup}' for p in fmt.planes]
+        planes = [f'bytes_per_block:{p.bytes_per_block} pixels_per_block:{p.pixels_per_block} hsub:{p.hsub} vsub:{p.vsub}' for p in fmt.planes]
 
-        print(f'{fmt.name:15} {drm_fourcc:4} {v4l2_fourcc:4} group_size:{fmt.group_size} {planes}')
+        print(f'{fmt.name:15} {drm_fourcc:4} {v4l2_fourcc:4} pixel_align:{fmt.pixel_align} {planes}')
 
 
 if __name__ == '__main__':

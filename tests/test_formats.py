@@ -55,16 +55,18 @@ class TestFormats(unittest.TestCase):
     def run_data(self, data: TestData):
         fmt = data.format
         for idx, _ in enumerate(fmt.planes):
-            self.assertEqual(fmt.stride(data.width, idx),
+            stride = fmt.stride(data.width, idx)
+            size = fmt.planesize(stride, data.height, idx)
+            self.assertEqual(stride,
                              data.strides[idx],
                              f'stride failed for {fmt}')
-            self.assertEqual(fmt.planesize(data.width, data.height, idx),
+            self.assertEqual(size,
                              data.sizes[idx],
                              f'size failed for {fmt}')
 
             dumb_size = reduce(mul, fmt.dumb_size(data.width, data.height, idx)) // 8
 
-            self.assertEqual(fmt.planesize(data.width, data.height, idx),
+            self.assertEqual(size,
                              dumb_size,
                              f'dumb size failed for {fmt}')
 
