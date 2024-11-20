@@ -385,6 +385,16 @@ class PixelFormats:
         ( ( 4, ), ),
     )
 
+    X403 = PixelFormat('X403',
+        'X403', None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ),
+          ( 4, ),
+          ( 4, ) ),
+    )
+
     # Grey formats
 
     Y8 = PixelFormat('Y8',
