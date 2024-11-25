@@ -66,9 +66,8 @@ class RawFormat:
 
 
 def prepare_packed_raw(data: npt.NDArray[np.uint8], width: int, height: int,
-                       bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
-    # Only 10 bpp is supported for now
-    assert bits_per_pixel == 10
+                      bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
+    assert bits_per_pixel in [10, 12], 'Only 10 and 12 bpp are supported'
 
     # Reshape into rows if bytesperline is provided
     if bytesperline:
@@ -77,16 +76,22 @@ def prepare_packed_raw(data: npt.NDArray[np.uint8], width: int, height: int,
         data = data.reshape((height, len(data) // height))
 
     # Remove padding if present
-    padded_width = width * 10 // 8  # For 10-bit packed
+    padded_width = width * bits_per_pixel // 8
     if bytesperline > padded_width:
         data = np.delete(data, np.s_[padded_width:], 1)
 
-    # Convert to 16-bit and handle packing
-    arr16 = data.astype(np.uint16) << np.uint16(2)
-    for byte in range(4):
-        asd = (arr16[:, 4::5] >> ((4 - byte) * 2)) & 0b11
-        arr16[:, byte::5] |= asd
-    arr16 = np.delete(arr16, np.s_[4::5], 1)
+    # Unpack to 16-bit
+    if bits_per_pixel == 10:
+        arr16 = data.astype(np.uint16) << np.uint16(2)
+        for byte in range(4):
+            arr16[:, byte::5] |= (arr16[:, 4::5] >> ((4 - byte) * 2)) & 0b11
+        arr16 = np.delete(arr16, np.s_[4::5], 1)
+
+    else:  # 12-bit
+        arr16 = data.astype(np.uint16) << np.uint16(4)
+        for byte in range(2):
+            arr16[:, byte::3] |= (arr16[:, 2::3] >> ((2 - byte) * 4)) & 0b1111
+        arr16 = np.delete(arr16, np.s_[2::3], 1)
 
     return arr16
 
