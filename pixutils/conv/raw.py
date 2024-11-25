@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
-from numpy.lib.stride_tricks import as_strided
 import numpy as np
 import numpy.typing as npt
 
@@ -13,9 +12,10 @@ __all__ = ['raw_to_bgr888']
 
 
 def demosaic(data: npt.NDArray[np.uint16], r0, g0, g1, b0):
-    # Separate the components from the Bayer data to RGB planes
+    h, w = data.shape
 
-    rgb = np.zeros(data.shape + (3,), dtype=data.dtype)
+    # Separate the components from the Bayer data to RGB planes
+    rgb = np.zeros((h, w, 3), dtype=data.dtype)
     rgb[1::2, 0::2, 0] = data[r0[1]::2, r0[0]::2]  # Red
     rgb[0::2, 0::2, 1] = data[g0[1]::2, g0[0]::2]  # Green
     rgb[1::2, 1::2, 1] = data[g1[1]::2, g1[0]::2]  # Green
@@ -54,24 +54,24 @@ def demosaic(data: npt.NDArray[np.uint16], r0, g0, g1, b0):
         (0, 0),
     ], 'constant')
 
-    # For each plane in the RGB data, we use a nifty numpy trick
-    # (as_strided) to construct a view over the plane of 3x3 matrices. We do
-    # the same for the bayer array, then use Einstein summation on each
-    # (np.sum is simpler, but copies the data so it's slower), and divide
-    # the results to get our weighted average:
+    # For each plane in the RGB data, we calculate the 3x3 window sum
+    # and divide it with the weighted average. This version uses direct
+    # computation of the sum, instead of using numpy's as_strided()
+    # and einsum(), as the direct version is 2x as fast.
 
     for plane in range(3):
         p = rgb[..., plane]
         b = bayer[..., plane]
 
-        pview = as_strided(p, shape=(
-            p.shape[0] - borders[0],
-            p.shape[1] - borders[1]) + window, strides=p.strides * 2)
-        bview = as_strided(b, shape=(
-            b.shape[0] - borders[0],
-            b.shape[1] - borders[1]) + window, strides=b.strides * 2)
-        psum = np.einsum('ijkl->ij', pview)
-        bsum = np.einsum('ijkl->ij', bview)
+        # Direct computation of 3x3 window sum
+        psum = (p[:-2, :-2] + p[:-2, 1:-1] + p[:-2, 2:] +
+                p[1:-1, :-2] + p[1:-1, 1:-1] + p[1:-1, 2:] +
+                p[2:, :-2] + p[2:, 1:-1] + p[2:, 2:])
+
+        bsum = (b[:-2, :-2] + b[:-2, 1:-1] + b[:-2, 2:] +
+                b[1:-1, :-2] + b[1:-1, 1:-1] + b[1:-1, 2:] +
+                b[2:, :-2] + b[2:, 1:-1] + b[2:, 2:])
+
         output[..., plane] = psum // bsum
 
     return output
