@@ -1,85 +1,53 @@
 #!/usr/bin/python3
 
-import os
+import glob
 import gzip
+import os
 import unittest
+import re
 import numpy as np
 
-from pixutils.formats import PixelFormats, str_to_fourcc
+from pixutils.formats import PixelFormats, PixelFormat
 from pixutils.conv import buffer_to_bgr888
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = f'{TEST_PATH}/conv-test-data'
 
 
 class TestConv(unittest.TestCase):
     def test_conversions(self):
-        # Some formats are not supported yet
-
-        fmts = [
-            #'BG16',
-            'BG24',
-            #'BX24',
-            'NV12',
-            #'NV21',
-            #'RG16',
-            'RG24',
-            #'RX24',
-            'UYVY',
-            'XB24',
-            'XR24',
-            'YUYV',
-        ]
-
-        #fmts = [ 'YUYV' ]
-
-        w = 640
-        h = 480
-
-        fname = f'{TEST_PATH}/data/test-{w}-{h}-BG24.bin.gz'
-
-        with gzip.open(fname, 'rb') as f:
-            ref_buf = np.frombuffer(f.read(), dtype=np.uint8)
-        ref = buffer_to_bgr888(PixelFormats.BGR888, w, h, 0, ref_buf)
-        ref = ref.astype(np.int16)
-
-        for fourccstr in fmts:
-            fmt = PixelFormats.find_drm_fourcc(str_to_fourcc(fourccstr))
-
-            bytesperline = 0 #fmt.stride(w)
-
-            fname = f'{TEST_PATH}/data/test-{w}-{h}-{fourccstr}.bin.gz'
-
-            with gzip.open(fname, 'rb') as f:
-                data_in = np.frombuffer(f.read(), dtype=np.uint8)
-
-            # Note: the yuv test images are in bt601 limited
-            options = {
-                'range': 'limited',
-                'encoding': 'bt601',
-            }
-
-            rgb = buffer_to_bgr888(fmt, w, h, bytesperline, data_in, options)
-
-            self.assertEqual(rgb.shape, ref.shape)
-
-            rgb = rgb.astype(np.int16)
-
-            diff = rgb - ref
-
-            # Exact match?
-            if not diff.any():
+        for fname in glob.glob(f'{DATA_PATH}/*.bin.gz'):
+            bname = os.path.basename(fname)
+            m = re.match(r'(\d+)x(\d+)-(\w+).bin.gz',  bname)
+            if not m:
                 continue
 
-            diff = abs(diff)
+            width = int(m.group(1))
+            height = int(m.group(2))
+            fmt = PixelFormats.find_by_name(m.group(3))
 
-            b = diff[:,:,0]
-            g = diff[:,:,1]
-            r = diff[:,:,2]
+            self.run_test_image(width, height, fmt)
 
-            # 2.5 is an arbitrary number that seems to pass for now
-            self.assertLessEqual(b.mean(), 2.5)
-            self.assertLessEqual(g.mean(), 2.5)
-            self.assertLessEqual(r.mean(), 2.5)
+    def run_test_image(self, width: int, height: int, fmt: PixelFormat):
+        with gzip.open(f'{DATA_PATH}/{width}x{height}-{fmt.name}.bin.gz', 'rb') as f:
+            src_buf = np.frombuffer(f.read(), dtype=np.uint8)
+
+        with gzip.open(f'{DATA_PATH}/{width}x{height}-{fmt.name}-BGR888.bin.gz', 'rb') as f:
+            ref_buf = np.frombuffer(f.read(), dtype=np.uint8)
+
+        options = {
+            'range': 'limited',
+            'encoding': 'bt601',
+        }
+
+        rgb_buf = buffer_to_bgr888(fmt, width, height, 0, src_buf, options)
+        rgb_buf = rgb_buf.flatten()
+
+        self.assertEqual(rgb_buf.shape, ref_buf.shape)
+
+        diff = rgb_buf - ref_buf
+
+        self.assertFalse(diff.any())
 
 
 if __name__ == '__main__':
