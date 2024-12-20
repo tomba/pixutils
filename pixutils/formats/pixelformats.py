@@ -9,6 +9,9 @@ from .fourcc_str import str_to_fourcc
 __all__ = ['PixelColorEncoding', 'PixelFormat', 'PixelFormats']
 
 
+# Ensure stride is a multiple of 16 for memory alignment
+MEMORY_ALIGNMENT = 16
+
 class PixelColorEncoding(Enum):
     RGB = 0
     YUV = 1
@@ -63,7 +66,7 @@ class PixelFormat:
         return (_align_up(width, self.pixel_align[0]),
                 _align_up(height, self.pixel_align[1]))
 
-    def stride(self, width: int, plane: int = 0, align = 1):
+    def stride(self, width: int, plane: int = 0, align = MEMORY_ALIGNMENT):
         if plane >= len(self.planes):
             raise RuntimeError()
 
@@ -91,7 +94,7 @@ class PixelFormat:
         return stride * (height // pi.vsub)
 
 
-    def framesize(self, width: int, height: int, align = 1):
+    def framesize(self, width: int, height: int, align = MEMORY_ALIGNMENT):
         size = 0
 
         for i in range(len(self.planes)):
