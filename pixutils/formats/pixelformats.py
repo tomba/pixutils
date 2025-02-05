@@ -4,7 +4,7 @@ from enum import Enum
 from math import ceil
 from typing import NamedTuple
 
-from .fourcc_str import str_to_fourcc
+from .fourcc_str import fourcc_to_str, str_to_fourcc
 
 __all__ = ['PixelColorEncoding', 'PixelFormat', 'PixelFormats']
 
@@ -615,3 +615,33 @@ class PixelFormats:
         ( 1, 1 ),
         ( ( 1, ), ),
     )
+
+# Helper to dump the pixel formats into a C++ struct
+def dump_c_structs():
+    for fmt in PixelFormats.get_formats():
+        print(f'\t{fmt.name},')
+
+    print()
+    print()
+
+    print('{')
+
+    for fmt in PixelFormats.get_formats():
+        print('\t{')
+        print(f'\t\tPixelFormat::{fmt.name}, {{')
+        print('\t\t\tPixelFormatInfo {')
+        print(f'\t\t\t\t"{fmt.name}",')
+        print(f'\t\t\t\t"{fourcc_to_str(fmt.drm_fourcc) if fmt.drm_fourcc else ""}",')
+        print(f'\t\t\t\t"{fourcc_to_str(fmt.v4l2_fourcc) if fmt.v4l2_fourcc else ""}",')
+        print(f'\t\t\t\tPixelColorType::{fmt.color.name},')
+        print(f'\t\t\t\t{{ {fmt.pixel_align[0]}, {fmt.pixel_align[1]} }},')
+
+        planedata = [f'{{ {p.bytes_per_block}, {p.pixels_per_block}, {p.hsub}, {p.vsub} }}' for p in fmt.planes]
+
+        print(f'\t\t\t\t{{ {', '.join(planedata)} }},')
+
+        print('\t\t\t}')
+        print('\t\t}')
+        print('\t},')
+
+    print('}')
