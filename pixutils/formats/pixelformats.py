@@ -161,10 +161,26 @@ class PixelFormats:
         PixelFormats.__init_fmt_list()
         return PixelFormats.__FMT_LIST
 
+    # RGB 8-bit
+    RGB332 = PixelFormat('RGB332',
+        'RGB8', None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 1, ), ),
+    )
+
     # RGB 16-bit, no alpha
 
     RGB565 = PixelFormat('RGB565',
         'RG16', 'RGBP',
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 2, ), ),
+    )
+    BGR565 = PixelFormat('BGR565',
+        'BG16', None,
         PixelColorEncoding.RGB,
         False,
         ( 1, 1 ),
@@ -267,9 +283,42 @@ class PixelFormats:
         ( 1, 1 ),
         ( ( 4, ), ),
     )
+    BGRX8888 = PixelFormat('BGRX8888',
+        'BX24',     # DRM_FORMAT_RGBX8888
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+
     XBGR2101010 = PixelFormat('XBGR2101010',
         'XB30',     # DRM_FORMAT_XBGR2101010
         'RX30',     # V4L2_PIX_FMT_RGBX1010102
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+    XRGB2101010 = PixelFormat('XRGB2101010',
+        'XR30',
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+    RGBX1010102 = PixelFormat('RGBX1010102',
+        'RX30',
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+    BGRX1010102 = PixelFormat('BGRX1010102',
+        'BX30',
+        None,
         PixelColorEncoding.RGB,
         False,
         ( 1, 1 ),
@@ -302,11 +351,141 @@ class PixelFormats:
         ( 1, 1 ),
         ( ( 4, ), ),
     )
+    BGRA8888 = PixelFormat('BGRA8888',
+        'BA24',
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
 
-    # YUV
+
+    ABGR2101010 = PixelFormat('ABGR2101010',
+        'AB30',
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+    ARGB2101010 = PixelFormat('ARGB2101010',
+        'AR30',
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+    RGBA1010102 = PixelFormat('RGBA1010102',
+        'RA30',
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+    BGRA1010102 = PixelFormat('BGRA1010102',
+        'BA30',
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+
+    # YUV Packed
+
+    YUYV = PixelFormat('YUYV',
+        'YUYV', 'YUYV',
+        PixelColorEncoding.YUV,
+        False,
+        ( 2, 1 ),
+        ( ( 4, 2, 1, 1 ), ),
+    )
+
+    UYVY = PixelFormat('UYVY',
+        'UYVY', 'UYVY',
+        PixelColorEncoding.YUV,
+        False,
+        ( 2, 1 ),
+        ( ( 4, 2, 1, 1 ), ),
+    )
+
+    YVYU = PixelFormat('YVYU',
+        'YVYU', 'YVYU',
+        PixelColorEncoding.YUV,
+        False,
+        ( 2, 1 ),
+        ( ( 4, 2, 1, 1 ), ),
+    )
+
+    VYUY = PixelFormat('VYUY',
+        'VYUY', 'VYUY',
+        PixelColorEncoding.YUV,
+        False,
+        ( 2, 1 ),
+        ( ( 4, 2, 1, 1 ), ),
+    )
+
+    VUY888 = PixelFormat('VUY888',
+        'VU24',     # DRM_FORMAT_VUY888
+        'YUV3',     # V4L2_PIX_FMT_YUV24
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 3, ), ),
+    )
+
+    XVUY8888 = PixelFormat('XVUY8888',
+        'XVUY',     # DRM_FORMAT_XVUY8888
+        'YUVX',     # V4L2_PIX_FMT_YUVX32
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+
+    Y210 = PixelFormat('Y210',
+        'Y210',     # DRM_FORMAT_Y210
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 8, 2, 1, 1 ), ),
+    )
+
+    Y212 = PixelFormat('Y212',
+        'Y212',     # DRM_FORMAT_Y212
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 8, 2, 1, 1 ), ),
+    )
+
+    Y216 = PixelFormat('Y216',
+        'Y216',     # DRM_FORMAT_Y216
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 8, 2, 1, 1 ), ),
+    )
+
+    # YUV Semi Planar
 
     NV12 = PixelFormat('NV12',
         'NV12', 'NM12',
+        PixelColorEncoding.YUV,
+        False,
+        ( 2, 2 ),
+        ( ( 1, 1, 1, 1 ),
+          ( 2, 1, 2, 2), ),
+    )
+
+    NV21 = PixelFormat('NV21',
+        'NV21', 'NM21',
         PixelColorEncoding.YUV,
         False,
         ( 2, 2 ),
@@ -323,20 +502,13 @@ class PixelFormats:
           ( 2, 1, 2, 1), ),
     )
 
-    YUYV = PixelFormat('YUYV',
-        'YUYV', 'YUYV',
+    NV61 = PixelFormat('NV61',
+        'NV61', 'NM61',
         PixelColorEncoding.YUV,
         False,
         ( 2, 1 ),
-        ( ( 4, 2, 1, 1 ), ),
-    )
-
-    UYVY = PixelFormat('UYVY',
-        'UYVY', 'UYVY',
-        PixelColorEncoding.YUV,
-        False,
-        ( 2, 1 ),
-        ( ( 4, 2, 1, 1 ), ),
+        ( ( 1, 1, 1, 1 ),
+          ( 2, 1, 2, 1), ),
     )
 
     XV15 = PixelFormat('XV15',
@@ -365,24 +537,72 @@ class PixelFormats:
         ( ( 4, ), ),
     )
 
-    # YUV 4:4:4
+    # YUV Planar
 
-    VUY888 = PixelFormat('VUY888',
-        'VU24',     # DRM_FORMAT_VUY888
-        'YUV3',     # V4L2_PIX_FMT_YUV24
+    YUV420 = PixelFormat('YUV420',
+        'YU12',
+        None,
         PixelColorEncoding.YUV,
         False,
         ( 1, 1 ),
-        ( ( 3, ), ),
+        ( ( 1, 1, 1, 1 ),
+          ( 1, 1, 2, 2 ),
+          ( 1, 1, 2, 2 ), ),
     )
 
-    XVUY8888 = PixelFormat('XVUY8888',
-        'XVUY',     # DRM_FORMAT_XVUY8888
-        'YUVX',     # V4L2_PIX_FMT_YUVX32
+    YVU420 = PixelFormat('YVU420',
+        'YV12',
+        None,
         PixelColorEncoding.YUV,
         False,
         ( 1, 1 ),
-        ( ( 4, ), ),
+        ( ( 1, 1, 1, 1 ),
+          ( 1, 1, 2, 2 ),
+          ( 1, 1, 2, 2 ), ),
+    )
+
+    YUV422 = PixelFormat('YUV422',
+        'YU16',
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 1, 1, 1, 1 ),
+          ( 1, 1, 2, 1 ),
+          ( 1, 1, 2, 1 ), ),
+    )
+
+    YVU422 = PixelFormat('YVU422',
+        'YV16',
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 1, 1, 1, 1 ),
+          ( 1, 1, 2, 1 ),
+          ( 1, 1, 2, 1 ), ),
+    )
+
+    YUV444 = PixelFormat('YUV444',
+        'YU24',
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 1, 1, 1, 1 ),
+          ( 1, 1, 1, 1 ),
+          ( 1, 1, 1, 1 ), ),
+    )
+
+    YVU444 = PixelFormat('YVU444',
+        'YV24',
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 1, 1, 1, 1 ),
+          ( 1, 1, 1, 1 ),
+          ( 1, 1, 1, 1 ), ),
     )
 
     X403 = PixelFormat('X403',
@@ -645,3 +865,18 @@ def dump_c_structs():
         print('\t},')
 
     print('}')
+
+# Validate that the format names match the field names, and that the fourccs are unique
+def validate_formats():
+    for f in PixelFormats.get_formats():
+        # pylint: disable=consider-iterating-dictionary
+        assert f.name in PixelFormats.__dict__.keys(), f.name
+
+    names = [f.name for f in PixelFormats.get_formats()]
+    assert len(names) == len(set(names))
+
+    drm_fourccs = [f.drm_fourcc for f in PixelFormats.get_formats() if f.drm_fourcc]
+    assert len(drm_fourccs) == len(set(drm_fourccs))
+
+    v4l2_fourccs = [f.v4l2_fourcc for f in PixelFormats.get_formats() if f.v4l2_fourcc]
+    assert len(v4l2_fourccs) == len(set(v4l2_fourccs))
