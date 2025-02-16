@@ -858,7 +858,7 @@ def dump_c_structs():
 
         planedata = [f'{{ {p.bytes_per_block}, {p.pixels_per_block}, {p.hsub}, {p.vsub} }}' for p in fmt.planes]
 
-        print(f'\t\t\t\t{{ {', '.join(planedata)} }},')
+        print(f'\t\t\t\t{{ {", ".join(planedata)} }},')
 
         print('\t\t\t}')
         print('\t\t}')
