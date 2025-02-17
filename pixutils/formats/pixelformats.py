@@ -161,6 +161,15 @@ class PixelFormats:
         PixelFormats.__init_fmt_list()
         return PixelFormats.__FMT_LIST
 
+    # Single 8-bit channel
+    R8 = PixelFormat('R8',
+        'R8  ', None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 1, ), ),
+    )
+
     # RGB 8-bit
     RGB332 = PixelFormat('RGB332',
         'RGB8', None,
