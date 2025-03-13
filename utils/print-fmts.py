@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 from pixutils.formats import PixelFormats, fourcc_to_str
 
