@@ -159,7 +159,7 @@ def demosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern) -> npt.NDArray
     # and einsum(), as the direct version is 2x as fast.
 
     for plane in range(3):
-        p = rgb[..., plane]
+        p = rgb[..., plane].astype(np.uint32, copy=False)
         b = bayer[..., plane]
 
         # Direct computation of 3x3 window sum
