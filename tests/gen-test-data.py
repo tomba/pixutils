@@ -40,6 +40,22 @@ def main():
         size = fmt.framesize(WIDTH, HEIGHT)
 
         buf = np.frombuffer(rnd.bytes(size), dtype=np.uint8)
+
+        # Mask out the padding bits
+
+        if fmt == PixelFormats.SRGGB10:
+            buf = buf.view(np.uint16)
+            buf = buf & ((1 << 10) - 1)
+        elif fmt == PixelFormats.SRGGB12:
+            buf = buf.view(np.uint16)
+            buf = buf & ((1 << 12) - 1)
+        elif fmt == PixelFormats.XBGR8888:
+            buf = buf.view(np.uint32)
+            buf = buf & ((1 << 24) - 1)
+        elif fmt == PixelFormats.XRGB8888:
+            buf = buf.view(np.uint32)
+            buf = buf & ((1 << 24) - 1)
+
         rgb = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, options)
 
         src_file = f'{WIDTH}x{HEIGHT}-{fmt}.bin.gz'
