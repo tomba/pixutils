@@ -35,7 +35,7 @@ def main():
     }
 
     for fmt in FMTS:
-        rnd = np.random.default_rng(SEED)
+        rnd = np.random.Generator(np.random.PCG64(SEED))
 
         size = fmt.framesize(WIDTH, HEIGHT)
 
