@@ -163,10 +163,10 @@ for fmt, (ref_src_sha, ref_rgb_sha) in FMTS.items():
     setattr(TestConv, test_name, test)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--save', action='store_true', help='Generate frames, save to files and exit.')
     parser.add_argument('--dict', action='store_true', help='Generate FMTS dict, print and exit.')
-    args = parser.parse_args()
+    args, unknown = parser.parse_known_args()
 
     if args.save:
         save_test_data()
