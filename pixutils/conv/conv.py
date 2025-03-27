@@ -42,6 +42,8 @@ def to_bgr888(
     # ones with assert for now
     assert len(fmt.planes) == 1 or bytesperline == 0
 
+    size = 0
+
     for i, plane in enumerate(fmt.planes):
         if bytesperline > 0 and bytesperline < fmt.stride(width, i):
             raise ValueError('bytesperline is too small')
@@ -49,6 +51,11 @@ def to_bgr888(
         stride = bytesperline if bytesperline > 0 else fmt.stride(width, i)
         if arr.size < fmt.planesize(stride, height, i):
             raise ValueError('Input array is too small')
+
+        size += stride * height
+
+    # Get a view for the actual data
+    arr = arr[:size]
 
     if fmt.color == PixelColorEncoding.YUV:
         return yuv_to_bgr888(arr, width, height, fmt, options)
