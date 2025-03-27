@@ -38,6 +38,18 @@ def to_bgr888(
         Numpy array containing the image in BGR888 format
     """
 
+    # The function API is broken for multiplane formats. Catch the problematic
+    # ones with assert for now
+    assert len(fmt.planes) == 1 or bytesperline == 0
+
+    for i, plane in enumerate(fmt.planes):
+        if bytesperline > 0 and bytesperline < fmt.stride(width, i):
+            raise ValueError('bytesperline is too small')
+
+        stride = bytesperline if bytesperline > 0 else fmt.stride(width, i)
+        if arr.size < fmt.planesize(stride, height, i):
+            raise ValueError('Input array is too small')
+
     if fmt.color == PixelColorEncoding.YUV:
         return yuv_to_bgr888(arr, width, height, fmt, options)
 
@@ -47,7 +59,7 @@ def to_bgr888(
     if fmt.color == PixelColorEncoding.RGB:
         return rgb_to_bgr888(fmt, width, height, arr)
 
-    raise RuntimeError(f'Unsupported format {fmt}')
+    raise ValueError(f'Unsupported format {fmt}')
 
 
 def buffer_to_bgr888(
