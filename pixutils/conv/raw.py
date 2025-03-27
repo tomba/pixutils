@@ -97,7 +97,19 @@ def prepare_packed_raw(data: npt.NDArray[np.uint8], width: int, height: int,
 
 
 def prepare_unpacked_raw(data: npt.NDArray[np.uint8], width: int, height: int,
-                        bits_per_pixel: int) -> npt.NDArray[np.uint16]:
+                        bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
+
+    # Reshape into rows if bytesperline is provided
+    if bytesperline:
+        data = data.reshape((len(data) // bytesperline, bytesperline))
+    else:
+        data = data.reshape((height, len(data) // height))
+
+    # Remove padding if present
+    padded_width = width * bits_per_pixel // 8
+    if bytesperline > padded_width:
+        data = np.delete(data, np.s_[padded_width:], 1)
+
     if bits_per_pixel == 8:
         return data.reshape((height, width)).astype(np.uint16)
 
@@ -186,7 +198,8 @@ def raw_to_bgr888(data: npt.NDArray[np.uint8], width: int, height: int,
         arr16 = prepare_packed_raw(data, width, height, raw_fmt.bits_per_pixel,
                                    bytesperline)
     else:
-        arr16 = prepare_unpacked_raw(data, width, height, raw_fmt.bits_per_pixel)
+        arr16 = prepare_unpacked_raw(data, width, height, raw_fmt.bits_per_pixel,
+                                     bytesperline)
 
     # Perform demosaic
     rgb = demosaic(arr16, raw_fmt.bayer_pattern)
