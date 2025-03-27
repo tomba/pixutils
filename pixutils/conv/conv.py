@@ -6,8 +6,6 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from collections.abc import Buffer
-
 from pixutils.formats import PixelFormat, PixelColorEncoding
 
 from .yuv import yuv_to_bgr888
@@ -74,7 +72,7 @@ def buffer_to_bgr888(
     width: int,
     height: int,
     bytesperline: int,
-    buffer: Buffer,
+    buffer,
     options: None | dict = None,
 ):
     """
