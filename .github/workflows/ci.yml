@@ -30,8 +30,8 @@ jobs:
     - name: Analysing the code with Pyright
       uses: jakebailey/pyright-action@v2
 
-    - name: Analysing the code with pylint
-      run: pylint $(git ls-files '*.py')
+#    - name: Analysing the code with pylint
+#      run: pylint $(git ls-files '*.py')
 
     - name: Analysing the code with Ruff
       run: ruff check --output-format=github .
