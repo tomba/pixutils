@@ -91,7 +91,10 @@ disable=
         too-many-statements,
         too-many-instance-attributes,
         too-many-public-methods,
+	too-many-positional-arguments,
         consider-using-f-string,
+	invalid-name,
+
 
 
 # Enable the message, report, category or checker with the given id(s). You can
