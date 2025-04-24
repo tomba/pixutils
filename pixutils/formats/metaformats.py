@@ -53,8 +53,8 @@ class MetaFormats:
         return next(f for f in MetaFormats.__FMT_LIST if f.name == name)
 
     GENERIC_8 = MetaFormat('GENERIC_8', 'MET8', 2, 2)
-    GENERIC_CSI2_10 = MetaFormat('GENERIC_CSI2_10', 'MC1A', 4, 5)
-    GENERIC_CSI2_12 = MetaFormat('GENERIC_CSI2_12', 'MC1C', 2, 3)
+    GENERIC_CSI2_10 = MetaFormat('GENERIC_CSI2_10', 'MECA', 4, 5)
+    GENERIC_CSI2_12 = MetaFormat('GENERIC_CSI2_12', 'MECC', 2, 3)
 
     RPI_FE_CFG = MetaFormat('RPI_FE_CFG', 'RPFC', 1, 1)
     RPI_FE_STATS = MetaFormat('RPI_FE_STATS', 'RPFS', 1, 1)
