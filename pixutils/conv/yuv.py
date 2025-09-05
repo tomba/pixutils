@@ -6,6 +6,18 @@ import numpy.typing as npt
 
 from pixutils.formats import PixelFormats
 
+import os
+
+# Try to import numba-optimized functions
+if os.environ.get('PIXUTILS_DISABLE_NUMBA'):
+    USE_NUMBA = False
+else:
+    try:
+        from .yuv_nb import yuyv_to_bgr888_nb, uyvy_to_bgr888_nb, nv12_to_bgr888_nb
+        USE_NUMBA = True
+    except ImportError:
+        USE_NUMBA = False
+
 YCBCR_VALUES = {
     'bt601': {
         'limited': {
@@ -28,7 +40,8 @@ YCBCR_VALUES = {
 }
 
 
-def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options) -> npt.NDArray[np.uint8]:
+def _get_conversion_matrix(options):
+    """Get color conversion offset and matrix from options"""
     color_range = 'limited'
     color_encoding = 'bt601'
 
@@ -37,13 +50,16 @@ def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options) -> npt.NDArray[np.uint8
         color_encoding = options.get('encoding', color_encoding)
 
     conv_data = YCBCR_VALUES[color_encoding][color_range]
+    return conv_data['offsets'], conv_data['matrix']
 
-    offset = np.array(conv_data['offsets'])
 
-    m = np.array(conv_data['matrix'])
+def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options) -> npt.NDArray[np.uint8]:
+    offset, matrix = _get_conversion_matrix(options)
+
+    offset = np.array(offset)
+    m = np.array(matrix)
 
     rgb = np.dot(yuv + offset, m)
-
     rgb = np.clip(rgb, 0, 255)
     rgb = rgb.astype(np.uint8)
 
@@ -51,45 +67,75 @@ def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options) -> npt.NDArray[np.uint8
 
 
 def yuyv_to_bgr888(data, w, h, options):
-    # YUV422
-    yuyv = data.reshape((h, w // 2 * 4))
+    if USE_NUMBA:
+        offset, matrix = _get_conversion_matrix(options)
+        return yuyv_to_bgr888_nb(  # type: ignore[possibly-undefined]
+            data, w, h,
+            offset[0], offset[1], offset[2],
+            matrix[0][0], matrix[0][1], matrix[0][2],
+            matrix[1][0], matrix[1][1], matrix[1][2],
+            matrix[2][0], matrix[2][1], matrix[2][2]
+        )
+    else:
+        # YUV422
+        yuyv = data.reshape((h, w // 2 * 4))
 
-    # YUV444
-    yuv = np.empty((h, w, 3), dtype=np.uint8)
-    yuv[:, :, 0] = yuyv[:, 0::2]                    # Y
-    yuv[:, :, 1] = yuyv[:, 1::4].repeat(2, axis=1)  # U
-    yuv[:, :, 2] = yuyv[:, 3::4].repeat(2, axis=1)  # V
+        # YUV444
+        yuv = np.empty((h, w, 3), dtype=np.uint8)
+        yuv[:, :, 0] = yuyv[:, 0::2]                    # Y
+        yuv[:, :, 1] = yuyv[:, 1::4].repeat(2, axis=1)  # U
+        yuv[:, :, 2] = yuyv[:, 3::4].repeat(2, axis=1)  # V
 
-    return ycbcr_to_bgr888(yuv, options)
+        return ycbcr_to_bgr888(yuv, options)
 
 
 def uyvy_to_bgr888(data, w, h, options):
-    # YUV422
-    yuyv = data.reshape((h, w // 2 * 4))
+    if USE_NUMBA:
+        offset, matrix = _get_conversion_matrix(options)
+        return uyvy_to_bgr888_nb(  # type: ignore[possibly-undefined]
+            data, w, h,
+            offset[0], offset[1], offset[2],
+            matrix[0][0], matrix[0][1], matrix[0][2],
+            matrix[1][0], matrix[1][1], matrix[1][2],
+            matrix[2][0], matrix[2][1], matrix[2][2]
+        )
+    else:
+        # YUV422
+        yuyv = data.reshape((h, w // 2 * 4))
 
-    # YUV444
-    yuv = np.empty((h, w, 3), dtype=np.uint8)
-    yuv[:, :, 0] = yuyv[:, 1::2]                    # Y
-    yuv[:, :, 1] = yuyv[:, 0::4].repeat(2, axis=1)  # U
-    yuv[:, :, 2] = yuyv[:, 2::4].repeat(2, axis=1)  # V
+        # YUV444
+        yuv = np.empty((h, w, 3), dtype=np.uint8)
+        yuv[:, :, 0] = yuyv[:, 1::2]                    # Y
+        yuv[:, :, 1] = yuyv[:, 0::4].repeat(2, axis=1)  # U
+        yuv[:, :, 2] = yuyv[:, 2::4].repeat(2, axis=1)  # V
 
-    return ycbcr_to_bgr888(yuv, options)
+        return ycbcr_to_bgr888(yuv, options)
 
 
 def nv12_to_bgr888(data, w, h, options):
-    plane1 = data[:w * h]
-    plane2 = data[w * h:]
+    if USE_NUMBA:
+        offset, matrix = _get_conversion_matrix(options)
+        return nv12_to_bgr888_nb(  # type: ignore[possibly-undefined]
+            data, w, h,
+            offset[0], offset[1], offset[2],
+            matrix[0][0], matrix[0][1], matrix[0][2],
+            matrix[1][0], matrix[1][1], matrix[1][2],
+            matrix[2][0], matrix[2][1], matrix[2][2]
+        )
+    else:
+        plane1 = data[:w * h]
+        plane2 = data[w * h:]
 
-    y = plane1.reshape((h, w))
-    uv = plane2.reshape((h // 2, w // 2, 2))
+        y = plane1.reshape((h, w))
+        uv = plane2.reshape((h // 2, w // 2, 2))
 
-    # YUV444
-    yuv = np.empty((h, w, 3), dtype=np.uint8)
-    yuv[:, :, 0] = y[:, :]                    # Y
-    yuv[:, :, 1] = uv[:, :, 0].repeat(2, axis=0).repeat(2, axis=1)  # U
-    yuv[:, :, 2] = uv[:, :, 1].repeat(2, axis=0).repeat(2, axis=1)  # V
+        # YUV444
+        yuv = np.empty((h, w, 3), dtype=np.uint8)
+        yuv[:, :, 0] = y[:, :]                    # Y
+        yuv[:, :, 1] = uv[:, :, 0].repeat(2, axis=0).repeat(2, axis=1)  # U
+        yuv[:, :, 2] = uv[:, :, 1].repeat(2, axis=0).repeat(2, axis=1)  # V
 
-    return ycbcr_to_bgr888(yuv, options)
+        return ycbcr_to_bgr888(yuv, options)
 
 
 def y8_to_bgr888(data, w, h, options):
