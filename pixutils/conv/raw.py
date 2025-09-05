@@ -122,6 +122,32 @@ def prepare_unpacked_raw(data: npt.NDArray[np.uint8], width: int, height: int,
     raise RuntimeError(f'Unsupported bits per pixel: {bits_per_pixel}')
 
 
+def mosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern) -> npt.NDArray[np.uint16]:
+    """
+    Converts Bayer-patterned data into an RGB mosaic image.
+    Red pixels will have green and blue set to zero,
+    Green pixels will have red and blue set to zero,
+    Blue pixels will have red and green set to zero.
+
+    Args:
+        data: The Bayer-patterned input data as a numpy array.
+        pattern: The Bayer pattern configuration.
+
+    Returns:
+        rgb: A new RGB image showing the Bayer mosaic pattern.
+    """
+
+    # Create an empty RGB image with 3 channels
+    rgb = np.zeros(data.shape + (3,), dtype=data.dtype)
+
+    rgb[pattern.r0[1]::2, pattern.r0[0]::2, 0] = data[pattern.r0[1]::2, pattern.r0[0]::2]
+    rgb[pattern.g0[1]::2, pattern.g0[0]::2, 1] = data[pattern.g0[1]::2, pattern.g0[0]::2]
+    rgb[pattern.g1[1]::2, pattern.g1[0]::2, 1] = data[pattern.g1[1]::2, pattern.g1[0]::2]
+    rgb[pattern.b0[1]::2, pattern.b0[0]::2, 2] = data[pattern.b0[1]::2, pattern.b0[0]::2]
+
+    return rgb
+
+
 def demosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern) -> npt.NDArray[np.uint16]:
     # Debayering code from PiCamera documentation
 
@@ -192,7 +218,8 @@ def demosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern) -> npt.NDArray
 
 
 def raw_to_bgr888(data: npt.NDArray[np.uint8], width: int, height: int,
-                  bytesperline: int, fmt: PixelFormat) -> npt.NDArray[np.uint8]:
+                  bytesperline: int, fmt: PixelFormat,
+                  do_demosaic: bool = True) -> npt.NDArray[np.uint8]:
     # Parse the format
     raw_fmt = RawFormat.from_pixelformat(fmt)
 
@@ -205,7 +232,10 @@ def raw_to_bgr888(data: npt.NDArray[np.uint8], width: int, height: int,
                                      bytesperline)
 
     # Perform demosaic
-    rgb = demosaic(arr16, raw_fmt.bayer_pattern)
+    if do_demosaic:
+        rgb = demosaic(arr16, raw_fmt.bayer_pattern)
+    else:
+        rgb = mosaic(arr16, raw_fmt.bayer_pattern)
 
     # Convert to 8-bit BGR
     return (rgb >> (raw_fmt.bits_per_pixel - 8)).astype(np.uint8)
