@@ -59,7 +59,7 @@ def to_bgr888(
         return yuv_to_bgr888(arr, width, height, fmt, options)
 
     if fmt.color == PixelColorEncoding.RAW:
-        return raw_to_bgr888(arr, width, height, bytesperline, fmt)
+        return raw_to_bgr888(arr, width, height, bytesperline, fmt, options)
 
     if fmt.color == PixelColorEncoding.RGB:
         return rgb_to_bgr888(fmt, width, height, arr)
