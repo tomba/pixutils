@@ -35,6 +35,9 @@ def main():
         'encoding': 'bt601',
     }
 
+    # Warmup run
+    buffer_to_bgr888(fmt, args.width, args.height, stride, buf, options)
+
     t1 = time.monotonic()
 
     for _ in range(args.loops):
