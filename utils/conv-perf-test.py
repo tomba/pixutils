@@ -16,6 +16,8 @@ def main():
     parser.add_argument('-f', '--format', type=str, default='XRGB8888', help='Pixel format')
     parser.add_argument('-l', '--loops', type=int, default=100, help='Number of loops')
     parser.add_argument('--stride', type=int, default=0, help='Stride')
+    parser.add_argument('--demosaic', type=str, choices=['3x3', 'bilinear'], default='3x3',
+                       help='Demosaic algorithm: 3x3 or bilinear')
     args = parser.parse_args()
 
     fmt = PixelFormats.find_by_name(args.format)
@@ -39,6 +41,7 @@ def main():
     options = {
         'range': 'limited',
         'encoding': 'bt601',
+        'demosaic_method': args.demosaic,
     }
 
     bytesperline = 0 if len(fmt.planes) > 1 else stride
