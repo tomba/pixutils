@@ -20,14 +20,21 @@ def main():
 
     fmt = PixelFormats.find_by_name(args.format)
 
-    # Only single plane formats are supported
-    assert len(fmt.planes) == 1
+    # Drop this when stride works
+    if len(fmt.planes) > 1 and args.stride > 0:
+        raise ValueError('Custom stride is not supported with multiplanar formats')
 
-    stride = args.stride if args.stride > 0 else fmt.stride(args.width)
-    planesize = fmt.planesize(stride, args.height)
-    size = planesize
+    # Calculate total buffer size for all planes
+    if args.stride > 0:
+        # Single plane format with custom stride
+        size = fmt.planesize(args.stride, args.height, 0)
+    else:
+        # Use framesize for both single and multiplanar formats
+        size = fmt.framesize(args.width, args.height)
+
     buf = np.zeros(size, dtype=np.uint8)
 
+    stride = args.stride if args.stride > 0 else fmt.stride(args.width, 0)
     print(f'Image size: {args.width}x{args.height}, format: {args.format}, stride: {stride}, size {size}')
 
     options = {
@@ -35,13 +42,15 @@ def main():
         'encoding': 'bt601',
     }
 
+    bytesperline = 0 if len(fmt.planes) > 1 else stride
+
     # Warmup run
-    buffer_to_bgr888(fmt, args.width, args.height, stride, buf, options)
+    buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
 
     t1 = time.monotonic()
 
     for _ in range(args.loops):
-        buffer_to_bgr888(fmt, args.width, args.height, stride, buf, options)
+        buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
 
     t2 = time.monotonic()
     print(f'{args.loops} loops took {(t2 - t1) * 1000:.3f} ms')
