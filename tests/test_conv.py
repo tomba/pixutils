@@ -157,16 +157,18 @@ def create_test_function(fmt: PixelFormat, ref_src_sha: str, ref_rgb_sha: str):
 
     return test_function
 
+# Create test methods dynamically at module level for unittest discovery
+for fmt, (ref_src_sha, ref_rgb_sha) in FMTS.items():
+    test_name = f'test_conv_{fmt.name}'
+    test = create_test_function(fmt, ref_src_sha, ref_rgb_sha)
+    setattr(TestConv, test_name, test)
+
+
 def main():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--save', action='store_true', help='Generate frames, save to files and exit.')
     parser.add_argument('--dict', action='store_true', help='Generate FMTS dict, print and exit.')
     args, _ = parser.parse_known_args()
-
-    for fmt, (ref_src_sha, ref_rgb_sha) in FMTS.items():
-        test_name = f'test_conv_{fmt.name}'
-        test = create_test_function(fmt, ref_src_sha, ref_rgb_sha)
-        setattr(TestConv, test_name, test)
 
     if args.save:
         save_test_data()
