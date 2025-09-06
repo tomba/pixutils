@@ -92,21 +92,28 @@ def nv12_to_bgr888(data, w, h, options):
     return ycbcr_to_bgr888(yuv, options)
 
 
-def y8_to_bgr888(data, w, h):
+def y8_to_bgr888(data, w, h, options):
+    color_range = options.get('range', 'full')
+    color_range = options.get('range', 'full') if options else 'full'
+
     y = data.reshape((h, w))
 
-    # YUV444
-    yuv = np.zeros((h, w, 3), dtype=np.uint8)
-    yuv[:, :, 0] = y  # Y
-    yuv[:, :, 1] = y  # U
-    yuv[:, :, 2] = y  # V
+    if color_range == 'limited':
+        # Convert from limited range (16-235) to full range (0-255)
+        y = np.clip((y.astype(np.float32) - 16) * 255 / 219, 0, 255).astype(np.uint8)
 
-    return yuv
+    # Create grayscale RGB (Y becomes R=G=B)
+    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    rgb[:, :, 0] = y  # B
+    rgb[:, :, 1] = y  # G
+    rgb[:, :, 2] = y  # R
+
+    return rgb
 
 
 def yuv_to_bgr888(arr, w, h, fmt, options):
     if fmt == PixelFormats.Y8:
-        return y8_to_bgr888(arr, w, h)
+        return y8_to_bgr888(arr, w, h, options)
 
     if fmt == PixelFormats.YUYV:
         return yuyv_to_bgr888(arr, w, h, options)
