@@ -30,8 +30,9 @@ Repository = 'https://github.com/tomba/pixutils.git'
 'Bug Tracker' = 'https://github.com/tomba/pixutils/issues'
 
 [project.optional-dependencies]
-conv = ['numpy']
+conv = ['numpy', 'numba']
 qt = ['PyQt6']
+all = ['numpy', 'numba', 'PyQt6']
 
 [tool.ruff]
 line-length = 100
