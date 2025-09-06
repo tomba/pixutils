@@ -48,45 +48,41 @@ def generate_test_buffer(fmt: PixelFormat):
     return buf
 
 
-def generate_test_data_dict():
+def generate_test_data():
     print('#!/usr/bin/env python3')
     print()
     print('from pixutils.formats import PixelFormats')
+    print('from conv_test_case import ConvTestCase')
     print()
-    print('FMTS = {')
-    for fmt in FMTS.keys():
-        src_buf = generate_test_buffer(fmt)
-
-        options = {
-            'range': 'limited',
-            'encoding': 'bt601',
-        }
-
-        rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, src_buf, options)
+    print('FMTS = [')
+    for test_case in FMTS:
+        src_buf = generate_test_buffer(test_case.pixel_format)
+        rgb_buf = buffer_to_bgr888(test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options)
 
         src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
 
-        print(f'    PixelFormats.{fmt.name}: (')
-        print(f"        '{src_sha}',")
-        print(f"        '{rgb_sha}',")
-        print('    ),')
-    print('}')
+        if test_case.options:
+            print(f'    ConvTestCase(PixelFormats.{test_case.pixel_format.name},')
+            print(f"        '{src_sha}',")
+            print(f"        '{rgb_sha}',")
+            print(f'        {test_case.options}),')
+        else:
+            print(f'    ConvTestCase(PixelFormats.{test_case.pixel_format.name},')
+            print(f"        '{src_sha}',")
+            print(f"        '{rgb_sha}'),")
+    print(']')
 
 
 def save_test_data():
-    for fmt in FMTS.keys():
-        src_buf = generate_test_buffer(fmt)
+    for test_case in FMTS:
+        src_buf = generate_test_buffer(test_case.pixel_format)
+        rgb_buf = buffer_to_bgr888(test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options)
 
-        options = {
-            'range': 'limited',
-            'encoding': 'bt601',
-        }
-
-        rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, src_buf, options)
-
-        src_file = f'{WIDTH}x{HEIGHT}-{fmt}.bin.gz'
-        rgb_file = f'{WIDTH}x{HEIGHT}-{fmt}-BGR888.bin.gz'
+        # Use test_case description for file naming to handle options
+        base_name = f'{WIDTH}x{HEIGHT}-{test_case.description}'
+        src_file = f'{base_name}.bin.gz'
+        rgb_file = f'{base_name}-BGR888.bin.gz'
 
         with open(src_file, 'wb') as raw:
             with gzip.GzipFile(fileobj=raw, mode='wb', mtime=0) as gz:
@@ -102,42 +98,36 @@ class TestConv(unittest.TestCase):
     pass
 
 
-def create_test_function(fmt: PixelFormat, ref_src_sha: str, ref_rgb_sha: str):
+def create_test_function(test_case):
     def test_function(self):
-        src_buf = generate_test_buffer(fmt)
-
-        options = {
-            'range': 'limited',
-            'encoding': 'bt601',
-        }
-
-        rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, src_buf, options)
+        src_buf = generate_test_buffer(test_case.pixel_format)
+        rgb_buf = buffer_to_bgr888(test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options)
 
         src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
 
-        self.assertEqual(src_sha, ref_src_sha, f'SHA mismatch for {fmt.name} source')
-        self.assertEqual(rgb_sha, ref_rgb_sha, f'SHA mismatch for {fmt.name} RGB')
+        self.assertEqual(src_sha, test_case.src_sha, f'SHA mismatch for {test_case.description} source')
+        self.assertEqual(rgb_sha, test_case.rgb_sha, f'SHA mismatch for {test_case.description} RGB')
 
     return test_function
 
 # Create test methods dynamically at module level for unittest discovery
-for fmt, (ref_src_sha, ref_rgb_sha) in FMTS.items():
-    test_name = f'test_conv_{fmt.name}'
-    test = create_test_function(fmt, ref_src_sha, ref_rgb_sha)
+for test_case in FMTS:
+    test_name = f'test_conv_{test_case.description}'
+    test = create_test_function(test_case)
     setattr(TestConv, test_name, test)
 
 
 def main():
     parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument('--save', action='store_true', help='Generate frames, save to files and exit.')
-    parser.add_argument('--dict', action='store_true', help='Generate FMTS dict, print and exit.')
+    parser.add_argument('--generate-data', action='store_true', help='Generate FMTS list, print and exit.')
     args, _ = parser.parse_known_args()
 
     if args.save:
         save_test_data()
-    elif args.dict:
-        generate_test_data_dict()
+    elif args.generate_data:
+        generate_test_data()
     else:
         unittest.main()
 
