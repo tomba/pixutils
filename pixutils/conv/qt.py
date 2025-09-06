@@ -6,12 +6,14 @@
 
 from __future__ import annotations
 
+import numpy.typing as npt
+import numpy as np
 from PyQt6 import QtGui
 from pixutils.formats import PixelFormat, PixelFormats
 from .conv import buffer_to_bgr888
 
 
-def bgr888_to_pix(rgb):
+def bgr888_to_pix(rgb: npt.NDArray[np.uint8]) -> QtGui.QPixmap:
     # QImage doesn't seem to like a numpy view
     if rgb.base is not None:
         rgb = rgb.copy()
@@ -23,7 +25,7 @@ def bgr888_to_pix(rgb):
     return pix
 
 
-def buffer_to_pix(fmt: PixelFormat, w, h, bytesperline, buffer, options: None | dict = None):
+def buffer_to_pix(fmt: PixelFormat, w: int, h: int, bytesperline: int, buffer, options: None | dict = None) -> QtGui.QPixmap:
     if fmt == PixelFormats.MJPEG:
         pix = QtGui.QPixmap(w, h)
         pix.loadFromData(buffer)
