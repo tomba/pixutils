@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
+from __future__ import annotations
+
 import numpy as np
 import numpy.typing as npt
 
-from pixutils.formats import PixelFormats
+from pixutils.formats import PixelFormat, PixelFormats
 
 import os
 
@@ -40,7 +42,7 @@ YCBCR_VALUES = {
 }
 
 
-def _get_conversion_matrix(options):
+def _get_conversion_matrix(options: dict | None) -> tuple[tuple[int, int, int], list[list[float]]]:
     """Get color conversion offset and matrix from options"""
     color_range = 'limited'
     color_encoding = 'bt601'
@@ -53,7 +55,7 @@ def _get_conversion_matrix(options):
     return conv_data['offsets'], conv_data['matrix']
 
 
-def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options) -> npt.NDArray[np.uint8]:
+def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options: dict | None) -> npt.NDArray[np.uint8]:
     offset, matrix = _get_conversion_matrix(options)
 
     offset = np.array(offset)
@@ -66,7 +68,7 @@ def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options) -> npt.NDArray[np.uint8
     return rgb
 
 
-def yuyv_to_bgr888(data, w, h, options):
+def yuyv_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None) -> npt.NDArray[np.uint8]:
     if USE_NUMBA:
         offset, matrix = _get_conversion_matrix(options)
         return yuyv_to_bgr888_nb(  # type: ignore[possibly-undefined]
@@ -89,7 +91,7 @@ def yuyv_to_bgr888(data, w, h, options):
         return ycbcr_to_bgr888(yuv, options)
 
 
-def uyvy_to_bgr888(data, w, h, options):
+def uyvy_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None) -> npt.NDArray[np.uint8]:
     if USE_NUMBA:
         offset, matrix = _get_conversion_matrix(options)
         return uyvy_to_bgr888_nb(  # type: ignore[possibly-undefined]
@@ -112,7 +114,7 @@ def uyvy_to_bgr888(data, w, h, options):
         return ycbcr_to_bgr888(yuv, options)
 
 
-def nv12_to_bgr888(data, w, h, options):
+def nv12_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None) -> npt.NDArray[np.uint8]:
     if USE_NUMBA:
         offset, matrix = _get_conversion_matrix(options)
         return nv12_to_bgr888_nb(  # type: ignore[possibly-undefined]
@@ -138,8 +140,7 @@ def nv12_to_bgr888(data, w, h, options):
         return ycbcr_to_bgr888(yuv, options)
 
 
-def y8_to_bgr888(data, w, h, options):
-    color_range = options.get('range', 'full')
+def y8_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None) -> npt.NDArray[np.uint8]:
     color_range = options.get('range', 'full') if options else 'full'
 
     y = data.reshape((h, w))
@@ -157,7 +158,7 @@ def y8_to_bgr888(data, w, h, options):
     return rgb
 
 
-def yuv_to_bgr888(arr, w, h, fmt, options):
+def yuv_to_bgr888(arr: npt.NDArray[np.uint8], w: int, h: int, fmt: PixelFormat, options: dict | None) -> npt.NDArray[np.uint8]:
     if fmt == PixelFormats.Y8:
         return y8_to_bgr888(arr, w, h, options)
 

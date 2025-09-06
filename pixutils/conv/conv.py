@@ -20,7 +20,7 @@ def to_bgr888(
     bytesperline: int,
     arr: npt.NDArray[np.uint8],
     options: None | dict = None,
-):
+) -> npt.NDArray[np.uint8]:
     """
     Convert a numpy array containing pixel data to BGR888 format.
 
@@ -74,7 +74,7 @@ def buffer_to_bgr888(
     bytesperline: int,
     buffer,
     options: None | dict = None,
-):
+) -> npt.NDArray[np.uint8]:
     """
     Convert a buffer-like object containing pixel data to BGR888 format.
 

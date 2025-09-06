@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
+from __future__ import annotations
+
 import numpy as np
 import numpy.typing as npt
 
 from pixutils.formats import PixelFormat, PixelFormats
 
 
-def rgb_to_bgr888(fmt: PixelFormat, w, h, data: npt.NDArray[np.uint8]):
+def rgb_to_bgr888(fmt: PixelFormat, w: int, h: int, data: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
     if fmt == PixelFormats.RGB888:
         rgb = data.reshape((h, w, 3))
         rgb = np.flip(rgb, axis=2) # Flip the components
