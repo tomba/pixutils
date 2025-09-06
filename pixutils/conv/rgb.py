@@ -23,11 +23,7 @@ def rgb_to_bgr888(fmt: PixelFormat, w, h, data: npt.NDArray[np.uint8]):
     elif fmt == PixelFormats.XBGR2101010:
         rgb = data.reshape((h, w * 4)) #.astype(np.uint16)
 
-        print(rgb.shape, rgb.dtype)
-
         v = rgb.view(np.dtype('<u4'))
-
-        print('{:#x}'.format(v[0, 0]))
 
         output = np.zeros((h, w, 3), dtype=np.uint16)
 
@@ -36,8 +32,6 @@ def rgb_to_bgr888(fmt: PixelFormat, w, h, data: npt.NDArray[np.uint8]):
         output[:, :, 2] = (v >> 20) & 0x3ff     # B
 
         rgb = output
-
-        print('{}'.format(rgb[0, 0]))
 
         rgb >>= 10 - 8
         rgb = rgb.astype(np.uint8)
