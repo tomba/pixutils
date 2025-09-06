@@ -836,6 +836,30 @@ class PixelFormats:
         ( ( 3, 2 ), ),
     )
 
+    SBGGR16 = PixelFormat('SBGGR16',
+        None, 'BYR2',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
+
+    SGBRG16 = PixelFormat('SGBRG16',
+        None, 'GB16',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
+
+    SGRBG16 = PixelFormat('SGRBG16',
+        None, 'GR16',
+        PixelColorEncoding.RAW,
+        False,
+        ( 2, 2 ),
+        ( ( 4, 2 ), ),
+    )
+
     SRGGB16 = PixelFormat('SRGGB16',
         None, 'RG16',
         PixelColorEncoding.RAW,
