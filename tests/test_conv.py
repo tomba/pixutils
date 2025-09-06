@@ -8,7 +8,7 @@ import numpy as np
 
 from pixutils.formats import PixelFormat, PixelColorEncoding, PixelFormats
 from pixutils.conv import buffer_to_bgr888
-from test_conv_data import FMTS
+from test_conv_data import FMTS  # type: ignore[import-not-found]
 
 WIDTH = 640
 HEIGHT = 480
@@ -51,10 +51,8 @@ def generate_test_buffer(fmt: PixelFormat):
 def generate_test_data():
     import sys
 
-    print('#!/usr/bin/env python3')
-    print()
     print('from pixutils.formats import PixelFormats')
-    print('from conv_test_case import ConvTestCase')
+    print('from conv_test_case import ConvTestCase  # type: ignore[import-not-found]')
     print()
     print('FMTS = [')
 
