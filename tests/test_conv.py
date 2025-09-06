@@ -6,7 +6,7 @@ import hashlib
 import unittest
 import numpy as np
 
-from pixutils.formats import PixelFormat, PixelColorEncoding
+from pixutils.formats import PixelFormat, PixelColorEncoding, PixelFormats
 from pixutils.conv import buffer_to_bgr888
 from test_conv_data import FMTS
 
@@ -49,28 +49,87 @@ def generate_test_buffer(fmt: PixelFormat):
 
 
 def generate_test_data():
+    import sys
+
     print('#!/usr/bin/env python3')
     print()
     print('from pixutils.formats import PixelFormats')
     print('from conv_test_case import ConvTestCase')
     print()
     print('FMTS = [')
-    for test_case in FMTS:
-        src_buf = generate_test_buffer(test_case.pixel_format)
-        rgb_buf = buffer_to_bgr888(test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options)
 
-        src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
-        rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
+    def is_yuv_format(pixel_format):
+        return pixel_format.color == PixelColorEncoding.YUV
 
-        if test_case.options:
-            print(f'    ConvTestCase(PixelFormats.{test_case.pixel_format.name},')
-            print(f"        '{src_sha}',")
-            print(f"        '{rgb_sha}',")
-            print(f'        {test_case.options}),')
+    def is_luma_only_format(pixel_format):
+        return pixel_format == PixelFormats.Y8
+
+    def generate_test_case(pixel_format, options=None):
+        try:
+            src_buf = generate_test_buffer(pixel_format)
+            rgb_buf = buffer_to_bgr888(pixel_format, WIDTH, HEIGHT, 0, src_buf, options or {})
+
+            src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
+            rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
+
+            return (src_sha, rgb_sha)
+        except Exception as e:
+            print(f'# Skipping {pixel_format.name} with options {options}: {e}', file=sys.stderr)
+            return None
+
+    # Group formats by type
+    rgb_bayer_formats = []
+    yuv_formats = []
+
+    for pixel_format in PixelFormats.get_formats():
+        if is_yuv_format(pixel_format):
+            yuv_formats.append(pixel_format)
         else:
-            print(f'    ConvTestCase(PixelFormats.{test_case.pixel_format.name},')
+            rgb_bayer_formats.append(pixel_format)
+
+    # Process RGB/Bayer formats (no options)
+    print('    # RGB/Bayer formats - conversion not affected by YUV options')
+    for pixel_format in rgb_bayer_formats:
+        result = generate_test_case(pixel_format)
+        if result:
+            src_sha, rgb_sha = result
+            print(f'    ConvTestCase(PixelFormats.{pixel_format.name},')
             print(f"        '{src_sha}',")
             print(f"        '{rgb_sha}'),")
+
+    # Process YUV formats (with range/encoding combinations)
+    if yuv_formats:
+        print()
+        print('    # YUV formats - conversion affected by range/encoding options')
+
+        ranges = ['limited', 'full']
+        encodings = ['bt601', 'bt709', 'bt2020']
+
+        for pixel_format in yuv_formats:
+            if is_luma_only_format(pixel_format):
+                # Luma-only formats: only test range variations, encoding doesn't apply
+                for range_val in ranges:
+                    options = {'range': range_val}
+                    result = generate_test_case(pixel_format, options)
+                    if result:
+                        src_sha, rgb_sha = result
+                        print(f'    ConvTestCase(PixelFormats.{pixel_format.name},')
+                        print(f"        '{src_sha}',")
+                        print(f"        '{rgb_sha}',")
+                        print(f'        {options}),')
+            else:
+                # Full YUV formats: test all range×encoding combinations
+                for range_val in ranges:
+                    for encoding in encodings:
+                        options = {'range': range_val, 'encoding': encoding}
+                        result = generate_test_case(pixel_format, options)
+                        if result:
+                            src_sha, rgb_sha = result
+                            print(f'    ConvTestCase(PixelFormats.{pixel_format.name},')
+                            print(f"        '{src_sha}',")
+                            print(f"        '{rgb_sha}',")
+                            print(f'        {options}),')
+
     print(']')
 
 
