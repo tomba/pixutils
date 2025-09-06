@@ -35,7 +35,6 @@ def main():
     buf = np.zeros(size, dtype=np.uint8)
 
     stride = args.stride if args.stride > 0 else fmt.stride(args.width, 0)
-    print(f'Image size: {args.width}x{args.height}, format: {args.format}, stride: {stride}, size {size}')
 
     options = {
         'range': 'limited',
@@ -53,7 +52,8 @@ def main():
         buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
 
     t2 = time.monotonic()
-    print(f'{args.loops} loops took {(t2 - t1) * 1000:.3f} ms')
+    print(f'Image size: {args.width}x{args.height}, format: {args.format}, stride: {stride}, size {size}, '
+          f'{args.loops} loops took {(t2 - t1) * 1000:.3f} ms')
 
 if __name__ == '__main__':
     main()
