@@ -6,64 +6,29 @@ import hashlib
 import unittest
 import numpy as np
 
-from pixutils.formats import PixelFormats, PixelFormat
+from pixutils.formats import PixelFormat, PixelColorEncoding
 from pixutils.conv import buffer_to_bgr888
+from test_conv_data import FMTS
 
 WIDTH = 640
 HEIGHT = 480
 
 SEED = 1234
 
-FMTS = {
-    PixelFormats.BGR888: (
-        'dc1f1d9cf96911bc33682edcf9b81af2b3184d88890aa118c09a7ba0932826c2',
-        'dc1f1d9cf96911bc33682edcf9b81af2b3184d88890aa118c09a7ba0932826c2',
-    ),
-    PixelFormats.RGB888: (
-        'dc1f1d9cf96911bc33682edcf9b81af2b3184d88890aa118c09a7ba0932826c2',
-        '9c2ced2d2d19197a6f49b513dcc5a0aa02837bb1876c5f8629820e998cafadad',
-    ),
-    PixelFormats.XBGR8888: (
-        'd555e8545b743011df3c27f0a7056552b302a9089b7b6d8d9562402c38c40f1e',
-        '366abaf8289cef57ee44410a7468189ece1040821073df18255e126196fad03d',
-    ),
-    PixelFormats.XRGB8888: (
-        'd555e8545b743011df3c27f0a7056552b302a9089b7b6d8d9562402c38c40f1e',
-        '5cd101d48be291acd03a7ce2443cebb081f9d6489c8213960b8fbb49274e3e3b',
-    ),
-    PixelFormats.NV12: (
-        '7d75356fc0ab885264f4ba453fc0c9eec23b70412fd3a8c261eb0d7ed5a1ea77',
-        'fbca6e74ae93a50aac8233b80a19fc5dd3ee0347c61ad27012f7ad3e34f03d62',
-    ),
-    PixelFormats.UYVY: (
-        '50e4efdafe1d8c6cc2b31fb2d9c1be2fa77363d6bd759417cab15ec580ce0f19',
-        '5c8aaa1acf732e1a126fdc815b595197d02830ebc743077d37a92bef8c40f8fa',
-    ),
-    PixelFormats.YUYV: (
-        '50e4efdafe1d8c6cc2b31fb2d9c1be2fa77363d6bd759417cab15ec580ce0f19',
-        '73cdd1de32cbc4ff9d1d8d03649b83ab4ccf5ef865cb3d0c1183de3752a0b727',
-    ),
-    PixelFormats.SRGGB10: (
-        '3eafcda7e182be78032d6296002c2a4780ce8317a67f30578453b97d24dd3205',
-        '59b206fa98863196fb3b8276b43aa9e54d4b6826b6e64d3c21bc76ce8914cf89',
-    ),
-    PixelFormats.SRGGB10P: (
-        'ab7ddc194c770396ae961630df80e05cfaf63a7de93fb19ff49aef999234310d',
-        '9603db169d70d12f8495fad8efac4a15d141ab8964803cd4f5ad7cce430ca42b',
-    ),
-    PixelFormats.SRGGB12: (
-        'dccb1922642869f266ed341b27200dca58add54c344c69a8991cedf6232fbb33',
-        '49999659bafe57a0e90672f176ccb06f6d14dfe67c84a1f1a44249d2513c24a9',
-    ),
-    PixelFormats.SRGGB16: (
-        '50e4efdafe1d8c6cc2b31fb2d9c1be2fa77363d6bd759417cab15ec580ce0f19',
-        '93b4137b70cccb9f45ff78cabef0406c2150e5ad7ac708dbd4aaaddf42dff15b',
-    ),
-    PixelFormats.SRGGB8: (
-        '0617515ed5db0a0ce1945ddd1887d7616137055d424199eddc71dceece53a740',
-        '4ebaac89404d809284c4ca4beab07dc6f77a8d8250cbc7cf225d13f40b8579be',
-    ),
-}
+
+def get_bit_mask(fmt: PixelFormat):
+    """Returns (dtype, mask) tuple for masking padding bits, or None if no masking needed."""
+    # RAW 10-bit formats (SRGGB10, SBGGR10, SGRBG10, SGBRG10)
+    if fmt.name.endswith('10') and fmt.color == PixelColorEncoding.RAW and not fmt.packed:
+        return (np.uint16, (1 << 10) - 1)
+    # RAW 12-bit formats (SRGGB12, SBGGR12, SGRBG12, SGBRG12)
+    elif fmt.name.endswith('12') and fmt.color == PixelColorEncoding.RAW and not fmt.packed:
+        return (np.uint16, (1 << 12) - 1)
+    # XBGR8888, XRGB8888 formats - mask out alpha channel
+    elif fmt.name in ('XBGR8888', 'XRGB8888'):
+        return (np.uint32, (1 << 24) - 1)
+    return None
+
 
 
 def generate_test_buffer(fmt: PixelFormat):
@@ -74,24 +39,20 @@ def generate_test_buffer(fmt: PixelFormat):
     buf = np.frombuffer(rnd.bytes(size), dtype=np.uint8)
 
     # Mask out the padding bits
-
-    if fmt == PixelFormats.SRGGB10:
-        buf = buf.view(np.uint16)
-        buf = buf & ((1 << 10) - 1)
-    elif fmt == PixelFormats.SRGGB12:
-        buf = buf.view(np.uint16)
-        buf = buf & ((1 << 12) - 1)
-    elif fmt == PixelFormats.XBGR8888:
-        buf = buf.view(np.uint32)
-        buf = buf & ((1 << 24) - 1)
-    elif fmt == PixelFormats.XRGB8888:
-        buf = buf.view(np.uint32)
-        buf = buf & ((1 << 24) - 1)
+    mask_info = get_bit_mask(fmt)
+    if mask_info:
+        dtype, mask = mask_info
+        buf = buf.view(dtype)
+        buf = buf & mask
 
     return buf
 
 
 def generate_test_data_dict():
+    print('#!/usr/bin/env python3')
+    print()
+    print('from pixutils.formats import PixelFormats')
+    print()
     print('FMTS = {')
     for fmt in FMTS.keys():
         src_buf = generate_test_buffer(fmt)
@@ -106,7 +67,10 @@ def generate_test_data_dict():
         src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
 
-        print(f"    PixelFormats.{fmt.name}: ('{src_sha}', '{rgb_sha}'),")
+        print(f'    PixelFormats.{fmt.name}: (')
+        print(f"        '{src_sha}',")
+        print(f"        '{rgb_sha}',")
+        print('    ),')
     print('}')
 
 
