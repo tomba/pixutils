@@ -1,5 +1,5 @@
 from pixutils.formats import PixelFormats
-from conv_test_case import ConvTestCase
+from conv_test_case import ConvTestCase  # type: ignore[import-not-found]
 
 FMTS = [
     # RGB/Bayer formats - conversion not affected by YUV options
