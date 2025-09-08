@@ -137,6 +137,9 @@ def main():
     parser.add_argument('width')
     parser.add_argument('height')
     parser.add_argument('format')
+    parser.add_argument('--range', choices=['full', 'limited'], help='Color range')
+    parser.add_argument('--encoding', choices=['bt601', 'bt709', 'bt2020'], help='Color encoding')
+    parser.add_argument('--demosaic', choices=['3x3', 'bilinear', 'mosaic'], help='Demosaic method')
     args = parser.parse_args()
 
     format = PixelFormats.find_by_name(args.format)
@@ -155,7 +158,15 @@ def main():
 
     qapp = QtWidgets.QApplication(sys.argv)
 
-    ref = buffer_to_bgr888(format, w, h, 0, buf)
+    options = {}
+    if args.range:
+        options['range'] = args.range
+    if args.encoding:
+        options['encoding'] = args.encoding
+    if args.demosaic:
+        options['demosaic_method'] = args.demosaic
+
+    ref = buffer_to_bgr888(format, w, h, 0, buf, options)
 
     pix = bgr888_to_pix(ref)
 
