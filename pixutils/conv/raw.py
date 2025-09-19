@@ -95,11 +95,13 @@ def prepare_packed_raw(data: npt.NDArray[np.uint8], width: int, height: int,
     arr16_input = data.astype(np.uint16)
     if bits_per_pixel == 10:
         if USE_NUMBA:
+            print('Using Numba for 10-bit unpacking')
             arr16 = unpack_10bit_nb(arr16_input)  # type: ignore[possibly-undefined]
         else:
             arr16 = _unpack_10bit(arr16_input)
     else:  # 12-bit
         if USE_NUMBA:
+            print('Using Numba for 12-bit unpacking')
             arr16 = unpack_12bit_nb(arr16_input)  # type: ignore[possibly-undefined]
         else:
             arr16 = _unpack_12bit(arr16_input)
@@ -236,6 +238,7 @@ def _demosaic_3x3_window(data: npt.NDArray[np.uint16], pattern: BayerPattern, h:
 
     # Choose backend based on Numba availability
     if USE_NUMBA:
+        print('Using Numba for 3x3 demosaic')
         return compute_demosaic_planes_nb(rgb, bayer, h, w)  # type: ignore[possibly-undefined]
     else:
         return _compute_demosaic_planes(rgb, bayer, h, w)
