@@ -61,8 +61,8 @@ class ZoomableImageWidget(QtWidgets.QLabel):
     def zoom_out(self, center_point=None):
         old_scale = self.scale_factor
         self.scale_factor /= 1.1
-        if self.scale_factor < 0.1:
-            self.scale_factor = 0.1
+        if self.scale_factor < 0.01:
+            self.scale_factor = 0.01
         self.update_pixmap(center_point, old_scale)
 
     def reset_zoom(self):
