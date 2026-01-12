@@ -32,7 +32,8 @@ Repository = 'https://github.com/tomba/pixutils.git'
 [project.optional-dependencies]
 conv = ['numpy', 'numba']
 qt = ['PyQt6']
-all = ['numpy', 'numba', 'PyQt6']
+png = ['Pillow']
+all = ['numpy', 'numba', 'PyQt6', 'Pillow']
 
 [tool.ruff]
 line-length = 100
