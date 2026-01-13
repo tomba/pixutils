@@ -63,6 +63,13 @@ class PixelFormat:
         return (_align_up(width, self.pixel_align[0]),
                 _align_up(height, self.pixel_align[1]))
 
+    @property
+    def bayer_pattern(self) -> str | None:
+        """Returns Bayer pattern string (e.g., 'RGGB') for RAW formats, None otherwise."""
+        if self.color != PixelColorEncoding.RAW:
+            return None
+        return self.name[1:5]
+
     def stride(self, width: int, plane: int = 0, align = 1):
         if plane >= len(self.planes):
             raise RuntimeError()

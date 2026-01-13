@@ -63,7 +63,8 @@ class RawFormat:
     def from_pixelformat(cls, fmt: PixelFormat):
         """Parse a PixelFormat into raw format configuration"""
         name = fmt.name
-        pattern = name[1:5]  # e.g., 'RGGB' from 'SRGGB8'
+        pattern = fmt.bayer_pattern
+        assert pattern is not None
         is_packed = name.endswith('P')
 
         if is_packed:
