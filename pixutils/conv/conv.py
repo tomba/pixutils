@@ -31,7 +31,11 @@ def to_bgr888(
         height: Height of the image in pixels
         bytesperline: Number of bytes per line in the input data or 0 for no padding
         arr: Numpy array containing the pixel data
-        options: Optional dictionary with conversion options
+        options: Optional dictionary with conversion options:
+            - backends: List of backends in priority order, e.g. ['opencv', 'numba']
+            - range: 'limited' or 'full' (for YUV formats)
+            - encoding: 'bt601' (for YUV formats)
+            - demosaic_method: '3x3', 'bilinear', 'mosaic', or 'opencv' (for RAW formats)
 
     Returns:
         Numpy array containing the image in BGR888 format
@@ -63,7 +67,14 @@ def to_bgr888(
 
     # Try backends in priority order
     for backend in backends:
-        if backend == 'numba':
+        if backend == 'opencv':
+            from .opencv import opencv_to_bgr888
+            result = opencv_to_bgr888(fmt, width, height, arr, options)
+            if result is not None:
+                return result
+            # opencv couldn't handle this format/options, try next backend
+            continue
+        elif backend == 'numba':
             from .numba import numba_to_bgr888
             result = numba_to_bgr888(fmt, width, height, bytesperline, arr, options)
             if result is not None:

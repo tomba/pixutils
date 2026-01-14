@@ -16,7 +16,7 @@ def _get_available_backends() -> list[str]:
     if env:
         backends = [b.strip() for b in env.split(',')]
     else:
-        backends = ['numba', 'numpy']
+        backends = ['opencv', 'numba', 'numpy']
 
     available = []
     for backend in backends:
@@ -25,6 +25,9 @@ def _get_available_backends() -> list[str]:
         elif backend == 'numba':
             if importlib.util.find_spec('numba'):
                 available.append('numba')
+        elif backend == 'opencv':
+            if importlib.util.find_spec('cv2'):
+                available.append('opencv')
         else:
             raise ValueError(f"Invalid backend '{backend}' in PIXUTILS_BACKENDS.")
 

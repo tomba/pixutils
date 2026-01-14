@@ -16,7 +16,7 @@ HEIGHT = 480
 
 SEED = 1234
 
-BACKENDS = ['numba', 'numpy']
+BACKENDS = ['opencv', 'numba', 'numpy']
 
 def get_bit_mask(fmt: PixelFormat):
     """Returns (dtype, mask) tuple for masking padding bits, or None if no masking needed."""

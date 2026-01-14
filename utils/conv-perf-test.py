@@ -16,8 +16,8 @@ def main():
     parser.add_argument('-f', '--format', type=str, default='XRGB8888', help='Pixel format')
     parser.add_argument('-l', '--loops', type=int, default=100, help='Number of loops')
     parser.add_argument('--stride', type=int, default=0, help='Stride')
-    parser.add_argument('--demosaic', type=str, choices=['3x3', 'bilinear', 'mosaic'], default='3x3',
-                       help='Demosaic algorithm: 3x3, bilinear, mosaic (no demosaic)')
+    parser.add_argument('--demosaic', type=str, choices=['3x3', 'bilinear', 'mosaic', 'opencv'], default='3x3',
+                       help='Demosaic algorithm: 3x3, bilinear, mosaic (no demosaic), or opencv')
     parser.add_argument('--backends', type=str, default=None,
                        help='Comma-separated list of backends in priority order')
     args = parser.parse_args()
