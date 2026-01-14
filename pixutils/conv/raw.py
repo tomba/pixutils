@@ -3,7 +3,6 @@
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
 
 import numpy as np
@@ -11,17 +10,7 @@ import numpy.typing as npt
 
 from pixutils.formats import PixelFormat
 
-# Try to import numba-optimized functions
-if os.environ.get('PIXUTILS_DISABLE_NUMBA'):
-    USE_NUMBA = False
-else:
-    try:
-        from .raw_nb import unpack_10bit_nb, unpack_12bit_nb, _demosaic_bilinear_nb, compute_demosaic_planes_nb
-        USE_NUMBA = True
-    except ImportError:
-        USE_NUMBA = False
-
-__all__ = ['raw_to_bgr888']
+__all__ = ['raw_to_bgr888', 'BayerPattern', 'RawFormat']
 
 
 @dataclass
@@ -78,7 +67,7 @@ class RawFormat:
 
 
 def prepare_packed_raw(data: npt.NDArray[np.uint8], width: int, height: int,
-                      bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
+                       bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
     assert bits_per_pixel in [10, 12], 'Only 10 and 12 bpp are supported'
 
     # Reshape into rows if bytesperline is provided
@@ -95,15 +84,9 @@ def prepare_packed_raw(data: npt.NDArray[np.uint8], width: int, height: int,
     # Unpack to 16-bit
     arr16_input = data.astype(np.uint16)
     if bits_per_pixel == 10:
-        if USE_NUMBA:
-            arr16 = unpack_10bit_nb(arr16_input)  # type: ignore[possibly-undefined]
-        else:
-            arr16 = _unpack_10bit(arr16_input)
+        arr16 = _unpack_10bit(arr16_input)
     else:  # 12-bit
-        if USE_NUMBA:
-            arr16 = unpack_12bit_nb(arr16_input)  # type: ignore[possibly-undefined]
-        else:
-            arr16 = _unpack_12bit(arr16_input)
+        arr16 = _unpack_12bit(arr16_input)
 
     return arr16
 
@@ -125,7 +108,7 @@ def _unpack_12bit(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
 
 
 def prepare_unpacked_raw(data: npt.NDArray[np.uint8], width: int, height: int,
-                        bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
+                         bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
 
     # Reshape into rows if bytesperline is provided
     if bytesperline:
@@ -184,10 +167,7 @@ def demosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern, options: None 
     if method == 'mosaic':
         return mosaic(data, pattern)
     elif method == 'bilinear':
-        if USE_NUMBA:
-            return _demosaic_bilinear_nb(data, pattern.r0, pattern.g0, pattern.g1, pattern.b0, h, w)  # type: ignore[possibly-undefined]
-        else:
-            raise NotImplementedError('Bilinear demosaic not available without Numba')
+        raise NotImplementedError('Bilinear demosaic requires numba backend')
     elif method == '3x3':
         return _demosaic_3x3_window(data, pattern, h, w)
     else:
@@ -195,7 +175,7 @@ def demosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern, options: None 
 
 
 def _demosaic_3x3_window(data: npt.NDArray[np.uint16], pattern: BayerPattern, h: int, w: int) -> npt.NDArray[np.uint16]:
-    """3x3 window demosaic algorithm with automatic Numba/Python backend selection"""
+    """3x3 window demosaic algorithm using pure numpy"""
     # Separate the components from the Bayer data to RGB planes
     rgb = np.zeros((h, w, 3), dtype=data.dtype)
     rgb[1::2, 0::2, 0] = data[pattern.r0[1] :: 2, pattern.r0[0] :: 2]  # Red
@@ -235,15 +215,11 @@ def _demosaic_3x3_window(data: npt.NDArray[np.uint16], pattern: BayerPattern, h:
         (0, 0),
     ], 'constant')
 
-    # Choose backend based on Numba availability
-    if USE_NUMBA:
-        return compute_demosaic_planes_nb(rgb, bayer, h, w)  # type: ignore[possibly-undefined]
-    else:
-        return _compute_demosaic_planes(rgb, bayer, h, w)
+    return _compute_demosaic_planes(rgb, bayer, h, w)
 
 
 def _compute_demosaic_planes(rgb: npt.NDArray[np.uint16], bayer: npt.NDArray[np.uint8],
-                            output_height: int, output_width: int) -> npt.NDArray[np.uint16]:
+                             output_height: int, output_width: int) -> npt.NDArray[np.uint16]:
     # For each plane in the RGB data, we calculate the 3x3 window sum
     # and divide it with the weighted average. This version uses direct
     # computation of the sum, instead of using numpy's as_strided()

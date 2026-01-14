@@ -3,6 +3,9 @@
 
 from __future__ import annotations
 
+import importlib.util
+import os
+
 import numpy as np
 import numpy.typing as npt
 
@@ -11,6 +14,13 @@ from pixutils.formats import PixelFormat, PixelColorEncoding
 from .yuv import yuv_to_bgr888
 from .rgb import rgb_to_bgr888
 from .raw import raw_to_bgr888
+
+
+def _numba_available() -> bool:
+    """Check if numba backend is available and enabled."""
+    if os.environ.get('PIXUTILS_DISABLE_NUMBA'):
+        return False
+    return importlib.util.find_spec('numba') is not None
 
 
 def to_bgr888(
@@ -55,6 +65,14 @@ def to_bgr888(
     # Get a view for the actual data
     arr = arr[:size]
 
+    # Try numba backend first if available
+    if _numba_available():
+        from .numba import numba_to_bgr888
+        result = numba_to_bgr888(fmt, width, height, bytesperline, arr, options)
+        if result is not None:
+            return result
+
+    # Fall back to numpy implementations
     if fmt.color == PixelColorEncoding.YUV:
         return yuv_to_bgr888(arr, width, height, fmt, options)
 
