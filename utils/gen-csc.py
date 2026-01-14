@@ -138,6 +138,7 @@ def generate_conversion_matrix(
 
     return {
         'direction': direction,
+        'standard': standard,
         'range': range_type,
         'matrix': matrix,
         'pre_offsets': pre_offsets,
@@ -327,11 +328,40 @@ def format_output_test(conversion_data):
     return result
 
 
+def format_output_python(conversion_data):
+    """Format conversion data as Python dict."""
+
+    std = conversion_data['standard']
+    range = conversion_data['range']
+
+    result = ''
+
+    result += f"'{std}': {{\n"
+    result += f"\t'{range}': {{\n"
+
+    result += "\t\t'offsets': ("
+    terms = [str(round(o * 255)) for o in conversion_data['pre_offsets']]
+    result += ', '.join(terms)
+    result += '),\n'
+
+    result += "\t\t'matrix': [\n"
+    for row in conversion_data['matrix']:
+        terms = [f'{v:.8f}' for v in row]
+        result += '\t\t\t[' + ', '.join(terms) + '],\n'
+    result += '\t\t]\n'
+
+    result += '\t},\n'
+    result += '},'
+
+    return result
+
+
 # Dictionary mapping format types to their formatter functions
 FORMATTERS = {
     'xilinx': format_output_xilinx,
     'text': format_output_text,
     'test': format_output_test,
+    'python': format_output_python,
 }
 
 
@@ -381,7 +411,7 @@ def parse_arguments():
 
     parser.add_argument(
         '--format',
-        choices=['xilinx', 'text', 'test'],
+        choices=['xilinx', 'text', 'test', 'python'],
         default='text',
         help='Output format (default: text)',
     )
