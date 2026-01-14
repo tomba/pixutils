@@ -2,3 +2,4 @@
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
 from .conv import to_bgr888, buffer_to_bgr888
+from .backends import get_backends

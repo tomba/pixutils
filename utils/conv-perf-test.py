@@ -17,7 +17,9 @@ def main():
     parser.add_argument('-l', '--loops', type=int, default=100, help='Number of loops')
     parser.add_argument('--stride', type=int, default=0, help='Stride')
     parser.add_argument('--demosaic', type=str, choices=['3x3', 'bilinear', 'mosaic'], default='3x3',
-                       help='Demosaic algorithm: 3x3, bilinear or mosaic (no demosaic)')
+                       help='Demosaic algorithm: 3x3, bilinear, mosaic (no demosaic)')
+    parser.add_argument('--backends', type=str, default=None,
+                       help='Comma-separated list of backends in priority order')
     args = parser.parse_args()
 
     fmt = PixelFormats.find_by_name(args.format)
@@ -43,6 +45,8 @@ def main():
         'encoding': 'bt601',
         'demosaic_method': args.demosaic,
     }
+    if args.backends:
+        options['backends'] = [b.strip() for b in args.backends.split(',')]
 
     bytesperline = 0 if len(fmt.planes) > 1 else stride
 
@@ -55,8 +59,9 @@ def main():
         buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
 
     t2 = time.monotonic()
-    print(f'Image size: {args.width}x{args.height}, format: {args.format}, stride: {stride}, size {size}, '
-          f'{args.loops} loops took {(t2 - t1) * 1000:.3f} ms')
+    backends_str = args.backends if args.backends else 'default'
+    print(f'Image size: {args.width}x{args.height}, format: {args.format}, backends: {backends_str}, '
+          f'stride: {stride}, size {size}, {args.loops} loops took {(t2 - t1) * 1000:.3f} ms')
 
 if __name__ == '__main__':
     main()

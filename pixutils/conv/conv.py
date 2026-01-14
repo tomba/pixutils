@@ -3,9 +3,6 @@
 
 from __future__ import annotations
 
-import importlib.util
-import os
-
 import numpy as np
 import numpy.typing as npt
 
@@ -14,13 +11,7 @@ from pixutils.formats import PixelFormat, PixelColorEncoding
 from .yuv import yuv_to_bgr888
 from .rgb import rgb_to_bgr888
 from .raw import raw_to_bgr888
-
-
-def _numba_available() -> bool:
-    """Check if numba backend is available and enabled."""
-    if os.environ.get('PIXUTILS_DISABLE_NUMBA'):
-        return False
-    return importlib.util.find_spec('numba') is not None
+from .backends import get_backends
 
 
 def to_bgr888(
@@ -46,6 +37,11 @@ def to_bgr888(
         Numpy array containing the image in BGR888 format
     """
 
+    # Get list of backends to try
+    backends = get_backends(options.get('backends') if options else None)
+    if not backends:
+        raise ValueError('No backends available')
+
     # The function API is broken for multiplane formats. Catch the problematic
     # ones with assert for now
     assert len(fmt.planes) == 1 or bytesperline == 0
@@ -65,24 +61,26 @@ def to_bgr888(
     # Get a view for the actual data
     arr = arr[:size]
 
-    # Try numba backend first if available
-    if _numba_available():
-        from .numba import numba_to_bgr888
-        result = numba_to_bgr888(fmt, width, height, bytesperline, arr, options)
-        if result is not None:
-            return result
+    # Try backends in priority order
+    for backend in backends:
+        if backend == 'numba':
+            from .numba import numba_to_bgr888
+            result = numba_to_bgr888(fmt, width, height, bytesperline, arr, options)
+            if result is not None:
+                return result
+        elif backend == 'numpy':
+            if fmt.color == PixelColorEncoding.YUV:
+                return yuv_to_bgr888(arr, width, height, fmt, options)
 
-    # Fall back to numpy implementations
-    if fmt.color == PixelColorEncoding.YUV:
-        return yuv_to_bgr888(arr, width, height, fmt, options)
+            if fmt.color == PixelColorEncoding.RAW:
+                return raw_to_bgr888(arr, width, height, bytesperline, fmt, options)
 
-    if fmt.color == PixelColorEncoding.RAW:
-        return raw_to_bgr888(arr, width, height, bytesperline, fmt, options)
+            if fmt.color == PixelColorEncoding.RGB:
+                return rgb_to_bgr888(fmt, width, height, arr)
 
-    if fmt.color == PixelColorEncoding.RGB:
-        return rgb_to_bgr888(fmt, width, height, arr)
+            raise ValueError(f'Unsupported format {fmt}')
 
-    raise ValueError(f'Unsupported format {fmt}')
+    raise ValueError(f'No backend could handle {fmt.name} with given options')
 
 
 def buffer_to_bgr888(

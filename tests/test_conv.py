@@ -158,7 +158,12 @@ class TestConv(unittest.TestCase):
 def create_test_function(test_case):
     def test_function(self):
         src_buf = generate_test_buffer(test_case.pixel_format)
-        rgb_buf = buffer_to_bgr888(test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options)
+        try:
+            rgb_buf = buffer_to_bgr888(test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options)
+        except ValueError as e:
+            if str(e) == 'No backends available':
+                self.skipTest('No backend available')
+            raise
 
         src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
