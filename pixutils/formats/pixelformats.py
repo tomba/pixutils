@@ -878,7 +878,7 @@ class PixelFormats:
     # Compressed formats
     MJPEG = PixelFormat('MJPEG',
         'MJPG', 'MJPG',
-        PixelColorEncoding.YUV,
+        PixelColorEncoding.UNDEFINED,
         False,
         ( 1, 1 ),
         ( ( 1, ), ),
