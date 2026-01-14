@@ -9,7 +9,7 @@ import unittest
 
 from pixutils.formats.pixelformats import PixelFormat, PixelFormats
 
-class TestData(NamedTuple):
+class FormatTestData(NamedTuple):
     format: PixelFormat
     width: int
     height: int
@@ -18,41 +18,41 @@ class TestData(NamedTuple):
 
 
 TEST_DATA = [
-    TestData(format=PixelFormats.XRGB8888,
+    FormatTestData(format=PixelFormats.XRGB8888,
              width=1920, height=1080,
              strides=[1920*4], sizes=[1920*4*1080]),
 
-    TestData(format=PixelFormats.YUYV,
+    FormatTestData(format=PixelFormats.YUYV,
              width=1920, height=1080,
              strides=[1920*2], sizes=[1920*2*1080]),
 
-    TestData(format=PixelFormats.NV12,
+    FormatTestData(format=PixelFormats.NV12,
              width=1920, height=1080,
              strides=[1920*1, 1920*2//2], sizes=[1920*1*1080, 1920*2//2 * 1080//2]),
 
-    TestData(format=PixelFormats.NV16,
+    FormatTestData(format=PixelFormats.NV16,
              width=1920, height=1080,
              strides=[1920*1, 1920*2//2], sizes=[1920*1*1080, 1920*2//2 * 1080//1]),
 
-    TestData(format=PixelFormats.XV15,
+    FormatTestData(format=PixelFormats.XV15,
              width=1920, height=1080,
              strides=[1920 // 3 * 4, 1920 // 3 * 8 // 2],
              sizes=[1920 // 3 * 4 * 1080, 1920 // 3 * 8 // 2 * 1080 // 2]),
 
-    TestData(format=PixelFormats.XV20,
+    FormatTestData(format=PixelFormats.XV20,
              width=1920, height=1080,
              strides=[1920 // 3 * 4, 1920 // 3 * 8 // 2],
              sizes=[1920 // 3 * 4 * 1080, 1920 // 3 * 8 // 2 * 1080 // 1]),
 
-    TestData(format=PixelFormats.SBGGR8,
+    FormatTestData(format=PixelFormats.SBGGR8,
              width=1920, height=1080,
              strides=[1920*1], sizes=[1920*1*1080]),
 
-    TestData(format=PixelFormats.SRGGB10,
+    FormatTestData(format=PixelFormats.SRGGB10,
              width=1920, height=1080,
              strides=[1920*2], sizes=[1920*2*1080]),
 
-    TestData(format=PixelFormats.SRGGB10P,
+    FormatTestData(format=PixelFormats.SRGGB10P,
              width=1920, height=1080,
              strides=[1920*5//4], sizes=[1920*5//4*1080]),
 ]
@@ -62,7 +62,7 @@ class TestFormats(unittest.TestCase):
         for data in TEST_DATA:
             self.run_data(data)
 
-    def run_data(self, data: TestData):
+    def run_data(self, data: FormatTestData):
         fmt = data.format
         for idx, _ in enumerate(fmt.planes):
             stride = fmt.stride(data.width, idx)

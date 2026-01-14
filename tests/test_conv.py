@@ -168,12 +168,14 @@ def create_test_function(test_case):
 
     return test_function
 
-# Create test methods dynamically at module level for unittest discovery
-for test_case in FMTS:
-    test_name = f'test_conv_{test_case.description}'
-    test = create_test_function(test_case)
-    setattr(TestConv, test_name, test)
+def create_test_functions():
+    # Create test methods dynamically at module level for unittest discovery
+    for test_case in FMTS:
+        test_name = f'test_conv_{test_case.description}'
+        test_func = create_test_function(test_case)
+        setattr(TestConv, test_name, test_func)
 
+create_test_functions()
 
 def main():
     parser = argparse.ArgumentParser(add_help=False)
