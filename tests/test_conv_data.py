@@ -1,3 +1,4 @@
+# fmt: off
 # Generated! Do not modify!
 from pixutils.formats import PixelFormats
 from conv_test_case import ConvTestCase  # type: ignore[import-not-found]

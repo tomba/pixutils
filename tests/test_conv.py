@@ -137,7 +137,7 @@ def generate_test_data_other(other_formats):
             print(f"        '{rgb_sha}'),")
 
 def generate_test_data():
-
+    print('# fmt: off')
     print('# Generated! Do not modify!')
     print('from pixutils.formats import PixelFormats')
     print('from conv_test_case import ConvTestCase  # type: ignore[import-not-found]')
