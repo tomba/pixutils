@@ -198,6 +198,8 @@ def main():
     parser.add_argument('--range', choices=['full', 'limited'], help='Color range')
     parser.add_argument('--encoding', choices=['bt601', 'bt709', 'bt2020'], help='Color encoding')
     parser.add_argument('--demosaic', choices=['3x3', 'bilinear', 'mosaic'], help='Demosaic method')
+    parser.add_argument('--backends', type=str, default=None,
+                        help='Comma-separated list of backends in priority order')
     args = parser.parse_args()
 
     if args.width and args.height and args.format:
@@ -245,6 +247,8 @@ def main():
         options['encoding'] = final_encoding
     if args.demosaic:
         options['demosaic_method'] = args.demosaic
+    if args.backends:
+        options['backends'] = [b.strip() for b in args.backends.split(',')]
 
     ref = buffer_to_bgr888(format, w, h, 0, buf, options)
 
