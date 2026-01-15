@@ -168,6 +168,7 @@ class PixelFormats:
         PixelFormats.__init_fmt_list()
         return PixelFormats.__FMT_LIST
 
+    # fmt: off
     # Single 8-bit channel
     R8 = PixelFormat('R8',
         'R8  ', None,
@@ -883,6 +884,7 @@ class PixelFormats:
         ( 1, 1 ),
         ( ( 1, ), ),
     )
+    # fmt: on
 
 # Helper to dump the pixel formats into a C++ struct
 def dump_c_structs():
