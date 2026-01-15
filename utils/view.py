@@ -20,6 +20,7 @@ from pixutils.formats import PixelFormats
 from pixutils.conv import buffer_to_bgr888
 from pixutils.conv.qt import bgr888_to_pix
 
+
 class ZoomableImageWidget(QtWidgets.QLabel):
     def __init__(self, pixmap):
         super().__init__()
@@ -77,7 +78,7 @@ class ZoomableImageWidget(QtWidgets.QLabel):
             scaled_pixmap = self.original_pixmap.scaled(
                 size,
                 QtCore.Qt.AspectRatioMode.KeepAspectRatio,
-                QtCore.Qt.TransformationMode.FastTransformation
+                QtCore.Qt.TransformationMode.FastTransformation,
             )
         self.setPixmap(scaled_pixmap)
         self.resize(scaled_pixmap.size())
@@ -104,6 +105,7 @@ class ZoomableImageWidget(QtWidgets.QLabel):
 
                         h_bar.setValue(int(new_scroll_x))
                         v_bar.setValue(int(new_scroll_y))
+
 
 class ImageViewerWindow(QtWidgets.QMainWindow):
     def __init__(self, pixmap, title='Image Viewer'):
@@ -132,6 +134,7 @@ class ImageViewerWindow(QtWidgets.QMainWindow):
             self.image_widget.reset_zoom()
         else:
             super().keyPressEvent(event)
+
 
 def parse_filename_heuristics(filename):
     """Try to parse width, height, format, range and encoding from filename"""
@@ -189,17 +192,28 @@ def parse_filename_heuristics(filename):
 
     return result
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('file')
-    parser.add_argument('width', nargs='?', help='Width in pixels (optional if filename contains heuristics)')
-    parser.add_argument('height', nargs='?', help='Height in pixels (optional if filename contains heuristics)')
-    parser.add_argument('format', nargs='?', help='Pixel format (optional if filename contains heuristics)')
+    parser.add_argument(
+        'width', nargs='?', help='Width in pixels (optional if filename contains heuristics)'
+    )
+    parser.add_argument(
+        'height', nargs='?', help='Height in pixels (optional if filename contains heuristics)'
+    )
+    parser.add_argument(
+        'format', nargs='?', help='Pixel format (optional if filename contains heuristics)'
+    )
     parser.add_argument('--range', choices=['full', 'limited'], help='Color range')
     parser.add_argument('--encoding', choices=['bt601', 'bt709', 'bt2020'], help='Color encoding')
     parser.add_argument('--demosaic', choices=['3x3', 'bilinear', 'mosaic'], help='Demosaic method')
-    parser.add_argument('--backends', type=str, default=None,
-                        help='Comma-separated list of backends in priority order')
+    parser.add_argument(
+        '--backends',
+        type=str,
+        default=None,
+        help='Comma-separated list of backends in priority order',
+    )
     args = parser.parse_args()
 
     if args.width and args.height and args.format:
@@ -212,7 +226,9 @@ def main():
         parsed = parse_filename_heuristics(args.file)
         if parsed is None:
             if not args.width or not args.height or not args.format:
-                parser.error('Could not detect parameters from filename. Please provide width, height, and format arguments.')
+                parser.error(
+                    'Could not detect parameters from filename. Please provide width, height, and format arguments.'
+                )
             format = PixelFormats.find_by_name(args.format)
             w = int(args.width)
             h = int(args.height)

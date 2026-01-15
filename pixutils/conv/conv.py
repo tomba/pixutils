@@ -69,6 +69,7 @@ def to_bgr888(
     for backend in backends:
         if backend == 'opencv':
             from .opencv import opencv_to_bgr888
+
             result = opencv_to_bgr888(fmt, width, height, arr, options)
             if result is not None:
                 return result
@@ -76,6 +77,7 @@ def to_bgr888(
             continue
         elif backend == 'numba':
             from .numba import numba_to_bgr888
+
             result = numba_to_bgr888(fmt, width, height, bytesperline, arr, options)
             if result is not None:
                 return result

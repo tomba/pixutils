@@ -94,49 +94,57 @@ def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options: dict | None) -> npt.NDA
     return rgb
 
 
-def yuyv_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None) -> npt.NDArray[np.uint8]:
+def yuyv_to_bgr888(
+    data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None
+) -> npt.NDArray[np.uint8]:
     # YUV422
     yuyv = data.reshape((h, w // 2 * 4))
 
     # YUV444
     yuv = np.empty((h, w, 3), dtype=np.uint8)
-    yuv[:, :, 0] = yuyv[:, 0::2]                    # Y
+    yuv[:, :, 0] = yuyv[:, 0::2]  # Y
     yuv[:, :, 1] = yuyv[:, 1::4].repeat(2, axis=1)  # U
     yuv[:, :, 2] = yuyv[:, 3::4].repeat(2, axis=1)  # V
 
     return ycbcr_to_bgr888(yuv, options)
 
 
-def uyvy_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None) -> npt.NDArray[np.uint8]:
+def uyvy_to_bgr888(
+    data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None
+) -> npt.NDArray[np.uint8]:
     # YUV422
     yuyv = data.reshape((h, w // 2 * 4))
 
     # YUV444
     yuv = np.empty((h, w, 3), dtype=np.uint8)
-    yuv[:, :, 0] = yuyv[:, 1::2]                    # Y
+    yuv[:, :, 0] = yuyv[:, 1::2]  # Y
     yuv[:, :, 1] = yuyv[:, 0::4].repeat(2, axis=1)  # U
     yuv[:, :, 2] = yuyv[:, 2::4].repeat(2, axis=1)  # V
 
     return ycbcr_to_bgr888(yuv, options)
 
 
-def nv12_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None) -> npt.NDArray[np.uint8]:
-    plane1 = data[:w * h]
-    plane2 = data[w * h:]
+def nv12_to_bgr888(
+    data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None
+) -> npt.NDArray[np.uint8]:
+    plane1 = data[: w * h]
+    plane2 = data[w * h :]
 
     y = plane1.reshape((h, w))
     uv = plane2.reshape((h // 2, w // 2, 2))
 
     # YUV444
     yuv = np.empty((h, w, 3), dtype=np.uint8)
-    yuv[:, :, 0] = y[:, :]                    # Y
+    yuv[:, :, 0] = y[:, :]  # Y
     yuv[:, :, 1] = uv[:, :, 0].repeat(2, axis=0).repeat(2, axis=1)  # U
     yuv[:, :, 2] = uv[:, :, 1].repeat(2, axis=0).repeat(2, axis=1)  # V
 
     return ycbcr_to_bgr888(yuv, options)
 
 
-def y8_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None) -> npt.NDArray[np.uint8]:
+def y8_to_bgr888(
+    data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None
+) -> npt.NDArray[np.uint8]:
     color_range = options.get('range', 'full') if options else 'full'
 
     y = data.reshape((h, w))
@@ -154,7 +162,9 @@ def y8_to_bgr888(data: npt.NDArray[np.uint8], w: int, h: int, options: dict | No
     return rgb
 
 
-def yuv_to_bgr888(arr: npt.NDArray[np.uint8], w: int, h: int, fmt: PixelFormat, options: dict | None) -> npt.NDArray[np.uint8]:
+def yuv_to_bgr888(
+    arr: npt.NDArray[np.uint8], w: int, h: int, fmt: PixelFormat, options: dict | None
+) -> npt.NDArray[np.uint8]:
     if fmt == PixelFormats.Y8:
         return y8_to_bgr888(arr, w, h, options)
 

@@ -1,7 +1,8 @@
 import time
 
+
 class FPSCounter:
-    def __init__(self, name: str=''):
+    def __init__(self, name: str = ''):
         self.start_time = None
         self.frame_count = 0
         if name:

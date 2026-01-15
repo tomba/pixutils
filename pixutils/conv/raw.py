@@ -61,13 +61,16 @@ class RawFormat:
         else:
             bpp = int(name[5:])  # Direct BPP value
 
-        return cls(bayer_pattern=BayerPattern.from_pattern(pattern),
-                   bits_per_pixel=bpp,
-                   is_packed=is_packed)
+        return cls(
+            bayer_pattern=BayerPattern.from_pattern(pattern),
+            bits_per_pixel=bpp,
+            is_packed=is_packed,
+        )
 
 
-def prepare_packed_raw(data: npt.NDArray[np.uint8], width: int, height: int,
-                       bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
+def prepare_packed_raw(
+    data: npt.NDArray[np.uint8], width: int, height: int, bits_per_pixel: int, bytesperline: int
+) -> npt.NDArray[np.uint16]:
     assert bits_per_pixel in [10, 12], 'Only 10 and 12 bpp are supported'
 
     # Reshape into rows if bytesperline is provided
@@ -107,9 +110,9 @@ def _unpack_12bit(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
     return np.delete(arr16_shifted, np.s_[2::3], 1)
 
 
-def prepare_unpacked_raw(data: npt.NDArray[np.uint8], width: int, height: int,
-                         bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
-
+def prepare_unpacked_raw(
+    data: npt.NDArray[np.uint8], width: int, height: int, bits_per_pixel: int, bytesperline: int
+) -> npt.NDArray[np.uint16]:
     # Reshape into rows if bytesperline is provided
     if bytesperline:
         data = data.reshape((len(data) // bytesperline, bytesperline))
@@ -151,15 +154,17 @@ def mosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern) -> npt.NDArray[n
     # Create an empty RGB image with 3 channels
     rgb = np.zeros(data.shape + (3,), dtype=data.dtype)
 
-    rgb[pattern.r0[1]::2, pattern.r0[0]::2, 0] = data[pattern.r0[1]::2, pattern.r0[0]::2]
-    rgb[pattern.g0[1]::2, pattern.g0[0]::2, 1] = data[pattern.g0[1]::2, pattern.g0[0]::2]
-    rgb[pattern.g1[1]::2, pattern.g1[0]::2, 1] = data[pattern.g1[1]::2, pattern.g1[0]::2]
-    rgb[pattern.b0[1]::2, pattern.b0[0]::2, 2] = data[pattern.b0[1]::2, pattern.b0[0]::2]
+    rgb[pattern.r0[1] :: 2, pattern.r0[0] :: 2, 0] = data[pattern.r0[1] :: 2, pattern.r0[0] :: 2]
+    rgb[pattern.g0[1] :: 2, pattern.g0[0] :: 2, 1] = data[pattern.g0[1] :: 2, pattern.g0[0] :: 2]
+    rgb[pattern.g1[1] :: 2, pattern.g1[0] :: 2, 1] = data[pattern.g1[1] :: 2, pattern.g1[0] :: 2]
+    rgb[pattern.b0[1] :: 2, pattern.b0[0] :: 2, 2] = data[pattern.b0[1] :: 2, pattern.b0[0] :: 2]
 
     return rgb
 
 
-def demosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern, options: None | dict = None) -> npt.NDArray[np.uint16]:
+def demosaic(
+    data: npt.NDArray[np.uint16], pattern: BayerPattern, options: None | dict = None
+) -> npt.NDArray[np.uint16]:
     # Select demosaic algorithm based on options
     method = options.get('demosaic_method', '3x3') if options else '3x3'
     h, w = data.shape
@@ -174,7 +179,9 @@ def demosaic(data: npt.NDArray[np.uint16], pattern: BayerPattern, options: None 
         raise ValueError(f'Unknown demosaic method: {method}')
 
 
-def _demosaic_3x3_window(data: npt.NDArray[np.uint16], pattern: BayerPattern, h: int, w: int) -> npt.NDArray[np.uint16]:
+def _demosaic_3x3_window(
+    data: npt.NDArray[np.uint16], pattern: BayerPattern, h: int, w: int
+) -> npt.NDArray[np.uint16]:
     """3x3 window demosaic algorithm using pure numpy"""
     # Separate the components from the Bayer data to RGB planes
     rgb = np.zeros((h, w, 3), dtype=data.dtype)
@@ -204,22 +211,31 @@ def _demosaic_3x3_window(data: npt.NDArray[np.uint16], pattern: BayerPattern, h:
     borders = (window[0] - 1, window[1] - 1)
     border = (borders[0] // 2, borders[1] // 2)
 
-    rgb = np.pad(rgb, [
-        (border[0], border[0]),
-        (border[1], border[1]),
-        (0, 0),
-    ], 'constant')
-    bayer = np.pad(bayer, [
-        (border[0], border[0]),
-        (border[1], border[1]),
-        (0, 0),
-    ], 'constant')
+    rgb = np.pad(
+        rgb,
+        [
+            (border[0], border[0]),
+            (border[1], border[1]),
+            (0, 0),
+        ],
+        'constant',
+    )
+    bayer = np.pad(
+        bayer,
+        [
+            (border[0], border[0]),
+            (border[1], border[1]),
+            (0, 0),
+        ],
+        'constant',
+    )
 
     return _compute_demosaic_planes(rgb, bayer, h, w)
 
 
-def _compute_demosaic_planes(rgb: npt.NDArray[np.uint16], bayer: npt.NDArray[np.uint8],
-                             output_height: int, output_width: int) -> npt.NDArray[np.uint16]:
+def _compute_demosaic_planes(
+    rgb: npt.NDArray[np.uint16], bayer: npt.NDArray[np.uint8], output_height: int, output_width: int
+) -> npt.NDArray[np.uint16]:
     # For each plane in the RGB data, we calculate the 3x3 window sum
     # and divide it with the weighted average. This version uses direct
     # computation of the sum, instead of using numpy's as_strided()
@@ -232,32 +248,51 @@ def _compute_demosaic_planes(rgb: npt.NDArray[np.uint16], bayer: npt.NDArray[np.
         b = bayer[..., plane]
 
         # Direct computation of 3x3 window sum
-        psum = (p[:-2, :-2] + p[:-2, 1:-1] + p[:-2, 2:] +
-                p[1:-1, :-2] + p[1:-1, 1:-1] + p[1:-1, 2:] +
-                p[2:, :-2] + p[2:, 1:-1] + p[2:, 2:])
+        psum = (
+            p[:-2, :-2]
+            + p[:-2, 1:-1]
+            + p[:-2, 2:]
+            + p[1:-1, :-2]
+            + p[1:-1, 1:-1]
+            + p[1:-1, 2:]
+            + p[2:, :-2]
+            + p[2:, 1:-1]
+            + p[2:, 2:]
+        )
 
-        bsum = (b[:-2, :-2] + b[:-2, 1:-1] + b[:-2, 2:] +
-                b[1:-1, :-2] + b[1:-1, 1:-1] + b[1:-1, 2:] +
-                b[2:, :-2] + b[2:, 1:-1] + b[2:, 2:])
+        bsum = (
+            b[:-2, :-2]
+            + b[:-2, 1:-1]
+            + b[:-2, 2:]
+            + b[1:-1, :-2]
+            + b[1:-1, 1:-1]
+            + b[1:-1, 2:]
+            + b[2:, :-2]
+            + b[2:, 1:-1]
+            + b[2:, 2:]
+        )
 
         output[..., plane] = psum // bsum
 
     return output
 
 
-def raw_to_bgr888(data: npt.NDArray[np.uint8], width: int, height: int,
-                  bytesperline: int, fmt: PixelFormat,
-                  options: None | dict = None) -> npt.NDArray[np.uint8]:
+def raw_to_bgr888(
+    data: npt.NDArray[np.uint8],
+    width: int,
+    height: int,
+    bytesperline: int,
+    fmt: PixelFormat,
+    options: None | dict = None,
+) -> npt.NDArray[np.uint8]:
     # Parse the format
     raw_fmt = RawFormat.from_pixelformat(fmt)
 
     # Prepare the raw data into a common 16-bit format
     if raw_fmt.is_packed:
-        arr16 = prepare_packed_raw(data, width, height, raw_fmt.bits_per_pixel,
-                                   bytesperline)
+        arr16 = prepare_packed_raw(data, width, height, raw_fmt.bits_per_pixel, bytesperline)
     else:
-        arr16 = prepare_unpacked_raw(data, width, height, raw_fmt.bits_per_pixel,
-                                     bytesperline)
+        arr16 = prepare_unpacked_raw(data, width, height, raw_fmt.bits_per_pixel, bytesperline)
 
     # Perform demosaic
     rgb = demosaic(arr16, raw_fmt.bayer_pattern, options)

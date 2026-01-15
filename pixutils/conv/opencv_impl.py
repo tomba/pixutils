@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Callable, cast
 
-import cv2 # type: ignore[import-not-found]
+import cv2  # type: ignore[import-not-found]
 import numpy as np
 import numpy.typing as npt
 
@@ -47,15 +47,17 @@ YUV_FORMAT_MAP: dict[str, tuple[int, Callable]] = {
 }
 
 
-def _convert_yuv(fmt: PixelFormat, width: int, height: int,
-                 arr: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+def _convert_yuv(
+    fmt: PixelFormat, width: int, height: int, arr: npt.NDArray[np.uint8]
+) -> npt.NDArray[np.uint8]:
     cv_code, reshape_func = YUV_FORMAT_MAP[fmt.name]
     reshaped = reshape_func(arr, width, height)
     return cv2.cvtColor(reshaped, cv_code)
 
 
-def _convert_rgb(fmt: PixelFormat, width: int, height: int,
-                 arr: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8]:
+def _convert_rgb(
+    fmt: PixelFormat, width: int, height: int, arr: npt.NDArray[np.uint8]
+) -> npt.NDArray[np.uint8]:
     cv_code, reshape_func = RGB_FORMAT_MAP[fmt.name]
     reshaped = reshape_func(arr, width, height)
 
@@ -66,8 +68,9 @@ def _convert_rgb(fmt: PixelFormat, width: int, height: int,
     return cv2.cvtColor(reshaped, cv_code)
 
 
-def _convert_raw(fmt: PixelFormat, width: int, height: int,
-                 arr: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8] | None:
+def _convert_raw(
+    fmt: PixelFormat, width: int, height: int, arr: npt.NDArray[np.uint8]
+) -> npt.NDArray[np.uint8] | None:
     pattern = fmt.bayer_pattern
     assert pattern is not None
     cv_code = BAYER_PATTERN_MAP[pattern]
@@ -96,8 +99,9 @@ def _convert_raw(fmt: PixelFormat, width: int, height: int,
         return None
 
 
-def opencv_convert(fmt: PixelFormat, width: int, height: int,
-                   arr: npt.NDArray[np.uint8]) -> npt.NDArray[np.uint8] | None:
+def opencv_convert(
+    fmt: PixelFormat, width: int, height: int, arr: npt.NDArray[np.uint8]
+) -> npt.NDArray[np.uint8] | None:
     if fmt.color == PixelColorEncoding.YUV:
         return _convert_yuv(fmt, width, height, arr)
 

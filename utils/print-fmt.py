@@ -35,7 +35,7 @@ def main():
         v4l2_fourcc = '    '
 
     if args.a:
-        width,height = fmt.align_pixels(width, height)
+        width, height = fmt.align_pixels(width, height)
 
     print(f'{fmt.name}')
     print(f'drm_fourcc="{drm_fourcc:4}" v4l2_fourcc="{v4l2_fourcc:4}"')
@@ -43,14 +43,16 @@ def main():
 
     print(f'width={width} height={height} align={align}')
 
-    for pi,p in enumerate(fmt.planes):
+    for pi, p in enumerate(fmt.planes):
         stride = fmt.stride(width, pi, align)
         psize = fmt.planesize(stride, height, pi)
         dsize = fmt.dumb_size(width, height, pi, align)
 
         assert psize == dsize[0] * dsize[1] * dsize[2] / 8
 
-        print(f'plane{pi} bytes_per_block={p.bytes_per_block} pixels_per_block={p.pixels_per_block} hsub={p.hsub} vsub={p.vsub}')
+        print(
+            f'plane{pi} bytes_per_block={p.bytes_per_block} pixels_per_block={p.pixels_per_block} hsub={p.hsub} vsub={p.vsub}'
+        )
         print(f'       stride={stride} plane_size={psize} dumb_size={dsize}')
 
     print(f'framesize={fmt.framesize(width, height, align)}')

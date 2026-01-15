@@ -22,17 +22,26 @@ class PixelFormatPlaneInfo(NamedTuple):
     hsub: int
     vsub: int
 
+
 def _div_round_up(a: int, b: int):
     return int(ceil(a / b))
+
 
 def _align_up(a: int, b: int):
     return _div_round_up(a, b) * b
 
+
 class PixelFormat:
-    def __init__(self, name: str,
-                 drm_fourcc: None | str, v4l2_fourcc: None | str,
-                 colorencoding: PixelColorEncoding, packed: bool,
-                 pixel_align: tuple[int, int], planes) -> None:
+    def __init__(
+        self,
+        name: str,
+        drm_fourcc: None | str,
+        v4l2_fourcc: None | str,
+        colorencoding: PixelColorEncoding,
+        packed: bool,
+        pixel_align: tuple[int, int],
+        planes,
+    ) -> None:
         self.name = name
         self.drm_fourcc = str_to_fourcc(drm_fourcc) if drm_fourcc else None
         self.v4l2_fourcc = str_to_fourcc(v4l2_fourcc) if v4l2_fourcc else None
@@ -60,8 +69,7 @@ class PixelFormat:
         return f'PixelFormat({self.name})'
 
     def align_pixels(self, width: int, height: int):
-        return (_align_up(width, self.pixel_align[0]),
-                _align_up(height, self.pixel_align[1]))
+        return (_align_up(width, self.pixel_align[0]), _align_up(height, self.pixel_align[1]))
 
     @property
     def bayer_pattern(self) -> str | None:
@@ -70,7 +78,7 @@ class PixelFormat:
             return None
         return self.name[1:5]
 
-    def stride(self, width: int, plane: int = 0, align = 1):
+    def stride(self, width: int, plane: int = 0, align=1):
         if plane >= len(self.planes):
             raise RuntimeError()
 
@@ -97,8 +105,7 @@ class PixelFormat:
 
         return stride * (height // pi.vsub)
 
-
-    def framesize(self, width: int, height: int, align = 1):
+    def framesize(self, width: int, height: int, align=1):
         size = 0
 
         for i in range(len(self.planes)):
@@ -107,7 +114,7 @@ class PixelFormat:
 
         return size
 
-    def dumb_size(self, width: int, height: int, plane: int = 0, align = 1):
+    def dumb_size(self, width: int, height: int, plane: int = 0, align=1):
         """
         Helper function mainly for DRM dumb framebuffer
         Returns (width, height, bitspp) tuple which results in a suitable plane
@@ -146,7 +153,9 @@ class PixelFormats:
     def __init_fmt_list():
         # Perhaps there is some better way to handle this...
         if not PixelFormats.__FMT_LIST:
-            PixelFormats.__FMT_LIST = [v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat)]
+            PixelFormats.__FMT_LIST = [
+                v for v in PixelFormats.__dict__.values() if isinstance(v, PixelFormat)
+            ]
 
     @staticmethod
     def find_v4l2_fourcc(fourcc: int):
@@ -886,6 +895,7 @@ class PixelFormats:
     )
     # fmt: on
 
+
 # Helper to dump the pixel formats into a C++ struct
 def dump_c_structs():
     for fmt in PixelFormats.get_formats():
@@ -906,7 +916,10 @@ def dump_c_structs():
         print(f'\t\t\t\tPixelColorType::{fmt.color.name},')
         print(f'\t\t\t\t{{ {fmt.pixel_align[0]}, {fmt.pixel_align[1]} }},')
 
-        planedata = [f'{{ {p.bytes_per_block}, {p.pixels_per_block}, {p.hsub}, {p.vsub} }}' for p in fmt.planes]
+        planedata = [
+            f'{{ {p.bytes_per_block}, {p.pixels_per_block}, {p.hsub}, {p.vsub} }}'
+            for p in fmt.planes
+        ]
 
         print(f'\t\t\t\t{{ {", ".join(planedata)} }},')
 
@@ -915,6 +928,7 @@ def dump_c_structs():
         print('\t},')
 
     print('}')
+
 
 # Validate that the format names match the field names, and that the fourccs are unique
 def validate_formats():

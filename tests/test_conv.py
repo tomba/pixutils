@@ -18,6 +18,7 @@ SEED = 1234
 
 BACKENDS = ['opencv', 'numba', 'numpy']
 
+
 def get_bit_mask(fmt: PixelFormat):
     """Returns (dtype, mask) tuple for masking padding bits, or None if no masking needed."""
     # RAW 10-bit formats (SRGGB10, SBGGR10, SGRBG10, SGBRG10)
@@ -30,7 +31,6 @@ def get_bit_mask(fmt: PixelFormat):
     elif fmt.name in ('XBGR8888', 'XRGB8888'):
         return (np.uint32, (1 << 24) - 1)
     return None
-
 
 
 def generate_test_buffer(fmt: PixelFormat):
@@ -49,6 +49,7 @@ def generate_test_buffer(fmt: PixelFormat):
 
     return buf
 
+
 def generate_test_case(pixel_format, options=None):
     try:
         src_buf = generate_test_buffer(pixel_format)
@@ -61,6 +62,7 @@ def generate_test_case(pixel_format, options=None):
     except Exception as e:
         print(f'# Skipping {pixel_format.name} with options {options}: {e}', file=sys.stderr)
         return None
+
 
 def generate_test_data_rgb(rgb_formats):
     # Process RGB formats (no options)
@@ -75,6 +77,7 @@ def generate_test_data_rgb(rgb_formats):
                 print(f"        '{src_sha}',")
                 print(f"        '{rgb_sha}',")
                 print(f'        {options}),')
+
 
 def generate_test_data_yuv(yuv_formats):
     # Process YUV formats (with range/encoding combinations)
@@ -111,6 +114,7 @@ def generate_test_data_yuv(yuv_formats):
                             print(f"        '{rgb_sha}',")
                             print(f'        {options}),')
 
+
 def generate_test_data_raw(raw_formats):
     # Process Bayer formats
     print('    # Bayer formats')
@@ -125,6 +129,7 @@ def generate_test_data_raw(raw_formats):
                 print(f"        '{rgb_sha}',")
                 print(f'        {options}),')
 
+
 def generate_test_data_other(other_formats):
     # Other formats
     print('    # Other formats')
@@ -135,6 +140,7 @@ def generate_test_data_other(other_formats):
             print(f'    ConvTestCase(PixelFormats.{pixel_format.name},')
             print(f"        '{src_sha}',")
             print(f"        '{rgb_sha}'),")
+
 
 def generate_test_data():
     print('# fmt: off')
@@ -171,7 +177,9 @@ def generate_test_data():
 def save_test_data():
     for test_case in FMTS:
         src_buf = generate_test_buffer(test_case.pixel_format)
-        rgb_buf = buffer_to_bgr888(test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options)
+        rgb_buf = buffer_to_bgr888(
+            test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options
+        )
 
         # Use test_case description for file naming to handle options
         base_name = f'{WIDTH}x{HEIGHT}-{test_case.description}'
@@ -196,7 +204,9 @@ def create_test_function(test_case):
     def test_function(self):
         src_buf = generate_test_buffer(test_case.pixel_format)
         try:
-            rgb_buf = buffer_to_bgr888(test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options)
+            rgb_buf = buffer_to_bgr888(
+                test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options
+            )
         except ValueError as e:
             if str(e) == 'No backends available':
                 self.skipTest('No backend available')
@@ -205,10 +215,15 @@ def create_test_function(test_case):
         src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
 
-        self.assertEqual(src_sha, test_case.src_sha, f'SHA mismatch for {test_case.description} source')
-        self.assertEqual(rgb_sha, test_case.rgb_sha, f'SHA mismatch for {test_case.description} RGB')
+        self.assertEqual(
+            src_sha, test_case.src_sha, f'SHA mismatch for {test_case.description} source'
+        )
+        self.assertEqual(
+            rgb_sha, test_case.rgb_sha, f'SHA mismatch for {test_case.description} RGB'
+        )
 
     return test_function
+
 
 def create_test_functions():
     # Create test methods dynamically at module level for unittest discovery
@@ -217,12 +232,18 @@ def create_test_functions():
         test_func = create_test_function(test_case)
         setattr(TestConv, test_name, test_func)
 
+
 create_test_functions()
+
 
 def main():
     parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument('--save', action='store_true', help='Generate frames, save to files and exit.')
-    parser.add_argument('--generate-data', action='store_true', help='Generate FMTS list, print and exit.')
+    parser.add_argument(
+        '--save', action='store_true', help='Generate frames, save to files and exit.'
+    )
+    parser.add_argument(
+        '--generate-data', action='store_true', help='Generate FMTS list, print and exit.'
+    )
     args, _ = parser.parse_known_args()
 
     if args.save:
@@ -231,6 +252,7 @@ def main():
         generate_test_data()
     else:
         unittest.main()
+
 
 if __name__ == '__main__':
     main()

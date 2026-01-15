@@ -18,10 +18,19 @@ def main():
     parser.add_argument('-f', '--format', type=str, default='XRGB8888', help='Pixel format')
     parser.add_argument('-l', '--loops', type=int, default=100, help='Number of loops')
     parser.add_argument('--stride', type=int, default=0, help='Stride')
-    parser.add_argument('--demosaic', type=str, choices=['3x3', 'bilinear', 'mosaic', 'opencv'], default=None,
-                       help='Demosaic algorithm: 3x3, bilinear, mosaic (no demosaic), or opencv')
-    parser.add_argument('--backends', type=str, default=None,
-                       help='Comma-separated list of backends in priority order')
+    parser.add_argument(
+        '--demosaic',
+        type=str,
+        choices=['3x3', 'bilinear', 'mosaic', 'opencv'],
+        default=None,
+        help='Demosaic algorithm: 3x3, bilinear, mosaic (no demosaic), or opencv',
+    )
+    parser.add_argument(
+        '--backends',
+        type=str,
+        default=None,
+        help='Comma-separated list of backends in priority order',
+    )
     args = parser.parse_args()
 
     fmt = PixelFormats.find_by_name(args.format)
@@ -63,8 +72,11 @@ def main():
 
     t2 = time.monotonic()
     backends_str = args.backends if args.backends else 'default'
-    print(f'Image size: {args.width}x{args.height}, format: {args.format}, backends: {backends_str}, '
-          f'stride: {stride}, size {size}, {args.loops} loops took {(t2 - t1) * 1000:.3f} ms')
+    print(
+        f'Image size: {args.width}x{args.height}, format: {args.format}, backends: {backends_str}, '
+        f'stride: {stride}, size {size}, {args.loops} loops took {(t2 - t1) * 1000:.3f} ms'
+    )
+
 
 if __name__ == '__main__':
     main()

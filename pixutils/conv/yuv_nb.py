@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
-from numba import njit # type: ignore[import-not-found]
+from numba import njit  # type: ignore[import-not-found]
 
 from pixutils.conv.yuv import _get_conversion_matrix
 from pixutils.formats import PixelFormat, PixelFormats
@@ -16,11 +16,23 @@ __all__ = ['yuv_to_bgr888_nb']
 
 
 @njit(cache=True)
-def _yuyv_to_bgr888_nb(data: npt.NDArray[np.uint8], width: int, height: int,
-                       offset_y: float, offset_u: float, offset_v: float,
-                       m00: float, m01: float, m02: float,
-                       m10: float, m11: float, m12: float,
-                       m20: float, m21: float, m22: float) -> npt.NDArray[np.uint8]:
+def _yuyv_to_bgr888_nb(
+    data: npt.NDArray[np.uint8],
+    width: int,
+    height: int,
+    offset_y: float,
+    offset_u: float,
+    offset_v: float,
+    m00: float,
+    m01: float,
+    m02: float,
+    m10: float,
+    m11: float,
+    m12: float,
+    m20: float,
+    m21: float,
+    m22: float,
+) -> npt.NDArray[np.uint8]:
     """JIT-compiled YUYV to BGR conversion with direct pixel processing"""
     rgb = np.empty((height, width, 3), dtype=np.uint8)
 
@@ -61,11 +73,23 @@ def _yuyv_to_bgr888_nb(data: npt.NDArray[np.uint8], width: int, height: int,
 
 
 @njit(cache=True)
-def _uyvy_to_bgr888_nb(data: npt.NDArray[np.uint8], width: int, height: int,
-                       offset_y: float, offset_u: float, offset_v: float,
-                       m00: float, m01: float, m02: float,
-                       m10: float, m11: float, m12: float,
-                       m20: float, m21: float, m22: float) -> npt.NDArray[np.uint8]:
+def _uyvy_to_bgr888_nb(
+    data: npt.NDArray[np.uint8],
+    width: int,
+    height: int,
+    offset_y: float,
+    offset_u: float,
+    offset_v: float,
+    m00: float,
+    m01: float,
+    m02: float,
+    m10: float,
+    m11: float,
+    m12: float,
+    m20: float,
+    m21: float,
+    m22: float,
+) -> npt.NDArray[np.uint8]:
     """JIT-compiled UYVY to BGR conversion with direct pixel processing"""
     rgb = np.empty((height, width, 3), dtype=np.uint8)
 
@@ -106,11 +130,23 @@ def _uyvy_to_bgr888_nb(data: npt.NDArray[np.uint8], width: int, height: int,
 
 
 @njit(cache=True)
-def _nv12_to_bgr888_nb(data: npt.NDArray[np.uint8], width: int, height: int,
-                       offset_y: float, offset_u: float, offset_v: float,
-                       m00: float, m01: float, m02: float,
-                       m10: float, m11: float, m12: float,
-                       m20: float, m21: float, m22: float) -> npt.NDArray[np.uint8]:
+def _nv12_to_bgr888_nb(
+    data: npt.NDArray[np.uint8],
+    width: int,
+    height: int,
+    offset_y: float,
+    offset_u: float,
+    offset_v: float,
+    m00: float,
+    m01: float,
+    m02: float,
+    m10: float,
+    m11: float,
+    m12: float,
+    m20: float,
+    m21: float,
+    m22: float,
+) -> npt.NDArray[np.uint8]:
     """JIT-compiled NV12 to BGR conversion with custom chroma upsampling"""
     rgb = np.empty((height, width, 3), dtype=np.uint8)
 
@@ -148,37 +184,67 @@ def _nv12_to_bgr888_nb(data: npt.NDArray[np.uint8], width: int, height: int,
     return rgb
 
 
-def yuv_to_bgr888_nb(arr: npt.NDArray[np.uint8], w: int, h: int,
-                     fmt: PixelFormat,
-                     options: dict | None) -> npt.NDArray[np.uint8]:
+def yuv_to_bgr888_nb(
+    arr: npt.NDArray[np.uint8], w: int, h: int, fmt: PixelFormat, options: dict | None
+) -> npt.NDArray[np.uint8]:
     """Entry point for numba YUV conversions."""
     offset, matrix = _get_conversion_matrix(options)
 
     if fmt == PixelFormats.YUYV:
         return _yuyv_to_bgr888_nb(
-            arr, w, h,
-            offset[0], offset[1], offset[2],
-            matrix[0][0], matrix[0][1], matrix[0][2],
-            matrix[1][0], matrix[1][1], matrix[1][2],
-            matrix[2][0], matrix[2][1], matrix[2][2]
+            arr,
+            w,
+            h,
+            offset[0],
+            offset[1],
+            offset[2],
+            matrix[0][0],
+            matrix[0][1],
+            matrix[0][2],
+            matrix[1][0],
+            matrix[1][1],
+            matrix[1][2],
+            matrix[2][0],
+            matrix[2][1],
+            matrix[2][2],
         )
 
     if fmt == PixelFormats.UYVY:
         return _uyvy_to_bgr888_nb(
-            arr, w, h,
-            offset[0], offset[1], offset[2],
-            matrix[0][0], matrix[0][1], matrix[0][2],
-            matrix[1][0], matrix[1][1], matrix[1][2],
-            matrix[2][0], matrix[2][1], matrix[2][2]
+            arr,
+            w,
+            h,
+            offset[0],
+            offset[1],
+            offset[2],
+            matrix[0][0],
+            matrix[0][1],
+            matrix[0][2],
+            matrix[1][0],
+            matrix[1][1],
+            matrix[1][2],
+            matrix[2][0],
+            matrix[2][1],
+            matrix[2][2],
         )
 
     if fmt == PixelFormats.NV12:
         return _nv12_to_bgr888_nb(
-            arr, w, h,
-            offset[0], offset[1], offset[2],
-            matrix[0][0], matrix[0][1], matrix[0][2],
-            matrix[1][0], matrix[1][1], matrix[1][2],
-            matrix[2][0], matrix[2][1], matrix[2][2]
+            arr,
+            w,
+            h,
+            offset[0],
+            offset[1],
+            offset[2],
+            matrix[0][0],
+            matrix[0][1],
+            matrix[0][2],
+            matrix[1][0],
+            matrix[1][1],
+            matrix[1][2],
+            matrix[2][0],
+            matrix[2][1],
+            matrix[2][2],
         )
 
     raise RuntimeError(f'Unsupported YUV format {fmt}')

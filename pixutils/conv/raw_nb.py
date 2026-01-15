@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
-from numba import njit # type: ignore[import-not-found]
+from numba import njit  # type: ignore[import-not-found]
 
 from pixutils.formats import PixelFormat
 
@@ -68,8 +68,9 @@ def _unpack_12bit_nb(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
 
 
 @njit(parallel=True, cache=True)
-def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
-                          h: int, w: int) -> npt.NDArray[np.uint16]:
+def _demosaic_bilinear_nb(
+    data: npt.NDArray[np.uint16], r0, g0, g1, b0, h: int, w: int
+) -> npt.NDArray[np.uint16]:
     """JIT-compiled bilinear interpolation demosaic - structured processing"""
     output = np.zeros((h, w, 3), dtype=data.dtype)
 
@@ -103,16 +104,16 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
             g_sum = 0
             g_count = 0
             if y > 0:
-                g_sum += output[y-1, x, 1]
+                g_sum += output[y - 1, x, 1]
                 g_count += 1
-            if y < h-1:
-                g_sum += output[y+1, x, 1]
+            if y < h - 1:
+                g_sum += output[y + 1, x, 1]
                 g_count += 1
             if x > 0:
-                g_sum += output[y, x-1, 1]
+                g_sum += output[y, x - 1, 1]
                 g_count += 1
-            if x < w-1:
-                g_sum += output[y, x+1, 1]
+            if x < w - 1:
+                g_sum += output[y, x + 1, 1]
                 g_count += 1
             if g_count > 0:
                 output[y, x, 1] = g_sum // g_count
@@ -121,16 +122,16 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
             b_sum = 0
             b_count = 0
             if y > 0 and x > 0:
-                b_sum += output[y-1, x-1, 2]
+                b_sum += output[y - 1, x - 1, 2]
                 b_count += 1
-            if y > 0 and x < w-1:
-                b_sum += output[y-1, x+1, 2]
+            if y > 0 and x < w - 1:
+                b_sum += output[y - 1, x + 1, 2]
                 b_count += 1
-            if y < h-1 and x > 0:
-                b_sum += output[y+1, x-1, 2]
+            if y < h - 1 and x > 0:
+                b_sum += output[y + 1, x - 1, 2]
                 b_count += 1
-            if y < h-1 and x < w-1:
-                b_sum += output[y+1, x+1, 2]
+            if y < h - 1 and x < w - 1:
+                b_sum += output[y + 1, x + 1, 2]
                 b_count += 1
             if b_count > 0:
                 output[y, x, 2] = b_sum // b_count
@@ -142,16 +143,16 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
             r_sum = 0
             r_count = 0
             if y > 0 and x > 0:
-                r_sum += output[y-1, x-1, 0]
+                r_sum += output[y - 1, x - 1, 0]
                 r_count += 1
-            if y > 0 and x < w-1:
-                r_sum += output[y-1, x+1, 0]
+            if y > 0 and x < w - 1:
+                r_sum += output[y - 1, x + 1, 0]
                 r_count += 1
-            if y < h-1 and x > 0:
-                r_sum += output[y+1, x-1, 0]
+            if y < h - 1 and x > 0:
+                r_sum += output[y + 1, x - 1, 0]
                 r_count += 1
-            if y < h-1 and x < w-1:
-                r_sum += output[y+1, x+1, 0]
+            if y < h - 1 and x < w - 1:
+                r_sum += output[y + 1, x + 1, 0]
                 r_count += 1
             if r_count > 0:
                 output[y, x, 0] = r_sum // r_count
@@ -160,16 +161,16 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
             g_sum = 0
             g_count = 0
             if y > 0:
-                g_sum += output[y-1, x, 1]
+                g_sum += output[y - 1, x, 1]
                 g_count += 1
-            if y < h-1:
-                g_sum += output[y+1, x, 1]
+            if y < h - 1:
+                g_sum += output[y + 1, x, 1]
                 g_count += 1
             if x > 0:
-                g_sum += output[y, x-1, 1]
+                g_sum += output[y, x - 1, 1]
                 g_count += 1
-            if x < w-1:
-                g_sum += output[y, x+1, 1]
+            if x < w - 1:
+                g_sum += output[y, x + 1, 1]
                 g_count += 1
             if g_count > 0:
                 output[y, x, 1] = g_sum // g_count
@@ -181,10 +182,10 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
             r_sum = 0
             r_count = 0
             if x > 0:
-                r_sum += output[y, x-1, 0]
+                r_sum += output[y, x - 1, 0]
                 r_count += 1
-            if x < w-1:
-                r_sum += output[y, x+1, 0]
+            if x < w - 1:
+                r_sum += output[y, x + 1, 0]
                 r_count += 1
             if r_count > 0:
                 output[y, x, 0] = r_sum // r_count
@@ -193,10 +194,10 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
             b_sum = 0
             b_count = 0
             if y > 0:
-                b_sum += output[y-1, x, 2]
+                b_sum += output[y - 1, x, 2]
                 b_count += 1
-            if y < h-1:
-                b_sum += output[y+1, x, 2]
+            if y < h - 1:
+                b_sum += output[y + 1, x, 2]
                 b_count += 1
             if b_count > 0:
                 output[y, x, 2] = b_sum // b_count
@@ -207,10 +208,10 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
             b_sum = 0
             b_count = 0
             if x > 0:
-                b_sum += output[y, x-1, 2]
+                b_sum += output[y, x - 1, 2]
                 b_count += 1
-            if x < w-1:
-                b_sum += output[y, x+1, 2]
+            if x < w - 1:
+                b_sum += output[y, x + 1, 2]
                 b_count += 1
             if b_count > 0:
                 output[y, x, 2] = b_sum // b_count
@@ -219,10 +220,10 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
             r_sum = 0
             r_count = 0
             if y > 0:
-                r_sum += output[y-1, x, 0]
+                r_sum += output[y - 1, x, 0]
                 r_count += 1
-            if y < h-1:
-                r_sum += output[y+1, x, 0]
+            if y < h - 1:
+                r_sum += output[y + 1, x, 0]
                 r_count += 1
             if r_count > 0:
                 output[y, x, 0] = r_sum // r_count
@@ -231,8 +232,9 @@ def _demosaic_bilinear_nb(data: npt.NDArray[np.uint16], r0, g0, g1, b0,
 
 
 @njit(parallel=True, cache=True)
-def _compute_demosaic_planes_nb(rgb: npt.NDArray[np.uint16], bayer: npt.NDArray[np.uint8],
-                                output_height: int, output_width: int) -> npt.NDArray[np.uint16]:
+def _compute_demosaic_planes_nb(
+    rgb: npt.NDArray[np.uint16], bayer: npt.NDArray[np.uint8], output_height: int, output_width: int
+) -> npt.NDArray[np.uint16]:
     """JIT-compiled function to compute the demosaic for all RGB planes"""
     output = np.empty((output_height, output_width, 3), dtype=rgb.dtype)
 
@@ -241,21 +243,38 @@ def _compute_demosaic_planes_nb(rgb: npt.NDArray[np.uint16], bayer: npt.NDArray[
         b = bayer[..., plane]
 
         # Direct computation of 3x3 window sum
-        psum = (p[:-2, :-2] + p[:-2, 1:-1] + p[:-2, 2:] +
-                p[1:-1, :-2] + p[1:-1, 1:-1] + p[1:-1, 2:] +
-                p[2:, :-2] + p[2:, 1:-1] + p[2:, 2:])
+        psum = (
+            p[:-2, :-2]
+            + p[:-2, 1:-1]
+            + p[:-2, 2:]
+            + p[1:-1, :-2]
+            + p[1:-1, 1:-1]
+            + p[1:-1, 2:]
+            + p[2:, :-2]
+            + p[2:, 1:-1]
+            + p[2:, 2:]
+        )
 
-        bsum = (b[:-2, :-2] + b[:-2, 1:-1] + b[:-2, 2:] +
-                b[1:-1, :-2] + b[1:-1, 1:-1] + b[1:-1, 2:] +
-                b[2:, :-2] + b[2:, 1:-1] + b[2:, 2:])
+        bsum = (
+            b[:-2, :-2]
+            + b[:-2, 1:-1]
+            + b[:-2, 2:]
+            + b[1:-1, :-2]
+            + b[1:-1, 1:-1]
+            + b[1:-1, 2:]
+            + b[2:, :-2]
+            + b[2:, 1:-1]
+            + b[2:, 2:]
+        )
 
         output[..., plane] = psum // bsum
 
     return output
 
 
-def _prepare_packed_raw_nb(data: npt.NDArray[np.uint8], width: int, height: int,
-                           bits_per_pixel: int, bytesperline: int) -> npt.NDArray[np.uint16]:
+def _prepare_packed_raw_nb(
+    data: npt.NDArray[np.uint8], width: int, height: int, bits_per_pixel: int, bytesperline: int
+) -> npt.NDArray[np.uint16]:
     """Prepare packed raw data using numba unpacking."""
     assert bits_per_pixel in [10, 12], 'Only 10 and 12 bpp are supported'
 
@@ -278,8 +297,9 @@ def _prepare_packed_raw_nb(data: npt.NDArray[np.uint8], width: int, height: int,
         return _unpack_12bit_nb(arr16_input)
 
 
-def _demosaic_3x3_window_nb(data: npt.NDArray[np.uint16], pattern: BayerPattern,
-                            h: int, w: int) -> npt.NDArray[np.uint16]:
+def _demosaic_3x3_window_nb(
+    data: npt.NDArray[np.uint16], pattern: BayerPattern, h: int, w: int
+) -> npt.NDArray[np.uint16]:
     """3x3 window demosaic using numba."""
     # Separate the components from the Bayer data to RGB planes
     rgb = np.zeros((h, w, 3), dtype=data.dtype)
@@ -298,22 +318,31 @@ def _demosaic_3x3_window_nb(data: npt.NDArray[np.uint16], pattern: BayerPattern,
     borders = (window[0] - 1, window[1] - 1)
     border = (borders[0] // 2, borders[1] // 2)
 
-    rgb = np.pad(rgb, [
-        (border[0], border[0]),
-        (border[1], border[1]),
-        (0, 0),
-    ], 'constant')
-    bayer = np.pad(bayer, [
-        (border[0], border[0]),
-        (border[1], border[1]),
-        (0, 0),
-    ], 'constant')
+    rgb = np.pad(
+        rgb,
+        [
+            (border[0], border[0]),
+            (border[1], border[1]),
+            (0, 0),
+        ],
+        'constant',
+    )
+    bayer = np.pad(
+        bayer,
+        [
+            (border[0], border[0]),
+            (border[1], border[1]),
+            (0, 0),
+        ],
+        'constant',
+    )
 
     return _compute_demosaic_planes_nb(rgb, bayer, h, w)
 
 
-def _demosaic_nb(data: npt.NDArray[np.uint16], pattern: BayerPattern,
-                 options: None | dict = None) -> npt.NDArray[np.uint16]:
+def _demosaic_nb(
+    data: npt.NDArray[np.uint16], pattern: BayerPattern, options: None | dict = None
+) -> npt.NDArray[np.uint16]:
     """Demosaic using numba implementations."""
     method = options.get('demosaic_method', '3x3') if options else '3x3'
     h, w = data.shape
@@ -328,20 +357,23 @@ def _demosaic_nb(data: npt.NDArray[np.uint16], pattern: BayerPattern,
         raise ValueError(f'Unknown demosaic method: {method}')
 
 
-def raw_to_bgr888_nb(data: npt.NDArray[np.uint8], width: int, height: int,
-                     bytesperline: int, fmt: PixelFormat,
-                     options: None | dict = None) -> npt.NDArray[np.uint8]:
+def raw_to_bgr888_nb(
+    data: npt.NDArray[np.uint8],
+    width: int,
+    height: int,
+    bytesperline: int,
+    fmt: PixelFormat,
+    options: None | dict = None,
+) -> npt.NDArray[np.uint8]:
     """Entry point for numba RAW conversions."""
     # Parse the format
     raw_fmt = RawFormat.from_pixelformat(fmt)
 
     # Prepare the raw data into a common 16-bit format
     if raw_fmt.is_packed:
-        arr16 = _prepare_packed_raw_nb(data, width, height, raw_fmt.bits_per_pixel,
-                                       bytesperline)
+        arr16 = _prepare_packed_raw_nb(data, width, height, raw_fmt.bits_per_pixel, bytesperline)
     else:
-        arr16 = prepare_unpacked_raw(data, width, height, raw_fmt.bits_per_pixel,
-                                     bytesperline)
+        arr16 = prepare_unpacked_raw(data, width, height, raw_fmt.bits_per_pixel, bytesperline)
 
     # Perform demosaic
     rgb = _demosaic_nb(arr16, raw_fmt.bayer_pattern, options)

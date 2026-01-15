@@ -104,9 +104,9 @@ def generate_conversion_matrix(
         # Cr = (R-Y)/(2*(1-Kr))
 
         matrix = [
-            [Kr, Kg, Kb],                                  # Y = Kr*R + Kg*G + Kb*B
-            [-Kr/(2*(1-Kb)), -Kg/(2*(1-Kb)), 0.5],        # Cb = (B-Y)/(2*(1-Kb))
-            [0.5, -Kg/(2*(1-Kr)), -Kb/(2*(1-Kr))]         # Cr = (R-Y)/(2*(1-Kr))
+            [Kr, Kg, Kb],  # Y = Kr*R + Kg*G + Kb*B
+            [-Kr / (2 * (1 - Kb)), -Kg / (2 * (1 - Kb)), 0.5],  # Cb = (B-Y)/(2*(1-Kb))
+            [0.5, -Kg / (2 * (1 - Kr)), -Kb / (2 * (1 - Kr))],  # Cr = (R-Y)/(2*(1-Kr))
         ]
 
         # Apply scaling for limited range
@@ -117,8 +117,8 @@ def generate_conversion_matrix(
 
         # Setup offsets
         pre_offsets = [0.0, 0.0, 0.0]
-        y_offset = 16.0/255.0 if range_type.lower() == 'limited' else 0.0
-        c_offset = 128.0/255.0  # For both Cb and Cr
+        y_offset = 16.0 / 255.0 if range_type.lower() == 'limited' else 0.0
+        c_offset = 128.0 / 255.0  # For both Cb and Cr
         post_offsets = [y_offset, c_offset, c_offset]
 
         in_channels = ['R', 'G', 'B']
@@ -234,22 +234,22 @@ def format_output_text(conversion_data):
     """Format conversion data as human-readable text."""
     result = 'Matrix:\n'
     for i, row in enumerate(conversion_data['matrix']):
-        result += f"  {conversion_data['out_channels'][i]} = "
+        result += f'  {conversion_data["out_channels"][i]} = '
         terms = []
         for j, val in enumerate(row):
             if val != 0:
-                terms.append(f"{val:.6f}*{conversion_data['in_channels'][j]}")
+                terms.append(f'{val:.6f}*{conversion_data["in_channels"][j]}')
         result += ' + '.join(terms) + '\n'
 
     result += '\nPre-offsets (applied to input):\n'
     for i, offset in enumerate(conversion_data['pre_offsets']):
         if offset != 0:
-            result += f"  {conversion_data['in_channels'][i]}: {offset:.6f}\n"
+            result += f'  {conversion_data["in_channels"][i]}: {offset:.6f}\n'
 
     result += '\nPost-offsets (applied to output):\n'
     for i, offset in enumerate(conversion_data['post_offsets']):
         if offset != 0:
-            result += f"  {conversion_data['out_channels'][i]}: {offset:.6f}\n"
+            result += f'  {conversion_data["out_channels"][i]}: {offset:.6f}\n'
 
     return result
 
@@ -262,31 +262,31 @@ def format_output_test(conversion_data):
     if conversion_data['direction'] == 'rgb2yuv':
         # Define test colors in RGB (8-bit integers 0-255)
         input_colors = {
-            'Black':  [  0,   0,   0],
-            'White':  [255, 255, 255],
-            'Red':    [255,   0,   0],
-            'Green':  [  0, 255,   0],
-            'Blue':   [  0,   0, 255],
-            'Gray50': [128, 128, 128]
+            'Black': [0, 0, 0],
+            'White': [255, 255, 255],
+            'Red': [255, 0, 0],
+            'Green': [0, 255, 0],
+            'Blue': [0, 0, 255],
+            'Gray50': [128, 128, 128],
         }
     else:
         # Define test colors in YCbCr
         if conversion_data['range'] == 'full':
             input_colors = {
-                'Black':  [  0, 128, 128],
-                'White':  [255, 128, 128],
-                'Red':    [ 76,  85, 255],
-                'Green':  [150,  44,  21],
-                'Blue':   [ 29, 255, 107],
+                'Black': [0, 128, 128],
+                'White': [255, 128, 128],
+                'Red': [76, 85, 255],
+                'Green': [150, 44, 21],
+                'Blue': [29, 255, 107],
                 'Gray50': [128, 128, 128],
             }
         else:
             input_colors = {
-                'Black':  [ 16, 128, 128],
-                'White':  [235, 128, 128],
-                'Red':    [ 81,  90, 240],
-                'Green':  [145,  54,  34],
-                'Blue':   [ 41, 240, 110],
+                'Black': [16, 128, 128],
+                'White': [235, 128, 128],
+                'Red': [81, 90, 240],
+                'Green': [145, 54, 34],
+                'Blue': [41, 240, 110],
                 'Gray50': [126, 128, 128],
             }
 

@@ -20,12 +20,14 @@ def bgr888_to_pix(rgb: npt.NDArray[np.uint8]) -> QtGui.QPixmap:
 
     w = rgb.shape[1]
     h = rgb.shape[0]
-    qim = QtGui.QImage(rgb, w, h, QtGui.QImage.Format.Format_RGB888) # pylint: disable=no-member # type: ignore
+    qim = QtGui.QImage(rgb, w, h, QtGui.QImage.Format.Format_RGB888)  # pylint: disable=no-member # type: ignore
     pix = QtGui.QPixmap.fromImage(qim)
     return pix
 
 
-def buffer_to_pix(fmt: PixelFormat, w: int, h: int, bytesperline: int, buffer, options: None | dict = None) -> QtGui.QPixmap:
+def buffer_to_pix(
+    fmt: PixelFormat, w: int, h: int, bytesperline: int, buffer, options: None | dict = None
+) -> QtGui.QPixmap:
     if fmt == PixelFormats.MJPEG:
         pix = QtGui.QPixmap(w, h)
         pix.loadFromData(buffer)
