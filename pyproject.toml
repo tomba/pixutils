@@ -32,7 +32,7 @@ Repository = 'https://github.com/tomba/pixutils.git'
 [project.optional-dependencies]
 conv = ['numpy', 'numba', 'opencv-python']
 pixpat = ['pixpat @ git+https://github.com/tomba/pixpat.git@v1.0']
-qt = ['PyQt6']
+qt = ['PyQt6', 'pyqtgraph']
 png = ['Pillow']
 test = ['pytest']
 all = [
@@ -43,6 +43,7 @@ all = [
   'PyQt6',
   'Pillow',
   'pytest',
+  'pyqtgraph'
 ]
 
 [tool.ruff]
