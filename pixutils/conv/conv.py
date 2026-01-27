@@ -70,7 +70,7 @@ def to_bgr888(
         if backend == 'opencv':
             from .opencv import opencv_to_bgr888
 
-            result = opencv_to_bgr888(fmt, width, height, arr, options)
+            result = opencv_to_bgr888(fmt, width, height, bytesperline, arr, options)
             if result is not None:
                 return result
             # opencv couldn't handle this format/options, try next backend

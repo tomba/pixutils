@@ -61,7 +61,12 @@ def _can_use_opencv_rgb(fmt: PixelFormat) -> bool:
 
 
 def opencv_to_bgr888(
-    fmt: PixelFormat, width: int, height: int, arr: npt.NDArray[np.uint8], options: dict | None
+    fmt: PixelFormat,
+    width: int,
+    height: int,
+    bytesperline: int,
+    arr: npt.NDArray[np.uint8],
+    options: dict | None,
 ) -> npt.NDArray[np.uint8] | None:
     if fmt.color == PixelColorEncoding.YUV:
         if not _can_use_opencv_yuv(fmt, options):
@@ -78,4 +83,4 @@ def opencv_to_bgr888(
     # Import and call implementation only if format is supported
     from .opencv_impl import opencv_convert
 
-    return opencv_convert(fmt, width, height, arr)
+    return opencv_convert(fmt, width, height, bytesperline, arr)
