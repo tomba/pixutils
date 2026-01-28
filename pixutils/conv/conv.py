@@ -120,6 +120,10 @@ def buffer_to_bgr888(
 
     Returns:
         Numpy array containing the image in BGR888 format
+
+    TODO:
+        3.12+ supports collections.abc.Buffer which could be used for the input
+        buffer
     """
 
     arr = np.frombuffer(buffer, dtype=np.uint8)
