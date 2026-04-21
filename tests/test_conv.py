@@ -195,6 +195,24 @@ def save_test_data():
                 gz.write(rgb_buf.tobytes())
 
 
+PADDING_BYTES = 128
+
+
+def _make_padded_buf(fmt: PixelFormat, base_buf: np.ndarray) -> np.ndarray:
+    buf_u8 = np.ascontiguousarray(base_buf).view(np.uint8)
+    planes = []
+    offset = 0
+    for i in range(len(fmt.planes)):
+        stride = fmt.stride(WIDTH, i)
+        plane_size = fmt.planesize(stride, HEIGHT, i)
+        plane_height = plane_size // stride
+        rows = buf_u8[offset : offset + plane_size].reshape((plane_height, stride))
+        padding = np.zeros((plane_height, PADDING_BYTES), dtype=np.uint8)
+        planes.append(np.hstack([rows, padding]).ravel())
+        offset += plane_size
+    return np.ascontiguousarray(np.concatenate(planes))
+
+
 class TestConv(unittest.TestCase):
     # Test functions added dynamically below
     pass
@@ -234,6 +252,54 @@ def create_test_functions():
 
 
 create_test_functions()
+
+
+class TestConvStride(unittest.TestCase):
+    # Test functions added dynamically below
+    pass
+
+
+def create_stride_test_function(test_case, padded: bool):
+    def test_function(self):
+        fmt = test_case.pixel_format
+        base_buf = generate_test_buffer(fmt)
+
+        if len(fmt.planes) == 1:
+            stride = fmt.stride(WIDTH, 0)
+            bpl: int | tuple[int, ...] = stride + PADDING_BYTES if padded else stride
+        else:
+            bpl = (
+                tuple(fmt.stride(WIDTH, i) + PADDING_BYTES for i in range(len(fmt.planes)))
+                if padded
+                else tuple(fmt.stride(WIDTH, i) for i in range(len(fmt.planes)))
+            )
+
+        test_buf = _make_padded_buf(fmt, base_buf) if padded else base_buf
+
+        try:
+            rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, bpl, test_buf, test_case.options)
+        except ValueError as e:
+            if str(e) == 'No backends available':
+                self.skipTest('No backend available')
+            raise
+
+        rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
+        self.assertEqual(
+            rgb_sha, test_case.rgb_sha, f'SHA mismatch for {test_case.description} stride={bpl}'
+        )
+
+    return test_function
+
+
+def create_stride_test_functions():
+    for test_case in FMTS:
+        for padded in [False, True]:
+            suffix = 'padded' if padded else 'exact'
+            name = f'test_conv_stride_{suffix}_{test_case.description}'
+            setattr(TestConvStride, name, create_stride_test_function(test_case, padded))
+
+
+create_stride_test_functions()
 
 
 def main():
