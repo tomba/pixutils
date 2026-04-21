@@ -22,10 +22,10 @@ BACKENDS = ['opencv', 'numba', 'numpy']
 def get_bit_mask(fmt: PixelFormat):
     """Returns (dtype, mask) tuple for masking padding bits, or None if no masking needed."""
     # RAW 10-bit formats (SRGGB10, SBGGR10, SGRBG10, SGBRG10)
-    if fmt.name.endswith('10') and fmt.color == PixelColorEncoding.RAW and not fmt.packed:
+    if fmt.name.endswith('10') and fmt.color == PixelColorEncoding.RAW and not fmt.csi2_packed:
         return (np.uint16, (1 << 10) - 1)
     # RAW 12-bit formats (SRGGB12, SBGGR12, SGRBG12, SGBRG12)
-    elif fmt.name.endswith('12') and fmt.color == PixelColorEncoding.RAW and not fmt.packed:
+    elif fmt.name.endswith('12') and fmt.color == PixelColorEncoding.RAW and not fmt.csi2_packed:
         return (np.uint16, (1 << 12) - 1)
     # XBGR8888, XRGB8888 formats - mask out alpha channel
     elif fmt.name in ('XBGR8888', 'XRGB8888'):

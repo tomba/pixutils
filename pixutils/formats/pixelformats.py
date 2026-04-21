@@ -39,7 +39,7 @@ class PixelFormat:
         v4l2_fourcc: None | str,
         libcamera_name: None | str,
         colorencoding: PixelColorEncoding,
-        packed: bool,
+        csi2_packed: bool,
         pixel_align: tuple[int, int],
         planes,
     ) -> None:
@@ -48,7 +48,7 @@ class PixelFormat:
         self.v4l2_fourcc = str_to_fourcc(v4l2_fourcc) if v4l2_fourcc else None
         self.libcamera_name = libcamera_name
         self.color = colorencoding
-        self.packed = packed
+        self.csi2_packed = csi2_packed
         # pixel alignment (width, height)
         self.pixel_align = pixel_align
 
