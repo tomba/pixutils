@@ -51,20 +51,13 @@ class RawFormat:
     @classmethod
     def from_pixelformat(cls, fmt: PixelFormat):
         """Parse a PixelFormat into raw format configuration"""
-        name = fmt.name
         pattern = fmt.bayer_pattern
         assert pattern is not None
-        is_packed = name.endswith('P')
-
-        if is_packed:
-            bpp = int(name[5:-1])  # Remove 'P' for packed formats
-        else:
-            bpp = int(name[5:])  # Direct BPP value
 
         return cls(
             bayer_pattern=BayerPattern.from_pattern(pattern),
-            bits_per_pixel=bpp,
-            is_packed=is_packed,
+            bits_per_pixel=fmt.raw_bitspp,
+            is_packed=fmt.csi2_packed,
         )
 
 
