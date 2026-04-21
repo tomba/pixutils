@@ -14,6 +14,9 @@ from pixutils.formats import PixelFormat
 def strip_padding(
     data: npt.NDArray[np.uint8], height: int, strides: tuple[int, ...], fmt: PixelFormat, width: int
 ) -> npt.NDArray[np.uint8]:
+    if all(strides[i] == fmt.stride(width, i) for i in range(len(fmt.planes))):
+        return data
+
     planes = []
     offset = 0
     for i, plane in enumerate(fmt.planes):

@@ -7,11 +7,14 @@ import numpy as np
 import numpy.typing as npt
 
 from pixutils.formats import PixelFormat, PixelFormats
+from .utils import strip_padding
 
 
 def rgb_to_bgr888(
     fmt: PixelFormat, w: int, h: int, strides: tuple[int, ...], data: npt.NDArray[np.uint8]
 ) -> npt.NDArray[np.uint8]:
+    data = strip_padding(data, h, strides, fmt, w)
+
     if fmt == PixelFormats.RGB888:
         rgb = data.reshape((h, w, 3))
         rgb = np.flip(rgb, axis=2)  # Flip the components

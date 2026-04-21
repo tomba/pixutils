@@ -11,6 +11,7 @@ import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
 
 from pixutils.formats import PixelFormat, PixelColorEncoding
+from .utils import strip_padding
 
 __all__ = ['opencv_convert']
 
@@ -136,6 +137,9 @@ def opencv_convert(
     stride = bytesperline if bytesperline > 0 else fmt.stride(width, 0)
 
     if fmt.color == PixelColorEncoding.YUV:
+        if len(fmt.planes) > 1:
+            arr = strip_padding(arr, height, strides, fmt, width)
+            stride = fmt.stride(width, 0)
         return _convert_yuv(fmt, width, height, stride, arr)
 
     if fmt.color == PixelColorEncoding.RAW:

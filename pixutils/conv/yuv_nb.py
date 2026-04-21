@@ -10,6 +10,7 @@ import numpy.typing as npt
 from numba import njit  # type: ignore[import-not-found]
 
 from pixutils.conv.yuv import _get_conversion_matrix
+from pixutils.conv.utils import strip_padding
 from pixutils.formats import PixelFormat, PixelFormats
 
 __all__ = ['yuv_to_bgr888_nb']
@@ -193,6 +194,8 @@ def yuv_to_bgr888_nb(
     options: dict | None,
 ) -> npt.NDArray[np.uint8]:
     """Entry point for numba YUV conversions."""
+    arr = strip_padding(arr, h, strides, fmt, w)
+
     offset, matrix = _get_conversion_matrix(options)
 
     if fmt == PixelFormats.YUYV:
