@@ -7,6 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 from pixutils.formats import PixelFormat, PixelFormats
+from .utils import strip_padding
 
 # Generated with './utils/gen-csc.py --format python --transpose'
 
@@ -170,6 +171,8 @@ def yuv_to_bgr888(
     fmt: PixelFormat,
     options: dict | None,
 ) -> npt.NDArray[np.uint8]:
+    arr = strip_padding(arr, h, strides, fmt, w)
+
     if fmt == PixelFormats.Y8:
         return y8_to_bgr888(arr, w, h, options)
 
