@@ -10,7 +10,7 @@ from pixutils.formats import PixelFormat, PixelFormats
 
 
 def rgb_to_bgr888(
-    fmt: PixelFormat, w: int, h: int, data: npt.NDArray[np.uint8]
+    fmt: PixelFormat, w: int, h: int, strides: tuple[int, ...], data: npt.NDArray[np.uint8]
 ) -> npt.NDArray[np.uint8]:
     if fmt == PixelFormats.RGB888:
         rgb = data.reshape((h, w, 3))

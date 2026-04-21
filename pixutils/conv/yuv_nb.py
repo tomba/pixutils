@@ -185,7 +185,12 @@ def _nv12_to_bgr888_nb(
 
 
 def yuv_to_bgr888_nb(
-    arr: npt.NDArray[np.uint8], w: int, h: int, fmt: PixelFormat, options: dict | None
+    arr: npt.NDArray[np.uint8],
+    w: int,
+    h: int,
+    strides: tuple[int, ...],
+    fmt: PixelFormat,
+    options: dict | None,
 ) -> npt.NDArray[np.uint8]:
     """Entry point for numba YUV conversions."""
     offset, matrix = _get_conversion_matrix(options)
