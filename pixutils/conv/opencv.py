@@ -43,7 +43,7 @@ def _can_use_opencv_yuv(fmt: PixelFormat, options: dict | None) -> bool:
 
 def _can_use_opencv_raw(fmt: PixelFormat, options: dict | None) -> bool:
     # Only unpacked formats are supported (not packed 10P/12P)
-    if fmt.packed:
+    if fmt.csi2_packed:
         return False
 
     # Only use OpenCV if demosaic_method is 'opencv' or not specified
