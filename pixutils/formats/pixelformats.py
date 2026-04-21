@@ -80,6 +80,15 @@ class PixelFormat:
             return None
         return self.name[1:5]
 
+    @property
+    def raw_bitspp(self) -> int:
+        """Returns bits-per-pixel for RAW formats."""
+        assert self.color == PixelColorEncoding.RAW
+        name = self.name
+        if name.endswith('P'):
+            return int(name[5:-1])
+        return int(name[5:])
+
     def stride(self, width: int, plane: int = 0, align=1):
         if plane >= len(self.planes):
             raise RuntimeError()
