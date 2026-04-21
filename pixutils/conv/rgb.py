@@ -5,32 +5,33 @@ from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
+from numpy.lib.stride_tricks import as_strided
 
 from pixutils.formats import PixelFormat, PixelFormats
-from .utils import strip_padding
 
 
 def rgb_to_bgr888(
     fmt: PixelFormat, w: int, h: int, strides: tuple[int, ...], data: npt.NDArray[np.uint8]
 ) -> npt.NDArray[np.uint8]:
-    data = strip_padding(data, h, strides, fmt, w)
+    stride = strides[0]
 
     if fmt == PixelFormats.RGB888:
-        rgb = data.reshape((h, w, 3))
-        rgb = np.flip(rgb, axis=2)  # Flip the components
+        rgb = as_strided(data, shape=(h, w, 3), strides=(stride, 3, 1), writeable=False)
+        rgb = np.flip(rgb, axis=2)
     elif fmt == PixelFormats.BGR888:
-        rgb = data.reshape((h, w, 3))
+        rgb = as_strided(data, shape=(h, w, 3), strides=(stride, 3, 1), writeable=False)
+        rgb = rgb.copy()
     elif fmt in [PixelFormats.ARGB8888, PixelFormats.XRGB8888]:
-        rgb = data.reshape((h, w, 4))
+        rgb = as_strided(data, shape=(h, w, 4), strides=(stride, 4, 1), writeable=False)
         rgb = np.delete(rgb, np.s_[3::4], axis=2)  # drop alpha component
-        rgb = np.flip(rgb, axis=2)  # Flip the components
+        rgb = np.flip(rgb, axis=2)
     elif fmt in [PixelFormats.ABGR8888, PixelFormats.XBGR8888]:
-        rgb = data.reshape((h, w, 4))
+        rgb = as_strided(data, shape=(h, w, 4), strides=(stride, 4, 1), writeable=False)
         rgb = np.delete(rgb, np.s_[3::4], axis=2)  # drop alpha component
     elif fmt == PixelFormats.XBGR2101010:
-        rgb = data.reshape((h, w * 4))  # .astype(np.uint16)
-
-        v = rgb.view(np.dtype('<u4'))
+        v = as_strided(
+            data.view(np.dtype('<u4')), shape=(h, w), strides=(stride, 4), writeable=False
+        )
 
         output = np.zeros((h, w, 3), dtype=np.uint16)
 

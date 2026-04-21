@@ -5,9 +5,9 @@ from __future__ import annotations
 
 import numpy as np
 import numpy.typing as npt
+from numpy.lib.stride_tricks import as_strided
 
 from pixutils.formats import PixelFormat, PixelFormats
-from .utils import strip_padding
 
 # Generated with './utils/gen-csc.py --format python --transpose'
 
@@ -96,10 +96,9 @@ def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options: dict | None) -> npt.NDA
 
 
 def yuyv_to_bgr888(
-    data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None
+    data: npt.NDArray[np.uint8], w: int, h: int, stride: int, options: dict | None
 ) -> npt.NDArray[np.uint8]:
-    # YUV422
-    yuyv = data.reshape((h, w // 2 * 4))
+    yuyv = as_strided(data, shape=(h, w // 2 * 4), strides=(stride, 1), writeable=False)
 
     # YUV444
     yuv = np.empty((h, w, 3), dtype=np.uint8)
@@ -111,10 +110,9 @@ def yuyv_to_bgr888(
 
 
 def uyvy_to_bgr888(
-    data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None
+    data: npt.NDArray[np.uint8], w: int, h: int, stride: int, options: dict | None
 ) -> npt.NDArray[np.uint8]:
-    # YUV422
-    yuyv = data.reshape((h, w // 2 * 4))
+    yuyv = as_strided(data, shape=(h, w // 2 * 4), strides=(stride, 1), writeable=False)
 
     # YUV444
     yuv = np.empty((h, w, 3), dtype=np.uint8)
@@ -126,13 +124,12 @@ def uyvy_to_bgr888(
 
 
 def nv12_to_bgr888(
-    data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None
+    data: npt.NDArray[np.uint8], w: int, h: int, y_stride: int, uv_stride: int, options: dict | None
 ) -> npt.NDArray[np.uint8]:
-    plane1 = data[: w * h]
-    plane2 = data[w * h :]
-
-    y = plane1.reshape((h, w))
-    uv = plane2.reshape((h // 2, w // 2, 2))
+    y = as_strided(data, shape=(h, w), strides=(y_stride, 1), writeable=False)
+    uv = as_strided(
+        data[y_stride * h :], shape=(h // 2, w // 2, 2), strides=(uv_stride, 2, 1), writeable=False
+    )
 
     # YUV444
     yuv = np.empty((h, w, 3), dtype=np.uint8)
@@ -144,11 +141,11 @@ def nv12_to_bgr888(
 
 
 def y8_to_bgr888(
-    data: npt.NDArray[np.uint8], w: int, h: int, options: dict | None
+    data: npt.NDArray[np.uint8], w: int, h: int, stride: int, options: dict | None
 ) -> npt.NDArray[np.uint8]:
     color_range = options.get('range', 'full') if options else 'full'
 
-    y = data.reshape((h, w))
+    y = as_strided(data, shape=(h, w), strides=(stride, 1), writeable=False)
 
     if color_range == 'limited':
         # Convert from limited range (16-235) to full range (0-255)
@@ -171,18 +168,16 @@ def yuv_to_bgr888(
     fmt: PixelFormat,
     options: dict | None,
 ) -> npt.NDArray[np.uint8]:
-    arr = strip_padding(arr, h, strides, fmt, w)
-
     if fmt == PixelFormats.Y8:
-        return y8_to_bgr888(arr, w, h, options)
+        return y8_to_bgr888(arr, w, h, strides[0], options)
 
     if fmt == PixelFormats.YUYV:
-        return yuyv_to_bgr888(arr, w, h, options)
+        return yuyv_to_bgr888(arr, w, h, strides[0], options)
 
     if fmt == PixelFormats.UYVY:
-        return uyvy_to_bgr888(arr, w, h, options)
+        return uyvy_to_bgr888(arr, w, h, strides[0], options)
 
     if fmt == PixelFormats.NV12:
-        return nv12_to_bgr888(arr, w, h, options)
+        return nv12_to_bgr888(arr, w, h, strides[0], strides[1], options)
 
     raise RuntimeError(f'Unsupported YUV format {fmt}')
