@@ -48,7 +48,7 @@ YUV_FORMAT_MAP: dict[str, int] = {
 
 
 def _convert_yuv(
-    fmt: PixelFormat, width: int, height: int, stride: int, arr: npt.NDArray[np.uint8]
+    fmt: PixelFormat, width: int, height: int, strides: tuple[int, ...], arr: npt.NDArray[np.uint8]
 ) -> npt.NDArray[np.uint8]:
     cv_code = YUV_FORMAT_MAP[fmt.name]
 
@@ -61,12 +61,13 @@ def _convert_yuv(
         reshaped = as_strided(
             arr,
             shape=(height, width, bytes_per_pixel),
-            strides=(stride, bytes_per_pixel, 1),
+            strides=(strides[0], bytes_per_pixel, 1),
             writeable=False,
         )
     else:
         # Multi-plane formats (NV12, NV21)
         # OpenCV expects concatenated layout: (h * 3/2, w)
+        arr = strip_padding(arr, height, strides, fmt, width)
         reshaped = arr.reshape(height * 3 // 2, width)
 
     return cast(npt.NDArray[np.uint8], cv2.cvtColor(reshaped, cv_code))
@@ -133,19 +134,13 @@ def _convert_raw(
 def opencv_convert(
     fmt: PixelFormat, width: int, height: int, strides: tuple[int, ...], arr: npt.NDArray[np.uint8]
 ) -> npt.NDArray[np.uint8] | None:
-    bytesperline = strides[0]
-    stride = bytesperline if bytesperline > 0 else fmt.stride(width, 0)
-
     if fmt.color == PixelColorEncoding.YUV:
-        if len(fmt.planes) > 1:
-            arr = strip_padding(arr, height, strides, fmt, width)
-            stride = fmt.stride(width, 0)
-        return _convert_yuv(fmt, width, height, stride, arr)
+        return _convert_yuv(fmt, width, height, strides, arr)
 
     if fmt.color == PixelColorEncoding.RAW:
-        return _convert_raw(fmt, width, height, stride, arr)
+        return _convert_raw(fmt, width, height, strides[0], arr)
 
     if fmt.color == PixelColorEncoding.RGB:
-        return _convert_rgb(fmt, width, height, stride, arr)
+        return _convert_rgb(fmt, width, height, strides[0], arr)
 
     return None
