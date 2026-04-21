@@ -130,8 +130,9 @@ def _convert_raw(
 
 
 def opencv_convert(
-    fmt: PixelFormat, width: int, height: int, bytesperline: int, arr: npt.NDArray[np.uint8]
+    fmt: PixelFormat, width: int, height: int, strides: tuple[int, ...], arr: npt.NDArray[np.uint8]
 ) -> npt.NDArray[np.uint8] | None:
+    bytesperline = strides[0]
     stride = bytesperline if bytesperline > 0 else fmt.stride(width, 0)
 
     if fmt.color == PixelColorEncoding.YUV:

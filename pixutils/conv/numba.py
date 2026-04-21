@@ -31,7 +31,7 @@ def numba_to_bgr888(
     fmt: PixelFormat,
     width: int,
     height: int,
-    bytesperline: int,
+    strides: tuple[int, ...],
     arr: npt.NDArray[np.uint8],
     options: dict | None,
 ) -> npt.NDArray[np.uint8] | None:
@@ -42,14 +42,14 @@ def numba_to_bgr888(
             return None
         from .yuv_nb import yuv_to_bgr888_nb
 
-        return yuv_to_bgr888_nb(arr, width, height, fmt, options)
+        return yuv_to_bgr888_nb(arr, width, height, strides, fmt, options)
 
     if fmt.color == PixelColorEncoding.RAW:
         if not _can_use_numba_raw(fmt, options):
             return None
         from .raw_nb import raw_to_bgr888_nb
 
-        return raw_to_bgr888_nb(arr, width, height, bytesperline, fmt, options)
+        return raw_to_bgr888_nb(arr, width, height, strides, fmt, options)
 
     # RGB has no numba implementation (numpy is fast enough)
     return None

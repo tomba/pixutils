@@ -361,11 +361,12 @@ def raw_to_bgr888_nb(
     data: npt.NDArray[np.uint8],
     width: int,
     height: int,
-    bytesperline: int,
+    strides: tuple[int, ...],
     fmt: PixelFormat,
     options: None | dict = None,
 ) -> npt.NDArray[np.uint8]:
     """Entry point for numba RAW conversions."""
+    bytesperline = strides[0]
     # Parse the format
     raw_fmt = RawFormat.from_pixelformat(fmt)
 

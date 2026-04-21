@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
+
 import numpy as np
 import numpy.typing as npt
 
@@ -18,7 +20,7 @@ def to_bgr888(
     fmt: PixelFormat,
     width: int,
     height: int,
-    bytesperline: int,
+    bytesperline: int | Sequence[int],
     arr: npt.NDArray[np.uint8],
     options: None | dict = None,
 ) -> npt.NDArray[np.uint8]:
@@ -29,7 +31,8 @@ def to_bgr888(
         fmt: The pixel format of the input data
         width: Width of the image in pixels
         height: Height of the image in pixels
-        bytesperline: Number of bytes per line in the input data or 0 for no padding
+        bytesperline: Bytes per line, either a single int (0 for no padding) or a
+            sequence of ints with one value per plane for multiplane formats
         arr: Numpy array containing the pixel data
         options: Optional dictionary with conversion options:
             - backends: List of backends in priority order, e.g. ['opencv', 'numba']
@@ -41,26 +44,38 @@ def to_bgr888(
         Numpy array containing the image in BGR888 format
     """
 
+    # Normalize bytesperline to a per-plane tuple of concrete (non-zero) strides
+    if isinstance(bytesperline, int):
+        if len(fmt.planes) > 1 and bytesperline != 0:
+            raise ValueError('Multiplane formats require a sequence of strides or 0 for no padding')
+        strides = tuple(
+            bytesperline if bytesperline != 0 else fmt.stride(width, i)
+            for i in range(len(fmt.planes))
+        )
+    else:
+        if len(bytesperline) != len(fmt.planes):
+            raise ValueError(
+                f'Strides sequence length {len(bytesperline)} does not match number of planes {len(fmt.planes)}'
+            )
+        if any(s == 0 for s in bytesperline):
+            raise ValueError('Strides sequence must contain non-zero stride for each plane')
+        strides = tuple(bytesperline)
+
     # Get list of backends to try
     backends = get_backends(options.get('backends') if options else None)
     if not backends:
         raise ValueError('No backends available')
 
-    # The function API is broken for multiplane formats. Catch the problematic
-    # ones with assert for now
-    assert len(fmt.planes) == 1 or bytesperline == 0
-
     size = 0
 
-    for i, plane in enumerate(fmt.planes):
-        if bytesperline > 0 and bytesperline < fmt.stride(width, i):
+    for i in range(len(fmt.planes)):
+        if strides[i] < fmt.stride(width, i):
             raise ValueError('bytesperline is too small')
 
-        stride = bytesperline if bytesperline > 0 else fmt.stride(width, i)
-        if arr.size < fmt.planesize(stride, height, i):
+        if arr.size < fmt.planesize(strides[i], height, i):
             raise ValueError('Input array is too small')
 
-        size += stride * height
+        size += fmt.planesize(strides[i], height, i)
 
     # Get a view for the actual data
     arr = arr[:size]
@@ -70,7 +85,7 @@ def to_bgr888(
         if backend == 'opencv':
             from .opencv import opencv_to_bgr888
 
-            result = opencv_to_bgr888(fmt, width, height, bytesperline, arr, options)
+            result = opencv_to_bgr888(fmt, width, height, strides, arr, options)
             if result is not None:
                 return result
             # opencv couldn't handle this format/options, try next backend
@@ -78,18 +93,18 @@ def to_bgr888(
         elif backend == 'numba':
             from .numba import numba_to_bgr888
 
-            result = numba_to_bgr888(fmt, width, height, bytesperline, arr, options)
+            result = numba_to_bgr888(fmt, width, height, strides, arr, options)
             if result is not None:
                 return result
         elif backend == 'numpy':
             if fmt.color == PixelColorEncoding.YUV:
-                return yuv_to_bgr888(arr, width, height, fmt, options)
+                return yuv_to_bgr888(arr, width, height, strides, fmt, options)
 
             if fmt.color == PixelColorEncoding.RAW:
-                return raw_to_bgr888(arr, width, height, bytesperline, fmt, options)
+                return raw_to_bgr888(arr, width, height, strides, fmt, options)
 
             if fmt.color == PixelColorEncoding.RGB:
-                return rgb_to_bgr888(fmt, width, height, arr)
+                return rgb_to_bgr888(fmt, width, height, strides, arr)
 
             raise ValueError(f'Unsupported format {fmt}')
 
@@ -100,7 +115,7 @@ def buffer_to_bgr888(
     fmt: PixelFormat,
     width: int,
     height: int,
-    bytesperline: int,
+    bytesperline: int | Sequence[int],
     buffer,
     options: None | dict = None,
 ) -> npt.NDArray[np.uint8]:
@@ -114,7 +129,8 @@ def buffer_to_bgr888(
         fmt: The pixel format of the input data
         width: Width of the image in pixels
         height: Height of the image in pixels
-        bytesperline: Number of bytes per line in the input data or 0 for no padding
+        bytesperline: Bytes per line, either a single int (0 for no padding) or a
+            list of ints with one value per plane for multiplane formats
         buffer: Buffer-like object containing the pixel data
         options: Optional dictionary with conversion options
 

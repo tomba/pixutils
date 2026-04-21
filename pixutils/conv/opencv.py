@@ -64,7 +64,7 @@ def opencv_to_bgr888(
     fmt: PixelFormat,
     width: int,
     height: int,
-    bytesperline: int,
+    strides: tuple[int, ...],
     arr: npt.NDArray[np.uint8],
     options: dict | None,
 ) -> npt.NDArray[np.uint8] | None:
@@ -83,4 +83,4 @@ def opencv_to_bgr888(
     # Import and call implementation only if format is supported
     from .opencv_impl import opencv_convert
 
-    return opencv_convert(fmt, width, height, bytesperline, arr)
+    return opencv_convert(fmt, width, height, strides, arr)

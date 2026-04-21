@@ -163,7 +163,12 @@ def y8_to_bgr888(
 
 
 def yuv_to_bgr888(
-    arr: npt.NDArray[np.uint8], w: int, h: int, fmt: PixelFormat, options: dict | None
+    arr: npt.NDArray[np.uint8],
+    w: int,
+    h: int,
+    strides: tuple[int, ...],
+    fmt: PixelFormat,
+    options: dict | None,
 ) -> npt.NDArray[np.uint8]:
     if fmt == PixelFormats.Y8:
         return y8_to_bgr888(arr, w, h, options)
