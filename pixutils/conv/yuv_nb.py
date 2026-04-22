@@ -185,6 +185,61 @@ def _nv12_to_bgr888_nb(
     return rgb
 
 
+@njit(cache=True)
+def _nv16_to_bgr888_nb(
+    data: npt.NDArray[np.uint8],
+    width: int,
+    height: int,
+    y_stride: int,
+    uv_stride: int,
+    offset_y: float,
+    offset_u: float,
+    offset_v: float,
+    m00: float,
+    m01: float,
+    m02: float,
+    m10: float,
+    m11: float,
+    m12: float,
+    m20: float,
+    m21: float,
+    m22: float,
+) -> npt.NDArray[np.uint8]:
+    """JIT-compiled NV16 to BGR conversion with custom chroma upsampling"""
+    rgb = np.empty((height, width, 3), dtype=np.uint8)
+
+    # NV16 layout: Y plane followed by interleaved UV plane (4:2:2)
+    y_plane_offset = y_stride * height
+
+    for y in range(height):
+        for x in range(width):
+            y_val = data[y * y_stride + x]
+
+            # Get UV values from chroma plane (subsampled 2x horizontally only)
+            uv_x = x // 2
+            uv_idx = y_plane_offset + y * uv_stride + uv_x * 2
+
+            u = data[uv_idx + 0]
+            v = data[uv_idx + 1]
+
+            # Apply offsets
+            y_adj = y_val + offset_y
+            u_adj = u + offset_u
+            v_adj = v + offset_v
+
+            # Matrix multiplication: [Y U V] × Matrix (column-wise produces BGR)
+            b = m00 * y_adj + m10 * u_adj + m20 * v_adj
+            g = m01 * y_adj + m11 * u_adj + m21 * v_adj
+            r = m02 * y_adj + m12 * u_adj + m22 * v_adj
+
+            # Clip and store as BGR
+            rgb[y, x, 0] = max(0, min(255, int(b)))  # B
+            rgb[y, x, 1] = max(0, min(255, int(g)))  # G
+            rgb[y, x, 2] = max(0, min(255, int(r)))  # R
+
+    return rgb
+
+
 def yuv_to_bgr888_nb(
     arr: npt.NDArray[np.uint8],
     w: int,
@@ -238,6 +293,27 @@ def yuv_to_bgr888_nb(
 
     if fmt == PixelFormats.NV12:
         return _nv12_to_bgr888_nb(
+            arr,
+            w,
+            h,
+            strides[0],
+            strides[1],
+            offset[0],
+            offset[1],
+            offset[2],
+            matrix[0][0],
+            matrix[0][1],
+            matrix[0][2],
+            matrix[1][0],
+            matrix[1][1],
+            matrix[1][2],
+            matrix[2][0],
+            matrix[2][1],
+            matrix[2][2],
+        )
+
+    if fmt == PixelFormats.NV16:
+        return _nv16_to_bgr888_nb(
             arr,
             w,
             h,
