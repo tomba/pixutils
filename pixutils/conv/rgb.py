@@ -16,35 +16,31 @@ def rgb_to_bgr888(
     stride = strides[0]
 
     if fmt == PixelFormats.RGB888:
-        rgb = as_strided(data, shape=(h, w, 3), strides=(stride, 3, 1), writeable=False)
-        rgb = np.flip(rgb, axis=2)
+        src = as_strided(data, shape=(h, w, 3), strides=(stride, 3, 1), writeable=False)
+        rgb = np.empty((h, w, 3), dtype=np.uint8)
+        rgb[..., 0] = src[..., 2]
+        rgb[..., 1] = src[..., 1]
+        rgb[..., 2] = src[..., 0]
     elif fmt == PixelFormats.BGR888:
         rgb = as_strided(data, shape=(h, w, 3), strides=(stride, 3, 1), writeable=False)
     elif fmt in [PixelFormats.ARGB8888, PixelFormats.XRGB8888]:
-        rgb = as_strided(data, shape=(h, w, 4), strides=(stride, 4, 1), writeable=False)
-        rgb = np.delete(rgb, np.s_[3::4], axis=2)  # drop alpha component
-        rgb = np.flip(rgb, axis=2)
+        src = as_strided(data, shape=(h, w, 4), strides=(stride, 4, 1), writeable=False)
+        rgb = np.empty((h, w, 3), dtype=np.uint8)
+        rgb[..., 0] = src[..., 2]
+        rgb[..., 1] = src[..., 1]
+        rgb[..., 2] = src[..., 0]
     elif fmt in [PixelFormats.ABGR8888, PixelFormats.XBGR8888]:
-        rgb = as_strided(data, shape=(h, w, 4), strides=(stride, 4, 1), writeable=False)
-        rgb = np.delete(rgb, np.s_[3::4], axis=2)  # drop alpha component
+        src = as_strided(data, shape=(h, w, 4), strides=(stride, 4, 1), writeable=False)
+        rgb = src[..., :3]
     elif fmt == PixelFormats.XBGR2101010:
         v = as_strided(
             data.view(np.dtype('<u4')), shape=(h, w), strides=(stride, 4), writeable=False
         )
 
-        output = np.zeros((h, w, 3), dtype=np.uint16)
-
-        output[:, :, 0] = v & 0x3FF  # R
-        output[:, :, 1] = (v >> 10) & 0x3FF  # G
-        output[:, :, 2] = (v >> 20) & 0x3FF  # B
-
-        rgb = output
-
-        rgb >>= 10 - 8
-        rgb = rgb.astype(np.uint8)
-
-        # rgb = np.delete(rgb, np.s_[3::4], axis=2) # drop alpha component
-        # rgb = np.flip(rgb, axis=2) # Flip the components
+        rgb = np.empty((h, w, 3), dtype=np.uint8)
+        rgb[:, :, 0] = (v >> 2) & 0xFF  # R (10-bit → 8-bit)
+        rgb[:, :, 1] = (v >> 12) & 0xFF  # G
+        rgb[:, :, 2] = (v >> 22) & 0xFF  # B
     else:
         raise RuntimeError(f'Unsupported RGB format {fmt}')
 
