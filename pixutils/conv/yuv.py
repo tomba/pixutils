@@ -138,6 +138,23 @@ def nv12_to_bgr888(
     return ycbcr_to_bgr888(yuv, options)
 
 
+def nv16_to_bgr888(
+    data: npt.NDArray[np.uint8], w: int, h: int, y_stride: int, uv_stride: int, options: dict | None
+) -> npt.NDArray[np.uint8]:
+    y = as_strided(data, shape=(h, w), strides=(y_stride, 1), writeable=False)
+    uv = as_strided(
+        data[y_stride * h :], shape=(h, w // 2, 2), strides=(uv_stride, 2, 1), writeable=False
+    )
+
+    # YUV444
+    yuv = np.empty((h, w, 3), dtype=np.uint8)
+    yuv[:, :, 0] = y[:, :]  # Y
+    yuv[:, :, 1] = uv[:, :, 0].repeat(2, axis=1)  # U
+    yuv[:, :, 2] = uv[:, :, 1].repeat(2, axis=1)  # V
+
+    return ycbcr_to_bgr888(yuv, options)
+
+
 def y8_to_bgr888(
     data: npt.NDArray[np.uint8], w: int, h: int, stride: int, options: dict | None
 ) -> npt.NDArray[np.uint8]:
@@ -177,5 +194,8 @@ def yuv_to_bgr888(
 
     if fmt == PixelFormats.NV12:
         return nv12_to_bgr888(arr, w, h, strides[0], strides[1], options)
+
+    if fmt == PixelFormats.NV16:
+        return nv16_to_bgr888(arr, w, h, strides[0], strides[1], options)
 
     raise RuntimeError(f'Unsupported YUV format {fmt}')
