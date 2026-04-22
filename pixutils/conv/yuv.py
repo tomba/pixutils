@@ -89,10 +89,8 @@ def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options: dict | None) -> npt.NDA
     m = np.array(matrix)
 
     rgb = np.dot(yuv + offset, m)
-    rgb = np.clip(rgb, 0, 255)
-    rgb = rgb.astype(np.uint8)
-
-    return rgb
+    np.clip(rgb, 0, 255, out=rgb)
+    return rgb.astype(np.uint8)
 
 
 def yuyv_to_bgr888(
