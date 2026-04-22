@@ -48,6 +48,8 @@ def to_bgr888(
         Numpy array containing the image in BGR888 format
     """
 
+    arr = np.ascontiguousarray(arr).reshape(-1).view(np.uint8)
+
     # Normalize bytesperline to a per-plane tuple of concrete (non-zero) strides
     if isinstance(bytesperline, int):
         if bytesperline == 0:
