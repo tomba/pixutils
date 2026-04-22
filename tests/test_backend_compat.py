@@ -65,12 +65,13 @@ def _format_options(fmt: PixelFormat) -> dict:
 
 
 # A small probe size used at test-discovery time to find out which backends
-# actually handle a given format. 32 is divisible by every common pixel
-# alignment (2, 4, 8, 16, 32), so almost every format accepts it. The buffer
-# is sized as 32×32 × 8 bytes/pixel × 3 planes — an upper bound over every
-# defined format at the probe dimensions. `to_bgr888` slices it down to the
-# real framesize.
-_PROBE_WIDTH = 32
+# actually handle a given format. 48 is a multiple of every width alignment
+# used by the defined formats (LCM is 12: driven by XV15/XV20 at 6 and
+# Y10_P32 at 3), and 32 is a multiple of every height alignment (LCM 2).
+# The buffer is sized as 48×32 × 8 bytes/pixel × 3 planes — an upper bound
+# over every defined format at the probe dimensions; `to_bgr888` slices it
+# down to the real framesize.
+_PROBE_WIDTH = 48
 _PROBE_HEIGHT = 32
 _PROBE_BUFFER = np.zeros(_PROBE_WIDTH * _PROBE_HEIGHT * 8 * 3, dtype=np.uint8)
 
