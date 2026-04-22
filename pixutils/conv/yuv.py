@@ -156,6 +156,42 @@ def nv_to_bgr888(
     return ycbcr_to_bgr888(yuv, options)
 
 
+def planar_yuv_to_bgr888(
+    data: npt.NDArray[np.uint8],
+    w: int,
+    h: int,
+    y_stride: int,
+    c1_stride: int,
+    c2_stride: int,
+    v_subsample: int,
+    u_first: bool,
+    options: dict | None,
+) -> npt.NDArray[np.uint8]:
+    c_h = h // v_subsample
+    c_w = w // 2
+
+    y_size = y_stride * h
+    c1_size = c1_stride * c_h
+
+    y = as_strided(data, shape=(h, w), strides=(y_stride, 1), writeable=False)
+    c1 = as_strided(data[y_size:], shape=(c_h, c_w), strides=(c1_stride, 1), writeable=False)
+    c2 = as_strided(
+        data[y_size + c1_size :], shape=(c_h, c_w), strides=(c2_stride, 1), writeable=False
+    )
+
+    u, v = (c1, c2) if u_first else (c2, c1)
+
+    yuv = np.empty((h, w, 3), dtype=np.uint8)
+    yuv[:, :, 0] = y
+    if v_subsample == 2:
+        u = u.repeat(2, axis=0)
+        v = v.repeat(2, axis=0)
+    yuv[:, :, 1] = u.repeat(2, axis=1)
+    yuv[:, :, 2] = v.repeat(2, axis=1)
+
+    return ycbcr_to_bgr888(yuv, options)
+
+
 def y8_to_bgr888(
     data: npt.NDArray[np.uint8], w: int, h: int, stride: int, options: dict | None
 ) -> npt.NDArray[np.uint8]:
@@ -204,5 +240,21 @@ def yuv_to_bgr888(
 
     if fmt == PixelFormats.NV61:
         return nv_to_bgr888(arr, w, h, strides[0], strides[1], 1, False, options)
+
+    if fmt == PixelFormats.YUV420:
+        return planar_yuv_to_bgr888(arr, w, h, strides[0], strides[1], strides[2], 2, True, options)
+
+    if fmt == PixelFormats.YVU420:
+        return planar_yuv_to_bgr888(
+            arr, w, h, strides[0], strides[1], strides[2], 2, False, options
+        )
+
+    if fmt == PixelFormats.YUV422:
+        return planar_yuv_to_bgr888(arr, w, h, strides[0], strides[1], strides[2], 1, True, options)
+
+    if fmt == PixelFormats.YVU422:
+        return planar_yuv_to_bgr888(
+            arr, w, h, strides[0], strides[1], strides[2], 1, False, options
+        )
 
     raise RuntimeError(f'Unsupported YUV format {fmt}')
