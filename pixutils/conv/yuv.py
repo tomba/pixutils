@@ -150,7 +150,7 @@ def y8_to_bgr888(
         y = np.clip((y.astype(np.float32) - 16) * 255 / 219, 0, 255).astype(np.uint8)
 
     # Create grayscale RGB (Y becomes R=G=B)
-    rgb = np.zeros((h, w, 3), dtype=np.uint8)
+    rgb = np.empty((h, w, 3), dtype=np.uint8)
     rgb[:, :, 0] = y  # B
     rgb[:, :, 1] = y  # G
     rgb[:, :, 2] = y  # R
