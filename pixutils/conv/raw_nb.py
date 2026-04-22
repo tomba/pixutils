@@ -273,12 +273,12 @@ def _compute_demosaic_planes_nb(
 
 
 def _prepare_packed_raw_nb(
-    data: npt.NDArray[np.uint8], width: int, bits_per_pixel: int, bytesperline: int
+    data: npt.NDArray[np.uint8], width: int, height: int, bits_per_pixel: int, bytesperline: int
 ) -> npt.NDArray[np.uint16]:
     """Prepare packed raw data using numba unpacking."""
     assert bits_per_pixel in [10, 12], 'Only 10 and 12 bpp are supported'
 
-    data = data.reshape((len(data) // bytesperline, bytesperline))
+    data = data.reshape((height, bytesperline))
 
     # Remove padding if present
     padded_width = width * bits_per_pixel // 8
@@ -368,7 +368,7 @@ def raw_to_bgr888_nb(
 
     # Prepare the raw data into a common 16-bit format
     if raw_fmt.is_packed:
-        arr16 = _prepare_packed_raw_nb(data, width, raw_fmt.bits_per_pixel, bytesperline)
+        arr16 = _prepare_packed_raw_nb(data, width, height, raw_fmt.bits_per_pixel, bytesperline)
     else:
         arr16 = prepare_unpacked_raw(data, width, height, raw_fmt.bits_per_pixel, bytesperline)
 

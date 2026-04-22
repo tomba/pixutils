@@ -62,11 +62,11 @@ class RawFormat:
 
 
 def prepare_packed_raw(
-    data: npt.NDArray[np.uint8], width: int, bits_per_pixel: int, bytesperline: int
+    data: npt.NDArray[np.uint8], width: int, height: int, bits_per_pixel: int, bytesperline: int
 ) -> npt.NDArray[np.uint16]:
     assert bits_per_pixel in [10, 12], 'Only 10 and 12 bpp are supported'
 
-    data = data.reshape((len(data) // bytesperline, bytesperline))
+    data = data.reshape((height, bytesperline))
 
     # Remove padding if present
     padded_width = width * bits_per_pixel // 8
@@ -102,7 +102,7 @@ def _unpack_12bit(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
 def prepare_unpacked_raw(
     data: npt.NDArray[np.uint8], width: int, height: int, bits_per_pixel: int, bytesperline: int
 ) -> npt.NDArray[np.uint16]:
-    data = data.reshape((len(data) // bytesperline, bytesperline))
+    data = data.reshape((height, bytesperline))
 
     # Remove padding if present.
     # The unpacked data is stored in 8 bits for 8bpp, and 16 bits for 10/12/16bpp.
@@ -276,7 +276,7 @@ def raw_to_bgr888(
 
     # Prepare the raw data into a common 16-bit format
     if raw_fmt.is_packed:
-        arr16 = prepare_packed_raw(data, width, raw_fmt.bits_per_pixel, bytesperline)
+        arr16 = prepare_packed_raw(data, width, height, raw_fmt.bits_per_pixel, bytesperline)
     else:
         arr16 = prepare_unpacked_raw(data, width, height, raw_fmt.bits_per_pixel, bytesperline)
 
