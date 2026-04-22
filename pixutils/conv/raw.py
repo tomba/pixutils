@@ -284,4 +284,5 @@ def raw_to_bgr888(
     rgb = demosaic(arr16, raw_fmt.bayer_pattern, options)
 
     # Convert to 8-bit BGR
-    return (rgb >> (raw_fmt.bits_per_pixel - 8)).astype(np.uint8)
+    rgb >>= raw_fmt.bits_per_pixel - 8
+    return rgb.astype(np.uint8)
