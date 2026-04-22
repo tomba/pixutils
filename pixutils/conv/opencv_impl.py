@@ -10,7 +10,7 @@ import numpy as np
 import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
 
-from pixutils.formats import PixelFormat, PixelColorEncoding
+from pixutils.formats import PixelFormat, PixelFormats, PixelColorEncoding
 from .utils import strip_padding
 
 __all__ = ['opencv_convert']
@@ -20,22 +20,6 @@ BAYER_PATTERN_MAP: dict[str, int] = {
     'BGGR': cv2.COLOR_BAYER_BG2BGR,
     'GRBG': cv2.COLOR_BAYER_GR2BGR,
     'GBRG': cv2.COLOR_BAYER_GB2BGR,
-}
-
-RGB_FORMAT_MAP: dict[str, int | None] = {
-    # 32-bit BGRA formats
-    'XRGB8888': cv2.COLOR_BGRA2BGR,
-    'BGRX8888': cv2.COLOR_BGRA2BGR,
-    'ARGB8888': cv2.COLOR_BGRA2BGR,
-    'BGRA8888': cv2.COLOR_BGRA2BGR,
-    # 32-bit RGBA formats
-    'XBGR8888': cv2.COLOR_RGBA2BGR,
-    'RGBX8888': cv2.COLOR_RGBA2BGR,
-    'ABGR8888': cv2.COLOR_RGBA2BGR,
-    'RGBA8888': cv2.COLOR_RGBA2BGR,
-    # 24-bit formats
-    'RGB888': cv2.COLOR_RGB2BGR,
-    'BGR888': None,  # Already BGR
 }
 
 YUV_FORMAT_MAP: dict[str, int] = {
@@ -76,13 +60,9 @@ def _convert_yuv(
 def _convert_rgb(
     fmt: PixelFormat, width: int, height: int, stride: int, arr: npt.NDArray[np.uint8]
 ) -> npt.NDArray[np.uint8]:
-    cv_code = RGB_FORMAT_MAP[fmt.name]
-
-    # Generic bytes_per_pixel from plane info
     plane = fmt.planes[0]
     bytes_per_pixel = plane.bytes_per_block // plane.pixels_per_block
 
-    # OpenCV requires 3D array with channel dimension
     reshaped = as_strided(
         arr,
         shape=(height, width, bytes_per_pixel),
@@ -90,10 +70,27 @@ def _convert_rgb(
         writeable=False,
     )
 
-    if cv_code is None:
-        return reshaped.copy()
+    # Note: OpenCV uses reverse channel order naming than pixutils
+    if fmt == PixelFormats.BGR888:
+        result = reshaped
+    elif fmt == PixelFormats.RGB888:
+        result = cv2.cvtColor(reshaped, cv2.COLOR_BGR2RGB)
+    elif fmt in (PixelFormats.XRGB8888, PixelFormats.ARGB8888):
+        result = cv2.cvtColor(reshaped, cv2.COLOR_BGRA2RGB)
+    elif fmt in (PixelFormats.XBGR8888, PixelFormats.ABGR8888):
+        result = cv2.cvtColor(reshaped, cv2.COLOR_RGBA2RGB)
+    elif fmt in (PixelFormats.RGBX8888, PixelFormats.RGBA8888):
+        # Rotate X/A to the end
+        rotated = reshaped[..., [1, 2, 3, 0]]
+        result = cv2.cvtColor(rotated, cv2.COLOR_BGRA2RGB)
+    elif fmt in (PixelFormats.BGRX8888, PixelFormats.BGRA8888):
+        # Rotate X/A to the end
+        rotated = reshaped[..., [1, 2, 3, 0]]
+        result = cv2.cvtColor(rotated, cv2.COLOR_RGBA2RGB)
+    else:
+        raise NotImplementedError(f'Unsupported RGB format {fmt.name}')
 
-    return cast(npt.NDArray[np.uint8], cv2.cvtColor(reshaped, cv_code))
+    return cast(npt.NDArray[np.uint8], result)
 
 
 def _convert_raw(
