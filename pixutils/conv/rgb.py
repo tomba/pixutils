@@ -20,7 +20,6 @@ def rgb_to_bgr888(
         rgb = np.flip(rgb, axis=2)
     elif fmt == PixelFormats.BGR888:
         rgb = as_strided(data, shape=(h, w, 3), strides=(stride, 3, 1), writeable=False)
-        rgb = rgb.copy()
     elif fmt in [PixelFormats.ARGB8888, PixelFormats.XRGB8888]:
         rgb = as_strided(data, shape=(h, w, 4), strides=(stride, 4, 1), writeable=False)
         rgb = np.delete(rgb, np.s_[3::4], axis=2)  # drop alpha component

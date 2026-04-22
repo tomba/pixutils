@@ -85,13 +85,14 @@ def to_bgr888(
     arr = arr[:size]
 
     # Try backends in priority order
+    result = None
     for backend in backends:
         if backend == 'opencv':
             from .opencv import opencv_to_bgr888
 
             result = opencv_to_bgr888(fmt, width, height, strides, arr, options)
             if result is not None:
-                return result
+                break
             # opencv couldn't handle this format/options, try next backend
             continue
         elif backend == 'numba':
@@ -99,20 +100,27 @@ def to_bgr888(
 
             result = numba_to_bgr888(fmt, width, height, strides, arr, options)
             if result is not None:
-                return result
+                break
         elif backend == 'numpy':
             if fmt.color == PixelColorEncoding.YUV:
-                return yuv_to_bgr888(arr, width, height, strides, fmt, options)
+                result = yuv_to_bgr888(arr, width, height, strides, fmt, options)
+            elif fmt.color == PixelColorEncoding.RAW:
+                result = raw_to_bgr888(arr, width, height, strides, fmt, options)
+            elif fmt.color == PixelColorEncoding.RGB:
+                result = rgb_to_bgr888(fmt, width, height, strides, arr)
+            else:
+                raise ValueError(f'Unsupported format {fmt}')
+            break
 
-            if fmt.color == PixelColorEncoding.RAW:
-                return raw_to_bgr888(arr, width, height, strides, fmt, options)
+    if result is None:
+        raise ValueError(f'No backend could handle {fmt.name} with given options')
 
-            if fmt.color == PixelColorEncoding.RGB:
-                return rgb_to_bgr888(fmt, width, height, strides, arr)
-
-            raise ValueError(f'Unsupported format {fmt}')
-
-    raise ValueError(f'No backend could handle {fmt.name} with given options')
+    # Backends may return a view; guarantee only that it doesn't alias the
+    # input buffer. Callers that need a specific layout can contiguify
+    # themselves.
+    if np.shares_memory(result, arr):
+        result = result.copy()
+    return result
 
 
 def buffer_to_bgr888(
