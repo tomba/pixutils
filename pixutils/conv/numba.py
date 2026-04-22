@@ -10,7 +10,7 @@ from pixutils.formats import PixelFormat, PixelColorEncoding
 
 __all__ = ['numba_to_bgr888']
 
-_SUPPORTED_YUV_FORMATS = {'YUYV', 'UYVY', 'NV12', 'NV16'}
+_SUPPORTED_YUV_FORMATS = {'YUYV', 'UYVY', 'NV12', 'NV21', 'NV16', 'NV61'}
 
 
 def _can_use_numba_yuv(fmt: PixelFormat) -> bool:
