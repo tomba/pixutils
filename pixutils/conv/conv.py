@@ -25,7 +25,38 @@ def to_bgr888(
     options: None | dict = None,
 ) -> npt.NDArray[np.uint8]:
     """
-    Convert a numpy array containing pixel data to BGR888 format.
+    Convert a numpy array containing pixel data to an 8-bit 3-channel image.
+
+    Input convention
+    ----------------
+    Input pixel formats follow the Linux DRM/V4L2 fourcc naming convention,
+    where the name describes a little-endian machine word from MSB to LSB.
+    The in-memory byte order is therefore the reverse of the name. Examples
+    (each byte listed starting at byte 0 of a pixel):
+
+    - ``RGB888``   -> B, G, R
+    - ``BGR888``   -> R, G, B
+    - ``XRGB8888`` -> B, G, R, X
+    - ``BGRX8888`` -> X, R, G, B
+    - ``ARGB8888`` -> B, G, R, A
+    - ``ABGR8888`` -> R, G, B, A
+
+    Output layout
+    -------------
+    The return value is a ``(height, width, 3)`` uint8 array. For each pixel,
+    byte 0 is R, byte 1 is G, byte 2 is B. In DRM fourcc terms this is
+    ``BGR888`` (hence the function name), so the output memory layout follows
+    the same DRM/V4L2 fourcc convention as the inputs documented above.
+
+    Other frameworks label this same ``(R, G, B)``-in-memory layout
+    differently, typically because they name formats by in-memory byte order
+    rather than by little-endian machine word: Qt calls it
+    ``QImage::Format_RGB888``, PIL calls it the ``'RGB'`` mode, V4L2 (in its
+    userspace API) calls it ``V4L2_PIX_FMT_RGB24``, and OpenCV calls it
+    ``RGB``. The result can be passed to any of these without channel
+    reordering. OpenCV's default entry points (``cv2.imread``,
+    ``cv2.imshow``, ``cv2.imwrite``) instead expect OpenCV-``BGR`` — bytes
+    ``(B, G, R)`` in memory — and therefore require a channel swap.
 
     Parameters:
         fmt: The pixel format of the input data
@@ -45,7 +76,8 @@ def to_bgr888(
             - demosaic_method: '3x3', 'bilinear', 'mosaic', or 'opencv' (for RAW formats)
 
     Returns:
-        Numpy array containing the image in BGR888 format
+        ``(height, width, 3)`` uint8 array with per-pixel bytes (R, G, B)
+        (see "Output layout" above).
     """
 
     arr = np.ascontiguousarray(arr).reshape(-1).view(np.uint8)
@@ -134,10 +166,9 @@ def buffer_to_bgr888(
     options: None | dict = None,
 ) -> npt.NDArray[np.uint8]:
     """
-    Convert a buffer-like object containing pixel data to BGR888 format.
-
-    This function accepts any Buffer-like object, converts it to a numpy array,
-    and then uses to_bgr888() to perform the conversion.
+    Convert a buffer-like object containing pixel data to an 8-bit 3-channel
+    image. Thin wrapper around :func:`to_bgr888`; see that function for input
+    format conventions and output byte layout.
 
     Parameters:
         fmt: The pixel format of the input data
@@ -150,7 +181,7 @@ def buffer_to_bgr888(
         options: Optional dictionary with conversion options
 
     Returns:
-        Numpy array containing the image in BGR888 format
+        See :func:`to_bgr888`.
 
     TODO:
         3.12+ supports collections.abc.Buffer which could be used for the input
