@@ -197,7 +197,7 @@ def yuv_to_bgr888_nb(
     strides: tuple[int, ...],
     fmt: PixelFormat,
     options: dict | None,
-) -> npt.NDArray[np.uint8]:
+) -> npt.NDArray[np.uint8] | None:
     """Entry point for numba YUV conversions."""
     offset, matrix = _get_conversion_matrix(options)
 
@@ -273,4 +273,4 @@ def yuv_to_bgr888_nb(
             matrix[2][2],
         )
 
-    raise RuntimeError(f'Unsupported YUV format {fmt}')
+    return None

@@ -221,7 +221,7 @@ def yuv_to_bgr888(
     strides: tuple[int, ...],
     fmt: PixelFormat,
     options: dict | None,
-) -> npt.NDArray[np.uint8]:
+) -> npt.NDArray[np.uint8] | None:
 
     # HACK: for backward compatibility. Drop when no external user calls this internal function.
     if isinstance(strides, int):
@@ -264,4 +264,4 @@ def yuv_to_bgr888(
             arr, w, h, strides[0], strides[1], strides[2], 1, False, options
         )
 
-    raise RuntimeError(f'Unsupported YUV format {fmt}')
+    return None

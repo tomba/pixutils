@@ -12,7 +12,7 @@ from pixutils.formats import PixelFormat, PixelFormats
 
 def rgb_to_bgr888(
     fmt: PixelFormat, w: int, h: int, strides: tuple[int, ...], data: npt.NDArray[np.uint8]
-) -> npt.NDArray[np.uint8]:
+) -> npt.NDArray[np.uint8] | None:
 
     # HACK: for backward compatibility. Drop when no external user calls this internal function.
     if isinstance(strides, int):
@@ -47,6 +47,6 @@ def rgb_to_bgr888(
         rgb[:, :, 1] = (v >> 12) & 0xFF  # G
         rgb[:, :, 2] = (v >> 22) & 0xFF  # B
     else:
-        raise RuntimeError(f'Unsupported RGB format {fmt}')
+        return None
 
     return rgb
