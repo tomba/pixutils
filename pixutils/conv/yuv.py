@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+from typing import cast
+
 import numpy as np
 import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
@@ -220,6 +222,11 @@ def yuv_to_bgr888(
     fmt: PixelFormat,
     options: dict | None,
 ) -> npt.NDArray[np.uint8]:
+
+    # HACK: for backward compatibility. Drop when no external user calls this internal function.
+    if isinstance(strides, int):
+        strides = cast('tuple[int, ...]', (strides,))
+
     if fmt == PixelFormats.Y8:
         return y8_to_bgr888(arr, w, h, strides[0], options)
 

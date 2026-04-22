@@ -13,6 +13,11 @@ from pixutils.formats import PixelFormat, PixelFormats
 def rgb_to_bgr888(
     fmt: PixelFormat, w: int, h: int, strides: tuple[int, ...], data: npt.NDArray[np.uint8]
 ) -> npt.NDArray[np.uint8]:
+
+    # HACK: for backward compatibility. Drop when no external user calls this internal function.
+    if isinstance(strides, int):
+        strides = (strides,)
+
     stride = strides[0]
 
     if fmt == PixelFormats.RGB888:

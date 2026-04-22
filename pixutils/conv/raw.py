@@ -270,6 +270,11 @@ def raw_to_bgr888(
     fmt: PixelFormat,
     options: None | dict = None,
 ) -> npt.NDArray[np.uint8]:
+
+    # HACK: for backward compatibility. Drop when no external user calls this internal function.
+    if isinstance(strides, int):
+        strides = (strides,)
+
     bytesperline = strides[0]
     # Parse the format
     raw_fmt = RawFormat.from_pixelformat(fmt)
