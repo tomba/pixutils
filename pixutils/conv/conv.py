@@ -143,11 +143,11 @@ def to_bgr888(
             elif fmt.color == PixelColorEncoding.RGB:
                 result = rgb_to_bgr888(fmt, width, height, strides, arr)
             else:
-                raise ValueError(f'Unsupported format {fmt}')
+                raise NotImplementedError(f'Unsupported format {fmt}')
             break
 
     if result is None:
-        raise ValueError(f'No backend could handle {fmt.name} with given options')
+        raise NotImplementedError(f'No backend could handle {fmt.name} with given options')
 
     # Backends may return a view; guarantee only that it doesn't alias the
     # input buffer. Callers that need a specific layout can contiguify
