@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import argparse
 import gc
+import json
+import platform
+import socket
+import subprocess
 import time
+from datetime import datetime, timezone
 
 import numpy as np
 
@@ -12,7 +17,9 @@ from pixutils.formats import PixelFormats
 from pixutils.conv import buffer_to_bgr888
 
 
-def run_one(format_name: str, args: argparse.Namespace, options: dict[str, str | list[str]]):
+def run_one(
+    format_name: str, args: argparse.Namespace, options: dict[str, str | list[str]]
+) -> dict:
     fmt = PixelFormats.find_by_name(format_name)
 
     # Drop this when stride works
@@ -57,6 +64,42 @@ def run_one(format_name: str, args: argparse.Namespace, options: dict[str, str |
         f'{iters} iters in {elapsed:.3f}s = {iters / elapsed:.1f} iters/s'
     )
 
+    return {
+        'format': format_name,
+        'strides': list([stride]),
+        'bufsize': size,
+        'iters': iters,
+        'elapsed': elapsed,
+        'iters_per_s': iters / elapsed,
+    }
+
+
+def git_info() -> tuple[str | None, bool, str | None]:
+    try:
+        commit = subprocess.run(
+            ['git', 'rev-parse', '--short', 'HEAD'],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        dirty = bool(
+            subprocess.run(
+                ['git', 'status', '--porcelain'],
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.strip()
+        )
+        subject = subprocess.run(
+            ['git', 'show', '-s', '--format=%s', 'HEAD'],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+        return commit, dirty, subject
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None, False, None
+
 
 def main():
     parser = argparse.ArgumentParser(description='Test conversion performance.')
@@ -84,6 +127,13 @@ def main():
         default=None,
         help='Comma-separated list of backends in priority order',
     )
+    parser.add_argument(
+        '-o',
+        '--output',
+        type=str,
+        default=None,
+        help='Write results as JSON to this file (for conv-perf-compare.py)',
+    )
     args = parser.parse_args()
 
     options: dict[str, str | list[str]] = {
@@ -97,8 +147,29 @@ def main():
 
     format_names = [s.strip() for s in args.format.split(',') if s.strip()]
 
+    runs = []
     for format_name in format_names:
-        run_one(format_name, args, options)
+        runs.append(run_one(format_name, args, options))
+
+    if args.output:
+        commit, dirty, subject = git_info()
+        meta = {
+            'timestamp': datetime.now(timezone.utc).isoformat(timespec='seconds'),
+            'git_commit': commit,
+            'git_dirty': dirty,
+            'git_subject': subject,
+            'hostname': socket.gethostname(),
+            'python': platform.python_version(),
+            'numpy': np.__version__,
+            'width': args.width,
+            'height': args.height,
+            'padding': 0,
+            'backends': options.get('backends', ['default']),
+            'options': {k: v for k, v in options.items() if k != 'backends'},
+            'measurement_time': args.time,
+        }
+        with open(args.output, 'w') as f:
+            json.dump({'meta': meta, 'runs': runs}, f, indent=2)
 
 
 if __name__ == '__main__':
