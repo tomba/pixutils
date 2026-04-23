@@ -22,27 +22,15 @@ def run_one(
 ) -> dict:
     fmt = PixelFormats.find_by_name(format_name)
 
-    # Drop this when stride works
-    if len(fmt.planes) > 1 and args.stride > 0:
-        raise ValueError('Custom stride is not supported with multiplanar formats')
-
-    # Calculate total buffer size for all planes
-    if args.stride > 0:
-        # Single plane format with custom stride
-        size = fmt.planesize(args.stride, args.height, 0)
-    else:
-        # Use framesize for both single and multiplanar formats
-        size = fmt.framesize(args.width, args.height)
+    strides = tuple(fmt.stride(args.width, i) + args.padding for i in range(len(fmt.planes)))
+    size = sum(fmt.planesize(strides[i], args.height, i) for i in range(len(fmt.planes)))
 
     rng = np.random.default_rng(0)
     buf = rng.integers(0, 256, size=size, dtype=np.uint8)
 
-    stride = args.stride if args.stride > 0 else fmt.stride(args.width, 0)
-    bytesperline = 0 if len(fmt.planes) > 1 else stride
-
     # Warmup
     for _ in range(3):
-        buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
+        buffer_to_bgr888(fmt, args.width, args.height, strides, buf, options)
 
     min_iter_s = float('inf')
     gc.disable()
@@ -51,7 +39,7 @@ def run_one(
         t_start = time.perf_counter()
         t_prev = t_start
         while True:
-            buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
+            buffer_to_bgr888(fmt, args.width, args.height, strides, buf, options)
             iters += 1
             t_now = time.perf_counter()
             dt = t_now - t_prev
@@ -70,14 +58,14 @@ def run_one(
     backends_str = args.backends if args.backends else 'default'
     print(
         f'{format_name} {args.width}x{args.height}, backends: {backends_str}, '
-        f'stride: {stride} '
+        f'padding: {args.padding}, strides: {strides}, '
         f'{iters} iters in {elapsed:.3f}s = {mean_iters_per_s:.1f}/s mean, '
         f'{peak_iters_per_s:.1f}/s peak'
     )
 
     return {
         'format': format_name,
-        'strides': list([stride]),
+        'strides': list(strides),
         'bufsize': size,
         'iters': iters,
         'elapsed': elapsed,
@@ -125,7 +113,12 @@ def main():
         help='Pixel format (comma-separated list for multiple formats)',
     )
     parser.add_argument('-t', '--time', type=float, default=1.0, help='Measurement time in seconds')
-    parser.add_argument('--stride', type=int, default=0, help='Stride')
+    parser.add_argument(
+        '--padding',
+        type=int,
+        default=0,
+        help="Extra bytes added to each plane's natural stride",
+    )
     parser.add_argument(
         '--demosaic',
         type=str,
@@ -175,7 +168,7 @@ def main():
             'numpy': np.__version__,
             'width': args.width,
             'height': args.height,
-            'padding': 0,
+            'padding': args.padding,
             'backends': options.get('backends', ['default']),
             'options': {k: v for k, v in options.items() if k != 'backends'},
             'measurement_time': args.time,
