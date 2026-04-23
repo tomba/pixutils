@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import gc
 import time
 
 import numpy as np
@@ -26,22 +27,28 @@ def run_one(format_name: str, args: argparse.Namespace, options: dict[str, str |
         # Use framesize for both single and multiplanar formats
         size = fmt.framesize(args.width, args.height)
 
-    buf = np.zeros(size, dtype=np.uint8)
+    rng = np.random.default_rng(0)
+    buf = rng.integers(0, 256, size=size, dtype=np.uint8)
 
     stride = args.stride if args.stride > 0 else fmt.stride(args.width, 0)
     bytesperline = 0 if len(fmt.planes) > 1 else stride
 
-    # Warmup run
-    buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
-
-    iters = 0
-    t_start = time.monotonic()
-    while True:
+    # Warmup
+    for _ in range(3):
         buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
-        iters += 1
-        elapsed = time.monotonic() - t_start
-        if elapsed >= args.time:
-            break
+
+    gc.disable()
+    try:
+        iters = 0
+        t_start = time.perf_counter()
+        while True:
+            buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
+            iters += 1
+            elapsed = time.perf_counter() - t_start
+            if elapsed >= args.time:
+                break
+    finally:
+        gc.enable()
 
     backends_str = args.backends if args.backends else 'default'
     print(
