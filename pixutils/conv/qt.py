@@ -14,9 +14,8 @@ from .conv import buffer_to_bgr888
 
 
 def bgr888_to_pix(rgb: npt.NDArray[np.uint8]) -> QtGui.QPixmap:
-    # QImage doesn't seem to like a numpy view
-    if rgb.base is not None:
-        rgb = rgb.copy()
+    # Make sure we provide a contiguous array to QImage
+    rgb = np.ascontiguousarray(rgb)
 
     w = rgb.shape[1]
     h = rgb.shape[0]
