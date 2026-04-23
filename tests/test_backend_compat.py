@@ -83,7 +83,7 @@ def _probe_backends(fmt: PixelFormat, base_opts: dict) -> list[str]:
         opts = dict(base_opts) | {'backends': [backend]}
         try:
             buffer_to_bgr888(fmt, _PROBE_WIDTH, _PROBE_HEIGHT, 0, _PROBE_BUFFER, opts)
-        except Exception:
+        except NotImplementedError:
             continue
         working.append(backend)
     return working
