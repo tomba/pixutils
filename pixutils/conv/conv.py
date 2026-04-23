@@ -31,8 +31,12 @@ def to_bgr888(
         fmt: The pixel format of the input data
         width: Width of the image in pixels
         height: Height of the image in pixels
-        bytesperline: Bytes per line, either a single int (0 for no padding) or a
-            sequence of ints with one value per plane for multiplane formats
+        bytesperline: Bytes per line. Either:
+            - 0: no padding, natural strides are used for every plane
+            - a single non-zero int: stride of plane 0. For multiplane formats the
+              strides of the other planes are extrapolated, preserving the padding
+              ratio (matches libcamera convention)
+            - a sequence of non-zero ints: one stride per plane
         arr: Numpy array containing the pixel data
         options: Optional dictionary with conversion options:
             - backends: List of backends in priority order, e.g. ['opencv', 'numba']
@@ -46,12 +50,10 @@ def to_bgr888(
 
     # Normalize bytesperline to a per-plane tuple of concrete (non-zero) strides
     if isinstance(bytesperline, int):
-        if len(fmt.planes) > 1 and bytesperline != 0:
-            raise ValueError('Multiplane formats require a sequence of strides or 0 for no padding')
-        strides = tuple(
-            bytesperline if bytesperline != 0 else fmt.stride(width, i)
-            for i in range(len(fmt.planes))
-        )
+        if bytesperline == 0:
+            strides = tuple(fmt.stride(width, i) for i in range(len(fmt.planes)))
+        else:
+            strides = tuple(fmt.extrapolate_stride(bytesperline, i) for i in range(len(fmt.planes)))
     else:
         if len(bytesperline) != len(fmt.planes):
             raise ValueError(
@@ -73,7 +75,9 @@ def to_bgr888(
             raise ValueError('bytesperline is too small')
 
         if arr.size < fmt.planesize(strides[i], height, i):
-            raise ValueError('Input array is too small')
+            raise ValueError(
+                f'Input array is too small: {arr.size} < {fmt.planesize(strides[i], height, i)}, {bytesperline}, {strides}'
+            )
 
         size += fmt.planesize(strides[i], height, i)
 
@@ -129,8 +133,9 @@ def buffer_to_bgr888(
         fmt: The pixel format of the input data
         width: Width of the image in pixels
         height: Height of the image in pixels
-        bytesperline: Bytes per line, either a single int (0 for no padding) or a
-            list of ints with one value per plane for multiplane formats
+        bytesperline: Bytes per line. Either 0 (natural strides), a single
+            non-zero int (stride of plane 0; other planes extrapolated), or a
+            sequence of non-zero ints with one value per plane
         buffer: Buffer-like object containing the pixel data
         options: Optional dictionary with conversion options
 

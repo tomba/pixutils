@@ -107,6 +107,25 @@ class PixelFormat:
 
         return stride
 
+    def extrapolate_stride(self, plane0_stride: int, plane: int) -> int:
+        """Derive a plane's stride from plane 0's stride, preserving padding ratio."""
+        if plane >= len(self.planes):
+            raise RuntimeError()
+
+        if plane == 0:
+            return plane0_stride
+
+        p0 = self.planes[0]
+        pn = self.planes[plane]
+        num = plane0_stride * pn.bytes_per_block * p0.pixels_per_block * p0.hsub
+        den = p0.bytes_per_block * pn.pixels_per_block * pn.hsub
+        if num % den != 0:
+            raise ValueError(
+                f'Cannot extrapolate stride for plane {plane} from plane-0 stride '
+                f'{plane0_stride} in format {self.name}: result is not an integer'
+            )
+        return num // den
+
     def planesize(self, stride: int, height: int, plane: int = 0):
         assert height % self.pixel_align[1] == 0
 
