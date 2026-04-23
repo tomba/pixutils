@@ -64,7 +64,7 @@ def generate_test_case(pixel_format, options=None):
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
 
         return (src_sha, rgb_sha)
-    except Exception as e:
+    except NotImplementedError as e:
         print(f'# Skipping {pixel_format.name} with options {options}: {e}', file=sys.stderr)
         return None
 
