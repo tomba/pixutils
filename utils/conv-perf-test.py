@@ -44,24 +44,35 @@ def run_one(
     for _ in range(3):
         buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
 
+    min_iter_s = float('inf')
     gc.disable()
     try:
         iters = 0
         t_start = time.perf_counter()
+        t_prev = t_start
         while True:
             buffer_to_bgr888(fmt, args.width, args.height, bytesperline, buf, options)
             iters += 1
-            elapsed = time.perf_counter() - t_start
+            t_now = time.perf_counter()
+            dt = t_now - t_prev
+            if dt < min_iter_s:
+                min_iter_s = dt
+            t_prev = t_now
+            elapsed = t_now - t_start
             if elapsed >= args.time:
                 break
     finally:
         gc.enable()
 
+    mean_iters_per_s = iters / elapsed
+    peak_iters_per_s = 1.0 / min_iter_s
+
     backends_str = args.backends if args.backends else 'default'
     print(
-        f'Format: {format_name}, size: {args.width}x{args.height}, backends: {backends_str}, '
-        f'stride: {stride}, bufsize: {size}, '
-        f'{iters} iters in {elapsed:.3f}s = {iters / elapsed:.1f} iters/s'
+        f'{format_name} {args.width}x{args.height}, backends: {backends_str}, '
+        f'stride: {stride} '
+        f'{iters} iters in {elapsed:.3f}s = {mean_iters_per_s:.1f}/s mean, '
+        f'{peak_iters_per_s:.1f}/s peak'
     )
 
     return {
@@ -70,7 +81,8 @@ def run_one(
         'bufsize': size,
         'iters': iters,
         'elapsed': elapsed,
-        'iters_per_s': iters / elapsed,
+        'iters_per_s': mean_iters_per_s,
+        'min_iter_s': min_iter_s,
     }
 
 
