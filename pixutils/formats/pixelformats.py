@@ -441,7 +441,6 @@ class PixelFormats:
         ( ( 4, ), ),
     )
 
-
     ABGR2101010 = PixelFormat('ABGR2101010',
         'AB30',
         None,
@@ -477,6 +476,17 @@ class PixelFormats:
         False,
         ( 1, 1 ),
         ( ( 4, ), ),
+    )
+
+    # RGB 64-bit, alpha
+    ABGR16161616 = PixelFormat('ABGR16161616',
+        'AB48',     # DRM_FORMAT_ABGR16161616
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
     )
 
     # YUV Packed
@@ -709,6 +719,17 @@ class PixelFormats:
         ( ( 4, ),
           ( 4, ),
           ( 4, ) ),
+    )
+
+    # YUV 64-bit, alpha
+    AVUY16161616 = PixelFormat('AVUY16161616',
+        None,
+        None,
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
     )
 
     # Grey formats
