@@ -12,8 +12,8 @@ from pixutils.conv import buffer_to_bgr888
 from test_conv_data import FMTS  # type: ignore[import-not-found]
 
 # 636 is the nearest multiple of 12 to 640. 12 is the LCM of the width
-# pixel_align values across all defined formats (driven by XV15/XV20 which
-# require width % 6 == 0 and Y10_P32 which requires width % 3 == 0), so
+# pixel_align values across all defined formats (driven by P030/P230 which
+# require width % 6 == 0 and XYYY2101010 which requires width % 3 == 0), so
 # WIDTH=636 lets every format pass fmt.stride()'s alignment assertion.
 # Height alignment LCM is 2, so HEIGHT=480 was already fine.
 WIDTH = 636

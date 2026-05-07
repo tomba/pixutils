@@ -153,7 +153,7 @@ class PixelFormat:
         DRM_IOCTL_MODE_CREATE_DUMB takes a 'bpp' (bits-per-pixel) argument,
         which is then used with the width and height to allocate the buffer.
         This doesn't work for pixel formats where the average bits-per-pixel
-        is not an integer (e.g. XV15)
+        is not an integer (e.g. P030)
 
         So, we instead use the bytes_per_block (in bits) as
         the 'bpp' argument, and adjust the width accordingly.
@@ -611,8 +611,8 @@ class PixelFormats:
           ( 2, 1, 2, 1), ),
     )
 
-    XV15 = PixelFormat('XV15',
-        'XV15', None, None,
+    P030 = PixelFormat('P030',
+        'P030', None, None,
         PixelColorEncoding.YUV,
         False,
         (6, 2),
@@ -620,8 +620,8 @@ class PixelFormats:
           ( 8, 3, 2, 2, ), ),
     )
 
-    XV20 = PixelFormat('XV20',
-        'XV20', None, None,
+    P230 = PixelFormat('P230',
+        'P230', None, None,
         PixelColorEncoding.YUV,
         False,
         (6, 2),
@@ -711,8 +711,9 @@ class PixelFormats:
           ( 1, 1, 1, 1 ), ),
     )
 
-    X403 = PixelFormat('X403',
-        'X403', None, None,
+    T430 = PixelFormat('T430',
+        'T430', # DRM_FORMAT_T430
+        None, None,
         PixelColorEncoding.YUV,
         False,
         ( 1, 1 ),
@@ -774,8 +775,9 @@ class PixelFormats:
         ( ( 3, 2 ), ),
     )
 
-    Y10_LE32 = PixelFormat('Y10_P32',
-        'YPA4', None, None,
+    XYYY2101010 = PixelFormat('XYYY2101010',
+        'YPA4', # DRM_FORMAT_XYYY2101010
+        None, None,
         PixelColorEncoding.YUV,
         False,
         ( 3, 1 ),
