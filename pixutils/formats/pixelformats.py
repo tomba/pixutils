@@ -256,6 +256,15 @@ class PixelFormats:
         ( 1, 1 ),
         ( ( 2, ), ),
     )
+    XBGR1555 = PixelFormat('XBGR1555',
+        'XB15',     # DRM_FORMAT_XBGR1555
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 2, ), ),
+    )
     RGBX4444 = PixelFormat('RGBX4444',
         'RX12',     # DRM_FORMAT_RGBX4444
         None,
@@ -267,6 +276,15 @@ class PixelFormats:
     )
     XRGB4444 = PixelFormat('XRGB4444',
         'XR12',     # DRM_FORMAT_XRGB4444
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 2, ), ),
+    )
+    XBGR4444 = PixelFormat('XBGR4444',
+        'XB12',     # DRM_FORMAT_XBGR4444
         None,
         None,
         PixelColorEncoding.RGB,
@@ -286,6 +304,15 @@ class PixelFormats:
         ( 1, 1 ),
         ( ( 2, ), ),
     )
+    ABGR1555 = PixelFormat('ABGR1555',
+        'AB15',     # DRM_FORMAT_ABGR1555
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 2, ), ),
+    )
     RGBA4444 = PixelFormat('RGBA4444',
         'RA12',     # DRM_FORMAT_RGBA4444
         None,
@@ -297,6 +324,15 @@ class PixelFormats:
     )
     ARGB4444 = PixelFormat('ARGB4444',
         'AR12',     # DRM_FORMAT_ARGB4444
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 2, ), ),
+    )
+    ABGR4444 = PixelFormat('ABGR4444',
+        'AB12',     # DRM_FORMAT_ABGR4444
         None,
         None,
         PixelColorEncoding.RGB,
