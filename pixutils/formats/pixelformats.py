@@ -1025,10 +1025,13 @@ class PixelFormats:
     # fmt: on
 
 
-# Helper to dump the pixel formats into a C++ struct
+# Helper to dump the pixel formats into a C++ struct. Dump with:
+# python3 -c "import pixutils.formats; pixutils.formats.pixelformats.dump_c_structs()"
 def dump_c_structs():
+    print('{')
     for fmt in PixelFormats.get_formats():
         print(f'\t{fmt.name},')
+    print('}')
 
     print()
     print()
