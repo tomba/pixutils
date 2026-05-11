@@ -222,6 +222,17 @@ class PixelFormats:
         ( ( 1, ), ),
     )
 
+    # Color-indexed (palette) 8-bit
+    C8 = PixelFormat('C8',
+        'C8  ',     # DRM_FORMAT_C8
+        None,
+        None,
+        PixelColorEncoding.UNDEFINED,
+        False,
+        ( 1, 1 ),
+        ( ( 1, ), ),
+    )
+
     # RGB 8-bit
     RGB332 = PixelFormat('RGB332',
         'RGB8', None, None,
@@ -514,9 +525,76 @@ class PixelFormats:
         ( ( 4, ), ),
     )
 
+    # RGB 64-bit, no alpha
+    XRGB16161616 = PixelFormat('XRGB16161616',
+        'XR48',     # DRM_FORMAT_XRGB16161616
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
+    )
+    XBGR16161616 = PixelFormat('XBGR16161616',
+        'XB48',     # DRM_FORMAT_XBGR16161616
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
+    )
+
     # RGB 64-bit, alpha
+    ARGB16161616 = PixelFormat('ARGB16161616',
+        'AR48',     # DRM_FORMAT_ARGB16161616
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
+    )
     ABGR16161616 = PixelFormat('ABGR16161616',
         'AB48',     # DRM_FORMAT_ABGR16161616
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
+    )
+
+    # RGB 64-bit, half-float per channel
+    XRGB16161616F = PixelFormat('XRGB16161616F',
+        'XR4H',     # DRM_FORMAT_XRGB16161616F
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
+    )
+    XBGR16161616F = PixelFormat('XBGR16161616F',
+        'XB4H',     # DRM_FORMAT_XBGR16161616F
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
+    )
+    ARGB16161616F = PixelFormat('ARGB16161616F',
+        'AR4H',     # DRM_FORMAT_ARGB16161616F
+        None,
+        None,
+        PixelColorEncoding.RGB,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
+    )
+    ABGR16161616F = PixelFormat('ABGR16161616F',
+        'AB4H',     # DRM_FORMAT_ABGR16161616F
         None,
         None,
         PixelColorEncoding.RGB,
@@ -573,6 +651,16 @@ class PixelFormats:
         'XVUY',     # DRM_FORMAT_XVUY8888
         'YUVX',     # V4L2_PIX_FMT_YUVX32
         'XVUY8888',
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+
+    XYUV8888 = PixelFormat('XYUV8888',
+        'XYUV',     # DRM_FORMAT_XYUV8888
+        None,
+        None,
         PixelColorEncoding.YUV,
         False,
         ( 1, 1 ),
@@ -647,6 +735,33 @@ class PixelFormats:
           ( 2, 1, 2, 1), ),
     )
 
+    P010 = PixelFormat('P010',
+        'P010', None, None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 2, 2 ),
+        ( ( 2, 1, 1, 1 ),
+          ( 4, 1, 2, 2 ), ),
+    )
+
+    P012 = PixelFormat('P012',
+        'P012', None, None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 2, 2 ),
+        ( ( 2, 1, 1, 1 ),
+          ( 4, 1, 2, 2 ), ),
+    )
+
+    P016 = PixelFormat('P016',
+        'P016', None, None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 2, 2 ),
+        ( ( 2, 1, 1, 1 ),
+          ( 4, 1, 2, 2 ), ),
+    )
+
     P030 = PixelFormat('P030',
         'P030', None, None,
         PixelColorEncoding.YUV,
@@ -671,6 +786,36 @@ class PixelFormats:
         False,
         (1, 1),
         ( ( 4, ), ),
+    )
+
+    XVYU2101010 = PixelFormat('XVYU2101010',
+        'XV30',     # DRM_FORMAT_XVYU2101010
+        None,
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 4, ), ),
+    )
+
+    XVYU12_16161616 = PixelFormat('XVYU12_16161616',
+        'XV36',     # DRM_FORMAT_XVYU12_16161616
+        None,
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
+    )
+
+    XVYU16161616 = PixelFormat('XVYU16161616',
+        'XV48',     # DRM_FORMAT_XVYU16161616
+        None,
+        None,
+        PixelColorEncoding.YUV,
+        False,
+        ( 1, 1 ),
+        ( ( 8, ), ),
     )
 
     # YUV Planar
