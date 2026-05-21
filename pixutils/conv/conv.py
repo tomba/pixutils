@@ -100,7 +100,7 @@ def to_bgr888(
     # Get list of backends to try
     backends = get_backends(options.get('backends') if options else None)
     if not backends:
-        raise ValueError('No backends available')
+        raise NotImplementedError('No backends available')
 
     size = 0
 

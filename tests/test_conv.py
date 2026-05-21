@@ -230,10 +230,8 @@ def create_test_function(test_case):
             rgb_buf = buffer_to_bgr888(
                 test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options
             )
-        except ValueError as e:
-            if str(e) == 'No backends available':
-                self.skipTest('No backend available')
-            raise
+        except NotImplementedError as e:
+            raise unittest.SkipTest('No backend available') from e
 
         src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
@@ -283,10 +281,8 @@ def create_stride_test_function(test_case, padded: bool):
 
         try:
             rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, bpl, test_buf, test_case.options)
-        except ValueError as e:
-            if str(e) == 'No backends available':
-                self.skipTest('No backend available')
-            raise
+        except NotImplementedError as e:
+            raise unittest.SkipTest('No backend available') from e
 
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
         self.assertEqual(
@@ -345,10 +341,8 @@ def create_int_stride_test_function(test_case, padded: bool):
 
         try:
             rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, bpl, test_buf, test_case.options)
-        except ValueError as e:
-            if str(e) == 'No backends available':
-                self.skipTest('No backend available')
-            raise
+        except NotImplementedError as e:
+            raise unittest.SkipTest('No backend available') from e
 
         rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
         self.assertEqual(
