@@ -17,6 +17,29 @@ from pixutils.conv import buffer_to_bgr888
 from pixutils.formats import PixelFormats
 
 
+def pin_thread_count(n: int) -> None:
+    """Pin threaded backends to a fixed pool size so cross-commit numbers are comparable.
+
+    Multithreaded backends are the dominant source of run-to-run variance; a fixed
+    thread count removes the all-core turbo drift and straggler jitter that otherwise
+    swamp regression/optimization deltas. n <= 0 leaves backend defaults untouched.
+    """
+    if n <= 0:
+        return
+    try:
+        import cv2
+
+        cv2.setNumThreads(n)
+    except ImportError:
+        pass
+    try:
+        import numba
+
+        numba.set_num_threads(min(n, numba.config.NUMBA_NUM_THREADS))  # type: ignore[attr-defined]
+    except ImportError:
+        pass
+
+
 def run_one(
     format_name: str, args: argparse.Namespace, options: dict[str, str | list[str]]
 ) -> dict:
@@ -55,9 +78,10 @@ def run_one(
     peak_iters_per_s = 1.0 / min_iter_s
 
     backends_str = args.backends if args.backends else 'default'
+    threads_str = str(args.threads) if args.threads > 0 else 'default'
     print(
         f'{format_name} {args.width}x{args.height}, backends: {backends_str}, '
-        f'padding: {args.padding}, strides: {strides}, '
+        f'threads: {threads_str}, padding: {args.padding}, strides: {strides}, '
         f'{iters} iters in {elapsed:.3f}s = {mean_iters_per_s:.1f}/s mean, '
         f'{peak_iters_per_s:.1f}/s peak'
     )
@@ -113,6 +137,13 @@ def main():
     )
     parser.add_argument('-t', '--time', type=float, default=1.0, help='Measurement time in seconds')
     parser.add_argument(
+        '--threads',
+        type=int,
+        default=4,
+        help='Pin threaded backends (opencv, numba) to this many threads for '
+        'repeatable cross-commit comparison; 0 leaves backend defaults',
+    )
+    parser.add_argument(
         '--padding',
         type=int,
         default=0,
@@ -151,6 +182,8 @@ def main():
 
     format_names = [s.strip() for s in args.format.split(',') if s.strip()]
 
+    pin_thread_count(args.threads)
+
     runs = []
     for format_name in format_names:
         runs.append(run_one(format_name, args, options))
@@ -168,6 +201,7 @@ def main():
             'width': args.width,
             'height': args.height,
             'padding': args.padding,
+            'threads': args.threads,
             'backends': options.get('backends', ['default']),
             'options': {k: v for k, v in options.items() if k != 'backends'},
             'measurement_time': args.time,
