@@ -9,8 +9,9 @@ import numpy as np
 import numpy.typing as npt
 from numba import njit  # type: ignore[import-not-found]
 
+from pixutils.conv.frame import Frame
 from pixutils.conv.yuv import _get_conversion_matrix
-from pixutils.formats import PixelFormat, PixelFormats
+from pixutils.formats import PixelFormats
 
 __all__ = ['yuv_to_bgr888_nb']
 
@@ -131,7 +132,8 @@ def _uyvy_to_bgr888_nb(
 
 @njit(cache=True)
 def _nv_to_bgr888_nb(
-    data: npt.NDArray[np.uint8],
+    y_data: npt.NDArray[np.uint8],
+    uv_data: npt.NDArray[np.uint8],
     width: int,
     height: int,
     y_stride: int,
@@ -160,17 +162,15 @@ def _nv_to_bgr888_nb(
     """
     rgb = np.empty((height, width, 3), dtype=np.uint8)
 
-    y_plane_offset = y_stride * height
-
     for y in range(height):
-        uv_row_base = y_plane_offset + (y // v_subsample) * uv_stride
+        uv_row_base = (y // v_subsample) * uv_stride
 
         for x in range(width):
-            y_val = data[y * y_stride + x]
+            y_val = y_data[y * y_stride + x]
 
             uv_idx = uv_row_base + (x // 2) * 2
-            u = data[uv_idx + u_offset]
-            v = data[uv_idx + v_offset]
+            u = uv_data[uv_idx + u_offset]
+            v = uv_data[uv_idx + v_offset]
 
             # Apply offsets
             y_adj = y_val + offset_y
@@ -190,20 +190,19 @@ def _nv_to_bgr888_nb(
     return rgb
 
 
-def yuv_to_bgr888_nb(
-    arr: npt.NDArray[np.uint8],
-    w: int,
-    h: int,
-    strides: tuple[int, ...],
-    fmt: PixelFormat,
-    options: dict | None,
-) -> npt.NDArray[np.uint8] | None:
+def yuv_to_bgr888_nb(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8] | None:
     """Entry point for numba YUV conversions."""
+    fmt = frame.fmt
+    w = frame.width
+    h = frame.height
+    planes = frame.planes
+    strides = frame.strides
+
     offset, matrix = _get_conversion_matrix(options)
 
     if fmt == PixelFormats.YUYV:
         return _yuyv_to_bgr888_nb(
-            arr,
+            planes[0],
             w,
             h,
             strides[0],
@@ -223,7 +222,7 @@ def yuv_to_bgr888_nb(
 
     if fmt == PixelFormats.UYVY:
         return _uyvy_to_bgr888_nb(
-            arr,
+            planes[0],
             w,
             h,
             strides[0],
@@ -251,7 +250,8 @@ def yuv_to_bgr888_nb(
     if fmt in nv_params:
         v_subsample, u_offset, v_offset = nv_params[fmt]
         return _nv_to_bgr888_nb(
-            arr,
+            planes[0],
+            planes[1],
             w,
             h,
             strides[0],

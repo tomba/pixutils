@@ -38,9 +38,7 @@ def numba_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8]
             return None
         from .yuv_nb import yuv_to_bgr888_nb
 
-        return yuv_to_bgr888_nb(
-            frame.combined(), frame.width, frame.height, frame.strides, fmt, options
-        )
+        return yuv_to_bgr888_nb(frame, options)
 
     if fmt.color == PixelColorEncoding.RAW:
         if not _can_use_numba_raw(fmt, options):
