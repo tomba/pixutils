@@ -3,13 +3,13 @@
 
 from __future__ import annotations
 
-from typing import cast
-
 import numpy as np
 import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
 
-from pixutils.formats import PixelFormat, PixelFormats
+from pixutils.formats import PixelFormats
+
+from .frame import Frame
 
 # Generated with './utils/gen-csc.py --format python --transpose'
 
@@ -214,18 +214,12 @@ def y8_to_bgr888(
     return rgb
 
 
-def yuv_to_bgr888(
-    arr: npt.NDArray[np.uint8],
-    w: int,
-    h: int,
-    strides: tuple[int, ...],
-    fmt: PixelFormat,
-    options: dict | None,
-) -> npt.NDArray[np.uint8] | None:
-
-    # HACK: for backward compatibility. Drop when no external user calls this internal function.
-    if isinstance(strides, int):
-        strides = cast('tuple[int, ...]', (strides,))
+def yuv_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8] | None:
+    fmt = frame.fmt
+    w = frame.width
+    h = frame.height
+    strides = frame.strides
+    arr = frame.combined()
 
     if fmt == PixelFormats.Y8:
         return y8_to_bgr888(arr, w, h, strides[0], options)

@@ -11,6 +11,7 @@ import numpy.typing as npt
 from pixutils.formats import PixelColorEncoding, PixelFormat
 
 from .backends import get_backends
+from .frame import Frame
 from .raw import raw_to_bgr888
 from .rgb import rgb_to_bgr888
 from .yuv import yuv_to_bgr888
@@ -80,43 +81,12 @@ def to_bgr888(
         (see "Output layout" above).
     """
 
-    arr = np.ascontiguousarray(arr).reshape(-1).view(np.uint8)
-
-    # Normalize bytesperline to a per-plane tuple of concrete (non-zero) strides
-    if isinstance(bytesperline, int):
-        if bytesperline == 0:
-            strides = tuple(fmt.stride(width, i) for i in range(len(fmt.planes)))
-        else:
-            strides = tuple(fmt.extrapolate_stride(bytesperline, i) for i in range(len(fmt.planes)))
-    else:
-        if len(bytesperline) != len(fmt.planes):
-            raise ValueError(
-                f'Strides sequence length {len(bytesperline)} does not match number of planes {len(fmt.planes)}'
-            )
-        if any(s == 0 for s in bytesperline):
-            raise ValueError('Strides sequence must contain non-zero stride for each plane')
-        strides = tuple(bytesperline)
+    frame = Frame.from_single_buffer(fmt, width, height, bytesperline, arr)
 
     # Get list of backends to try
     backends = get_backends(options.get('backends') if options else None)
     if not backends:
         raise NotImplementedError('No backends available')
-
-    size = 0
-
-    for i in range(len(fmt.planes)):
-        if strides[i] < fmt.stride(width, i):
-            raise ValueError('bytesperline is too small')
-
-        if arr.size < fmt.planesize(strides[i], height, i):
-            raise ValueError(
-                f'Input array is too small: {arr.size} < {fmt.planesize(strides[i], height, i)}, {bytesperline}, {strides}'
-            )
-
-        size += fmt.planesize(strides[i], height, i)
-
-    # Get a view for the actual data
-    arr = arr[:size]
 
     # Try backends in priority order
     result = None
@@ -124,7 +94,7 @@ def to_bgr888(
         if backend == 'opencv':
             from .opencv import opencv_to_bgr888
 
-            result = opencv_to_bgr888(fmt, width, height, strides, arr, options)
+            result = opencv_to_bgr888(frame, options)
             if result is not None:
                 break
             # opencv couldn't handle this format/options, try next backend
@@ -132,16 +102,16 @@ def to_bgr888(
         elif backend == 'numba':
             from .numba import numba_to_bgr888
 
-            result = numba_to_bgr888(fmt, width, height, strides, arr, options)
+            result = numba_to_bgr888(frame, options)
             if result is not None:
                 break
         elif backend == 'numpy':
             if fmt.color == PixelColorEncoding.YUV:
-                result = yuv_to_bgr888(arr, width, height, strides, fmt, options)
+                result = yuv_to_bgr888(frame, options)
             elif fmt.color == PixelColorEncoding.RAW:
-                result = raw_to_bgr888(arr, width, height, strides, fmt, options)
+                result = raw_to_bgr888(frame, options)
             elif fmt.color == PixelColorEncoding.RGB:
-                result = rgb_to_bgr888(fmt, width, height, strides, arr)
+                result = rgb_to_bgr888(frame, options)
             else:
                 raise NotImplementedError(f'Unsupported format {fmt}')
             break
@@ -152,7 +122,7 @@ def to_bgr888(
     # Backends may return a view; guarantee only that it doesn't alias the
     # input buffer. Callers that need a specific layout can contiguify
     # themselves.
-    if np.shares_memory(result, arr):
+    if np.shares_memory(result, frame.combined()):
         result = result.copy()
     return result
 

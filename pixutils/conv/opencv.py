@@ -8,6 +8,8 @@ import numpy.typing as npt
 
 from pixutils.formats import PixelColorEncoding, PixelFormat
 
+from .frame import Frame
+
 __all__ = ['opencv_to_bgr888']
 
 _SUPPORTED_YUV_FORMATS = {'YUYV', 'UYVY', 'YVYU', 'NV12', 'NV21'}
@@ -60,14 +62,9 @@ def _can_use_opencv_rgb(fmt: PixelFormat) -> bool:
     return fmt.name in _SUPPORTED_RGB_FORMATS
 
 
-def opencv_to_bgr888(
-    fmt: PixelFormat,
-    width: int,
-    height: int,
-    strides: tuple[int, ...],
-    arr: npt.NDArray[np.uint8],
-    options: dict | None,
-) -> npt.NDArray[np.uint8] | None:
+def opencv_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8] | None:
+    fmt = frame.fmt
+
     if fmt.color == PixelColorEncoding.YUV:
         if not _can_use_opencv_yuv(fmt, options):
             return None
@@ -83,4 +80,4 @@ def opencv_to_bgr888(
     # Import and call implementation only if format is supported
     from .opencv_impl import opencv_convert
 
-    return opencv_convert(fmt, width, height, strides, arr)
+    return opencv_convert(fmt, frame.width, frame.height, frame.strides, frame.combined())

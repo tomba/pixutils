@@ -10,6 +10,8 @@ import numpy.typing as npt
 
 from pixutils.formats import PixelFormat
 
+from .frame import Frame
+
 __all__ = ['BayerPattern', 'RawFormat', 'raw_to_bgr888']
 
 
@@ -262,20 +264,13 @@ def _compute_demosaic_planes(
     return output
 
 
-def raw_to_bgr888(
-    data: npt.NDArray[np.uint8],
-    width: int,
-    height: int,
-    strides: tuple[int, ...],
-    fmt: PixelFormat,
-    options: None | dict = None,
-) -> npt.NDArray[np.uint8]:
+def raw_to_bgr888(frame: Frame, options: None | dict) -> npt.NDArray[np.uint8]:
+    fmt = frame.fmt
+    width = frame.width
+    height = frame.height
+    data = frame.combined()
+    bytesperline = frame.strides[0]
 
-    # HACK: for backward compatibility. Drop when no external user calls this internal function.
-    if isinstance(strides, int):
-        strides = (strides,)
-
-    bytesperline = strides[0]
     # Parse the format
     raw_fmt = RawFormat.from_pixelformat(fmt)
 
