@@ -8,6 +8,7 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 from numba import njit  # type: ignore[import-not-found]
+from numpy.lib.stride_tricks import as_strided
 
 from .frame import Frame
 
@@ -278,12 +279,12 @@ def _prepare_packed_raw_nb(
     """Prepare packed raw data using numba unpacking."""
     assert bits_per_pixel in [10, 12], 'Only 10 and 12 bpp are supported'
 
-    data = data.reshape((height, bytesperline))
-
-    # Remove padding if present
+    # Extract the tight (height, padded_width) rows directly from the (possibly
+    # cropped/offset) plane view, honoring the row stride (see prepare_packed_raw).
     padded_width = width * bits_per_pixel // 8
-    if bytesperline > padded_width:
-        data = np.delete(data, np.s_[padded_width:], 1)
+    data = np.ascontiguousarray(
+        as_strided(data, shape=(height, padded_width), strides=(bytesperline, 1), writeable=False)
+    )
 
     # Unpack to 16-bit using numba functions
     arr16_input = data.astype(np.uint16)

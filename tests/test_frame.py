@@ -212,3 +212,17 @@ def test_opencv_bows_out_on_cropped_nv12():
         to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, {'backends': ['opencv']}, crop=CROP)
     # but opencv handles the un-cropped frame fine
     to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, {'backends': ['opencv']})
+
+
+@pytest.mark.parametrize('fmt', [PixelFormats.SRGGB8, PixelFormats.SRGGB10P])
+def test_raw_crop_matches_full_interior(fmt):
+    x, y, w, h = CROP
+    buf = _make_buffer(fmt)
+    opts = {'backends': ['numpy']}
+
+    full = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts)
+    cropped = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts, crop=CROP)
+
+    # The 3x3 demosaic zero-pads at the crop border, so only the interior
+    # (excluding the 1-px border) is expected to match the full-frame result.
+    np.testing.assert_array_equal(cropped[1:-1, 1:-1], full[y + 1 : y + h - 1, x + 1 : x + w - 1])

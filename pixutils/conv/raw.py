@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import numpy.typing as npt
+from numpy.lib.stride_tricks import as_strided
 
 from pixutils.formats import PixelFormat
 
@@ -68,12 +69,14 @@ def prepare_packed_raw(
 ) -> npt.NDArray[np.uint16]:
     assert bits_per_pixel in [10, 12], 'Only 10 and 12 bpp are supported'
 
-    data = data.reshape((height, bytesperline))
-
-    # Remove padding if present
+    # Extract the tight (height, padded_width) rows directly from the (possibly
+    # cropped/offset) plane view, honoring the row stride. Reads only
+    # (height-1)*bytesperline + padded_width bytes, so it works for a cropped
+    # view that lacks a full trailing row.
     padded_width = width * bits_per_pixel // 8
-    if bytesperline > padded_width:
-        data = np.delete(data, np.s_[padded_width:], 1)
+    data = np.ascontiguousarray(
+        as_strided(data, shape=(height, padded_width), strides=(bytesperline, 1), writeable=False)
+    )
 
     # Unpack to 16-bit
     arr16_input = data.astype(np.uint16)
@@ -104,14 +107,15 @@ def _unpack_12bit(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
 def prepare_unpacked_raw(
     data: npt.NDArray[np.uint8], width: int, height: int, bits_per_pixel: int, bytesperline: int
 ) -> npt.NDArray[np.uint16]:
-    data = data.reshape((height, bytesperline))
-
-    # Remove padding if present.
     # The unpacked data is stored in 8 bits for 8bpp, and 16 bits for 10/12/16bpp.
     bytes_per_pixel = (bits_per_pixel + 7) // 8
     padded_width = width * bytes_per_pixel
-    if bytesperline > padded_width:
-        data = np.delete(data, np.s_[padded_width:], 1)
+
+    # Extract the tight (height, padded_width) rows directly from the (possibly
+    # cropped/offset) plane view, honoring the row stride (see prepare_packed_raw).
+    data = np.ascontiguousarray(
+        as_strided(data, shape=(height, padded_width), strides=(bytesperline, 1), writeable=False)
+    )
 
     # Expand 8 bit data into 16 bit containers
     if bits_per_pixel == 8:
