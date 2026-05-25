@@ -95,10 +95,12 @@ def ycbcr_to_bgr888(yuv: npt.NDArray[np.uint8], options: dict | None) -> npt.NDA
     return rgb.astype(np.uint8)
 
 
-def yuyv_to_bgr888(
-    data: npt.NDArray[np.uint8], w: int, h: int, stride: int, options: dict | None
-) -> npt.NDArray[np.uint8]:
-    yuyv = as_strided(data, shape=(h, w // 2 * 4), strides=(stride, 1), writeable=False)
+def yuyv_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8]:
+    w = frame.width
+    h = frame.height
+    stride = frame.strides[0]
+
+    yuyv = as_strided(frame.planes[0], shape=(h, w // 2 * 4), strides=(stride, 1), writeable=False)
 
     # YUV444
     yuv = np.empty((h, w, 3), dtype=np.uint8)
@@ -109,10 +111,12 @@ def yuyv_to_bgr888(
     return ycbcr_to_bgr888(yuv, options)
 
 
-def uyvy_to_bgr888(
-    data: npt.NDArray[np.uint8], w: int, h: int, stride: int, options: dict | None
-) -> npt.NDArray[np.uint8]:
-    yuyv = as_strided(data, shape=(h, w // 2 * 4), strides=(stride, 1), writeable=False)
+def uyvy_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8]:
+    w = frame.width
+    h = frame.height
+    stride = frame.strides[0]
+
+    yuyv = as_strided(frame.planes[0], shape=(h, w // 2 * 4), strides=(stride, 1), writeable=False)
 
     # YUV444
     yuv = np.empty((h, w, 3), dtype=np.uint8)
@@ -124,18 +128,16 @@ def uyvy_to_bgr888(
 
 
 def nv_to_bgr888(
-    data: npt.NDArray[np.uint8],
-    w: int,
-    h: int,
-    y_stride: int,
-    uv_stride: int,
-    v_subsample: int,
-    u_first: bool,
-    options: dict | None,
+    frame: Frame, v_subsample: int, u_first: bool, options: dict | None
 ) -> npt.NDArray[np.uint8]:
-    y = as_strided(data, shape=(h, w), strides=(y_stride, 1), writeable=False)
+    w = frame.width
+    h = frame.height
+    y_stride = frame.strides[0]
+    uv_stride = frame.strides[1]
+
+    y = as_strided(frame.planes[0], shape=(h, w), strides=(y_stride, 1), writeable=False)
     uv = as_strided(
-        data[y_stride * h :],
+        frame.planes[1],
         shape=(h // v_subsample, w // 2, 2),
         strides=(uv_stride, 2, 1),
         writeable=False,
@@ -159,27 +161,20 @@ def nv_to_bgr888(
 
 
 def planar_yuv_to_bgr888(
-    data: npt.NDArray[np.uint8],
-    w: int,
-    h: int,
-    y_stride: int,
-    c1_stride: int,
-    c2_stride: int,
-    v_subsample: int,
-    u_first: bool,
-    options: dict | None,
+    frame: Frame, v_subsample: int, u_first: bool, options: dict | None
 ) -> npt.NDArray[np.uint8]:
+    w = frame.width
+    h = frame.height
+    y_stride = frame.strides[0]
+    c1_stride = frame.strides[1]
+    c2_stride = frame.strides[2]
+
     c_h = h // v_subsample
     c_w = w // 2
 
-    y_size = y_stride * h
-    c1_size = c1_stride * c_h
-
-    y = as_strided(data, shape=(h, w), strides=(y_stride, 1), writeable=False)
-    c1 = as_strided(data[y_size:], shape=(c_h, c_w), strides=(c1_stride, 1), writeable=False)
-    c2 = as_strided(
-        data[y_size + c1_size :], shape=(c_h, c_w), strides=(c2_stride, 1), writeable=False
-    )
+    y = as_strided(frame.planes[0], shape=(h, w), strides=(y_stride, 1), writeable=False)
+    c1 = as_strided(frame.planes[1], shape=(c_h, c_w), strides=(c1_stride, 1), writeable=False)
+    c2 = as_strided(frame.planes[2], shape=(c_h, c_w), strides=(c2_stride, 1), writeable=False)
 
     u, v = (c1, c2) if u_first else (c2, c1)
 
@@ -194,12 +189,14 @@ def planar_yuv_to_bgr888(
     return ycbcr_to_bgr888(yuv, options)
 
 
-def y8_to_bgr888(
-    data: npt.NDArray[np.uint8], w: int, h: int, stride: int, options: dict | None
-) -> npt.NDArray[np.uint8]:
+def y8_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8]:
+    w = frame.width
+    h = frame.height
+    stride = frame.strides[0]
+
     color_range = options.get('range', 'full') if options else 'full'
 
-    y = as_strided(data, shape=(h, w), strides=(stride, 1), writeable=False)
+    y = as_strided(frame.planes[0], shape=(h, w), strides=(stride, 1), writeable=False)
 
     if color_range == 'limited':
         # Convert from limited range (16-235) to full range (0-255)
@@ -216,46 +213,38 @@ def y8_to_bgr888(
 
 def yuv_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8] | None:
     fmt = frame.fmt
-    w = frame.width
-    h = frame.height
-    strides = frame.strides
-    arr = frame.combined()
 
     if fmt == PixelFormats.Y8:
-        return y8_to_bgr888(arr, w, h, strides[0], options)
+        return y8_to_bgr888(frame, options)
 
     if fmt == PixelFormats.YUYV:
-        return yuyv_to_bgr888(arr, w, h, strides[0], options)
+        return yuyv_to_bgr888(frame, options)
 
     if fmt == PixelFormats.UYVY:
-        return uyvy_to_bgr888(arr, w, h, strides[0], options)
+        return uyvy_to_bgr888(frame, options)
 
     if fmt == PixelFormats.NV12:
-        return nv_to_bgr888(arr, w, h, strides[0], strides[1], 2, True, options)
+        return nv_to_bgr888(frame, 2, True, options)
 
     if fmt == PixelFormats.NV21:
-        return nv_to_bgr888(arr, w, h, strides[0], strides[1], 2, False, options)
+        return nv_to_bgr888(frame, 2, False, options)
 
     if fmt == PixelFormats.NV16:
-        return nv_to_bgr888(arr, w, h, strides[0], strides[1], 1, True, options)
+        return nv_to_bgr888(frame, 1, True, options)
 
     if fmt == PixelFormats.NV61:
-        return nv_to_bgr888(arr, w, h, strides[0], strides[1], 1, False, options)
+        return nv_to_bgr888(frame, 1, False, options)
 
     if fmt == PixelFormats.YUV420:
-        return planar_yuv_to_bgr888(arr, w, h, strides[0], strides[1], strides[2], 2, True, options)
+        return planar_yuv_to_bgr888(frame, 2, True, options)
 
     if fmt == PixelFormats.YVU420:
-        return planar_yuv_to_bgr888(
-            arr, w, h, strides[0], strides[1], strides[2], 2, False, options
-        )
+        return planar_yuv_to_bgr888(frame, 2, False, options)
 
     if fmt == PixelFormats.YUV422:
-        return planar_yuv_to_bgr888(arr, w, h, strides[0], strides[1], strides[2], 1, True, options)
+        return planar_yuv_to_bgr888(frame, 1, True, options)
 
     if fmt == PixelFormats.YVU422:
-        return planar_yuv_to_bgr888(
-            arr, w, h, strides[0], strides[1], strides[2], 1, False, options
-        )
+        return planar_yuv_to_bgr888(frame, 1, False, options)
 
     return None
