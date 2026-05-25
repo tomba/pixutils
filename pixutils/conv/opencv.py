@@ -62,11 +62,25 @@ def _can_use_opencv_rgb(fmt: PixelFormat) -> bool:
     return fmt.name in _SUPPORTED_RGB_FORMATS
 
 
+def _planes_are_full(frame: Frame) -> bool:
+    """True if every plane is exactly its full (un-cropped) plane size."""
+    fmt = frame.fmt
+    return all(
+        frame.planes[i].size == fmt.planesize(frame.strides[i], frame.height, i)
+        for i in range(len(fmt.planes))
+    )
+
+
 def opencv_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8] | None:
     fmt = frame.fmt
 
     if fmt.color == PixelColorEncoding.YUV:
         if not _can_use_opencv_yuv(fmt, options):
+            return None
+        # OpenCV's multi-plane (NV12/NV21) path needs a tightly-laid-out
+        # contiguous buffer and can't consume cropped/offset planes. Bow out so
+        # numba/numpy handle those.
+        if len(fmt.planes) > 1 and not _planes_are_full(frame):
             return None
     elif fmt.color == PixelColorEncoding.RAW:
         if not _can_use_opencv_raw(fmt, options):

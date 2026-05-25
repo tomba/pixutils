@@ -160,3 +160,55 @@ def test_buffer_to_bgr888_accepts_sequence(fmt):
     planes = [p.tobytes() for p in _split_planes(fmt, buf)]
     seq = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, planes, opts)
     np.testing.assert_array_equal(seq, single)
+
+
+CROP = (4, 2, 8, 4)  # (x, y, w, h), aligned to 2x2
+
+
+@pytest.mark.parametrize(
+    ('fmt', 'backend'),
+    [
+        (PixelFormats.RGB888, 'numpy'),
+        (PixelFormats.YUYV, 'numpy'),
+        (PixelFormats.NV12, 'numpy'),
+        (PixelFormats.NV12, 'numba'),
+        (PixelFormats.YUV420, 'numpy'),
+    ],
+)
+def test_crop_matches_full_subregion(fmt, backend):
+    x, y, w, h = CROP
+    buf = _make_buffer(fmt)
+    opts = {'backends': [backend]}
+
+    try:
+        full = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts)
+    except NotImplementedError:
+        pytest.skip(f'{backend} unavailable')
+
+    cropped = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts, crop=CROP)
+    np.testing.assert_array_equal(cropped, full[y : y + h, x : x + w])
+
+
+def test_crop_misaligned_raises():
+    fmt = PixelFormats.NV12
+    frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, _make_buffer(fmt))
+    with pytest.raises(ValueError):
+        frame.crop(1, 0, 8, 4)  # odd x, NV12 requires multiples of 2
+
+
+def test_crop_out_of_bounds_raises():
+    fmt = PixelFormats.RGB888
+    frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, _make_buffer(fmt))
+    with pytest.raises(ValueError):
+        frame.crop(0, 0, WIDTH + 2, HEIGHT)
+
+
+def test_opencv_bows_out_on_cropped_nv12():
+    cv2 = pytest.importorskip('cv2')  # noqa: F841
+    fmt = PixelFormats.NV12
+    buf = _make_buffer(fmt)
+    # opencv-only on a cropped multi-plane frame should have no usable backend
+    with pytest.raises(NotImplementedError):
+        to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, {'backends': ['opencv']}, crop=CROP)
+    # but opencv handles the un-cropped frame fine
+    to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, {'backends': ['opencv']})

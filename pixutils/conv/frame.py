@@ -161,3 +161,35 @@ class Frame:
         if len(self.planes) == 1:
             return self.planes[0]
         return np.concatenate(self.planes)
+
+    def crop(self, x: int, y: int, w: int, h: int) -> Frame:
+        """Return a new Frame for the sub-region ``(x, y, w, h)``.
+
+        Each plane view is offset to the crop origin and keeps its original
+        stride; the new Frame's width/height are the crop size. ``x``/``w`` must
+        be multiples of ``fmt.pixel_align[0]`` and ``y``/``h`` of
+        ``fmt.pixel_align[1]`` (which encode macropixel and chroma-subsampling
+        alignment), and the region must lie within the frame; otherwise
+        ``ValueError`` is raised.
+        """
+        fmt = self.fmt
+        ax, ay = fmt.pixel_align
+
+        if x % ax or w % ax or y % ay or h % ay:
+            raise ValueError(
+                f'Crop ({x}, {y}, {w}, {h}) is not aligned to {fmt.name} '
+                f'pixel_align {fmt.pixel_align}'
+            )
+        if x < 0 or y < 0 or w <= 0 or h <= 0 or x + w > self.width or y + h > self.height:
+            raise ValueError(
+                f'Crop ({x}, {y}, {w}, {h}) is out of bounds for {self.width}x{self.height}'
+            )
+
+        new_planes = []
+        for i, pi in enumerate(fmt.planes):
+            stride = self.strides[i]
+            x_bytes = (x // pi.pixels_per_block) * pi.bytes_per_block // pi.hsub
+            start = (y // pi.vsub) * stride + x_bytes
+            new_planes.append(self.planes[i][start:])
+
+        return Frame(fmt, w, h, tuple(new_planes), self.strides)

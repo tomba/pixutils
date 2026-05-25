@@ -24,6 +24,8 @@ def to_bgr888(
     bytesperline: int | Sequence[int],
     arr: npt.NDArray[np.uint8] | Sequence[npt.NDArray[np.uint8]],
     options: None | dict = None,
+    *,
+    crop: tuple[int, int, int, int] | None = None,
 ) -> npt.NDArray[np.uint8]:
     """
     Convert a numpy array containing pixel data to an 8-bit 3-channel image.
@@ -76,6 +78,9 @@ def to_bgr888(
             - range: 'limited' or 'full' (for YUV formats)
             - encoding: 'bt601' (for YUV formats)
             - demosaic_method: '3x3', 'bilinear', 'mosaic', or 'opencv' (for RAW formats)
+        crop: Optional ``(x, y, w, h)`` sub-region to convert. ``width``/``height``
+            still describe the full source buffer; ``crop`` selects the output
+            region. See :meth:`Frame.crop` for alignment requirements.
 
     Returns:
         ``(height, width, 3)`` uint8 array with per-pixel bytes (R, G, B)
@@ -86,12 +91,14 @@ def to_bgr888(
         frame = Frame.from_single_buffer(fmt, width, height, bytesperline, arr)
     else:
         frame = Frame.from_planes(fmt, width, height, arr, bytesperline)
-    return frame_to_bgr888(frame, options)
+    return frame_to_bgr888(frame, options, crop=crop)
 
 
 def frame_to_bgr888(
     frame: Frame,
     options: None | dict = None,
+    *,
+    crop: tuple[int, int, int, int] | None = None,
 ) -> npt.NDArray[np.uint8]:
     """
     Convert a :class:`Frame` to an 8-bit 3-channel image.
@@ -104,10 +111,15 @@ def frame_to_bgr888(
             buffer + stride per plane).
         options: Optional dictionary with conversion options (see
             :func:`to_bgr888`).
+        crop: Optional ``(x, y, w, h)`` sub-region to convert; see
+            :meth:`Frame.crop` for alignment requirements.
 
     Returns:
         See :func:`to_bgr888`.
     """
+
+    if crop is not None:
+        frame = frame.crop(*crop)
 
     fmt = frame.fmt
 
@@ -162,6 +174,8 @@ def buffer_to_bgr888(
     bytesperline: int | Sequence[int],
     buffer,
     options: None | dict = None,
+    *,
+    crop: tuple[int, int, int, int] | None = None,
 ) -> npt.NDArray[np.uint8]:
     """
     Convert a buffer-like object containing pixel data to an 8-bit 3-channel
@@ -191,4 +205,4 @@ def buffer_to_bgr888(
         arr: npt.NDArray | list = [np.frombuffer(b, dtype=np.uint8) for b in buffer]
     else:
         arr = np.frombuffer(buffer, dtype=np.uint8)
-    return to_bgr888(fmt, width, height, bytesperline, arr, options)
+    return to_bgr888(fmt, width, height, bytesperline, arr, options, crop=crop)
