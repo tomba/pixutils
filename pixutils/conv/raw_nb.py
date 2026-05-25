@@ -9,7 +9,7 @@ import numpy as np
 import numpy.typing as npt
 from numba import njit  # type: ignore[import-not-found]
 
-from pixutils.formats import PixelFormat
+from .frame import Frame
 
 # Import shared code from raw.py
 from .raw import BayerPattern, RawFormat, mosaic, prepare_unpacked_raw
@@ -353,16 +353,14 @@ def _demosaic_nb(
         raise ValueError(f'Unknown demosaic method: {method}')
 
 
-def raw_to_bgr888_nb(
-    data: npt.NDArray[np.uint8],
-    width: int,
-    height: int,
-    strides: tuple[int, ...],
-    fmt: PixelFormat,
-    options: None | dict = None,
-) -> npt.NDArray[np.uint8]:
+def raw_to_bgr888_nb(frame: Frame, options: None | dict = None) -> npt.NDArray[np.uint8]:
     """Entry point for numba RAW conversions."""
-    bytesperline = strides[0]
+    fmt = frame.fmt
+    data = frame.planes[0]
+    width = frame.width
+    height = frame.height
+    bytesperline = frame.strides[0]
+
     # Parse the format
     raw_fmt = RawFormat.from_pixelformat(fmt)
 

@@ -45,9 +45,7 @@ def numba_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8]
             return None
         from .raw_nb import raw_to_bgr888_nb
 
-        return raw_to_bgr888_nb(
-            frame.combined(), frame.width, frame.height, frame.strides, fmt, options
-        )
+        return raw_to_bgr888_nb(frame, options)
 
     # RGB has no numba implementation (numpy is fast enough)
     return None

@@ -268,7 +268,7 @@ def raw_to_bgr888(frame: Frame, options: None | dict) -> npt.NDArray[np.uint8]:
     fmt = frame.fmt
     width = frame.width
     height = frame.height
-    data = frame.combined()
+    data = frame.planes[0]
     bytesperline = frame.strides[0]
 
     # Parse the format
