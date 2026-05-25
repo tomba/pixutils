@@ -14,6 +14,30 @@ from pixutils.formats import PixelFormat
 __all__ = ['Frame']
 
 
+def _normalize_strides(
+    fmt: PixelFormat, width: int, bytesperline: int | Sequence[int]
+) -> tuple[int, ...]:
+    """Normalize bytesperline to a per-plane tuple of concrete (non-zero) strides.
+
+    ``bytesperline`` is either 0 (natural strides), a single non-zero int (stride
+    of plane 0, others extrapolated), or one stride per plane.
+    """
+    n = len(fmt.planes)
+
+    if isinstance(bytesperline, int):
+        if bytesperline == 0:
+            return tuple(fmt.stride(width, i) for i in range(n))
+        return tuple(fmt.extrapolate_stride(bytesperline, i) for i in range(n))
+
+    if len(bytesperline) != n:
+        raise ValueError(
+            f'Strides sequence length {len(bytesperline)} does not match number of planes {n}'
+        )
+    if any(s == 0 for s in bytesperline):
+        raise ValueError('Strides sequence must contain non-zero stride for each plane')
+    return tuple(bytesperline)
+
+
 @dataclass(frozen=True)
 class Frame:
     """A (possibly multi-plane) framebuffer: pixel format, dimensions, and one
@@ -63,21 +87,7 @@ class Frame:
         arr = np.ascontiguousarray(arr).reshape(-1).view(np.uint8)
 
         n = len(fmt.planes)
-
-        # Normalize bytesperline to a per-plane tuple of concrete (non-zero) strides
-        if isinstance(bytesperline, int):
-            if bytesperline == 0:
-                strides = tuple(fmt.stride(width, i) for i in range(n))
-            else:
-                strides = tuple(fmt.extrapolate_stride(bytesperline, i) for i in range(n))
-        else:
-            if len(bytesperline) != n:
-                raise ValueError(
-                    f'Strides sequence length {len(bytesperline)} does not match number of planes {n}'
-                )
-            if any(s == 0 for s in bytesperline):
-                raise ValueError('Strides sequence must contain non-zero stride for each plane')
-            strides = tuple(bytesperline)
+        strides = _normalize_strides(fmt, width, bytesperline)
 
         sizes = []
         total = 0
@@ -103,6 +113,41 @@ class Frame:
             offset += plane_size
 
         return cls(fmt, width, height, tuple(planes), strides, _backing=arr)
+
+    @classmethod
+    def from_planes(
+        cls,
+        fmt: PixelFormat,
+        width: int,
+        height: int,
+        planes: Sequence[npt.NDArray[np.uint8]],
+        bytesperline: int | Sequence[int] = 0,
+    ) -> Frame:
+        """Build a Frame from one independent buffer per plane.
+
+        ``planes`` holds one array per plane (``len(fmt.planes)`` of them); each is
+        flattened to a 1-D ``uint8`` view and sliced to its plane size.
+        ``bytesperline`` follows the same convention as :meth:`from_single_buffer`.
+        """
+        n = len(fmt.planes)
+        if len(planes) != n:
+            raise ValueError(
+                f'Number of planes {len(planes)} does not match format {fmt.name} ({n})'
+            )
+
+        strides = _normalize_strides(fmt, width, bytesperline)
+
+        plane_arrs = []
+        for i in range(n):
+            arr = np.ascontiguousarray(planes[i]).reshape(-1).view(np.uint8)
+            if strides[i] < fmt.stride(width, i):
+                raise ValueError('bytesperline is too small')
+            plane_size = fmt.planesize(strides[i], height, i)
+            if arr.size < plane_size:
+                raise ValueError(f'Plane {i} is too small: {arr.size} < {plane_size}')
+            plane_arrs.append(arr[:plane_size])
+
+        return cls(fmt, width, height, tuple(plane_arrs), strides)
 
     def combined(self) -> npt.NDArray[np.uint8]:
         """Return all planes as one contiguous 1-D ``uint8`` buffer.

@@ -107,3 +107,35 @@ def test_frame_to_bgr888_matches_to_bgr888(fmt):
 
     frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, buf)
     np.testing.assert_array_equal(frame_to_bgr888(frame), expected)
+
+
+def _split_planes(fmt, buf):
+    """Split a single concatenated buffer into independent per-plane copies."""
+    arr = np.frombuffer(buf, np.uint8)
+    out = []
+    offset = 0
+    for i in range(len(fmt.planes)):
+        size = fmt.planesize(fmt.stride(WIDTH, i), HEIGHT, i)
+        out.append(np.array(arr[offset : offset + size]))  # independent copy
+        offset += size
+    return out
+
+
+@pytest.mark.parametrize(
+    'fmt',
+    [PixelFormats.RGB888, PixelFormats.YUYV, PixelFormats.NV12, PixelFormats.YUV420],
+)
+def test_from_planes_matches_from_single_buffer(fmt):
+    buf = _make_buffer(fmt)
+    opts = {'backends': ['numpy']}  # same backend on both sides
+
+    single = frame_to_bgr888(Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, buf), opts)
+    planes = frame_to_bgr888(Frame.from_planes(fmt, WIDTH, HEIGHT, _split_planes(fmt, buf)), opts)
+    np.testing.assert_array_equal(planes, single)
+
+
+def test_from_planes_wrong_count_raises():
+    fmt = PixelFormats.NV12
+    buf = _make_buffer(fmt)
+    with pytest.raises(ValueError):
+        Frame.from_planes(fmt, WIDTH, HEIGHT, _split_planes(fmt, buf)[:1])
