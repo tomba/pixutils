@@ -82,6 +82,30 @@ def to_bgr888(
     """
 
     frame = Frame.from_single_buffer(fmt, width, height, bytesperline, arr)
+    return frame_to_bgr888(frame, options)
+
+
+def frame_to_bgr888(
+    frame: Frame,
+    options: None | dict = None,
+) -> npt.NDArray[np.uint8]:
+    """
+    Convert a :class:`Frame` to an 8-bit 3-channel image.
+
+    See :func:`to_bgr888` for the input format conventions and the output byte
+    layout.
+
+    Parameters:
+        frame: The framebuffer to convert (pixel format, dimensions, and one
+            buffer + stride per plane).
+        options: Optional dictionary with conversion options (see
+            :func:`to_bgr888`).
+
+    Returns:
+        See :func:`to_bgr888`.
+    """
+
+    fmt = frame.fmt
 
     # Get list of backends to try
     backends = get_backends(options.get('backends') if options else None)

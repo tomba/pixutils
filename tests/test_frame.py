@@ -3,6 +3,7 @@
 import numpy as np
 import pytest
 
+from pixutils.conv import frame_to_bgr888, to_bgr888
 from pixutils.conv.frame import Frame
 from pixutils.formats import PixelFormats
 
@@ -91,3 +92,18 @@ def test_zero_stride_in_sequence_raises():
     buf = _make_buffer(fmt)
     with pytest.raises(ValueError):
         Frame.from_single_buffer(fmt, WIDTH, HEIGHT, [fmt.stride(WIDTH, 0), 0], buf)
+
+
+@pytest.mark.parametrize(
+    'fmt',
+    [PixelFormats.RGB888, PixelFormats.YUYV, PixelFormats.NV12, PixelFormats.YUV420],
+)
+def test_frame_to_bgr888_matches_to_bgr888(fmt):
+    buf = _make_buffer(fmt)
+    try:
+        expected = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf)
+    except NotImplementedError:
+        pytest.skip('No backend available')
+
+    frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, buf)
+    np.testing.assert_array_equal(frame_to_bgr888(frame), expected)
