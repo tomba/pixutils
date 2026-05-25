@@ -16,6 +16,13 @@ def _make_buffer(fmt):
     return np.arange(size, dtype=np.uint8)
 
 
+def _require_backend(name):
+    from pixutils.conv import get_backends
+
+    if not get_backends([name]):
+        pytest.skip(f'{name} backend unavailable')
+
+
 @pytest.mark.parametrize(
     'fmt',
     [PixelFormats.RGB888, PixelFormats.YUYV, PixelFormats.NV12, PixelFormats.YUV420],
@@ -126,6 +133,7 @@ def _split_planes(fmt, buf):
     [PixelFormats.RGB888, PixelFormats.YUYV, PixelFormats.NV12, PixelFormats.YUV420],
 )
 def test_from_planes_matches_from_single_buffer(fmt):
+    _require_backend('numpy')
     buf = _make_buffer(fmt)
     opts = {'backends': ['numpy']}  # same backend on both sides
 
@@ -143,6 +151,7 @@ def test_from_planes_wrong_count_raises():
 
 @pytest.mark.parametrize('fmt', [PixelFormats.NV12, PixelFormats.YUV420])
 def test_to_bgr888_accepts_sequence_arr(fmt):
+    _require_backend('numpy')
     buf = _make_buffer(fmt)
     opts = {'backends': ['numpy']}
     single = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts)
@@ -154,6 +163,7 @@ def test_to_bgr888_accepts_sequence_arr(fmt):
 def test_buffer_to_bgr888_accepts_sequence(fmt):
     from pixutils.conv import buffer_to_bgr888
 
+    _require_backend('numpy')
     buf = _make_buffer(fmt)
     opts = {'backends': ['numpy']}
     single = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, buf.tobytes(), opts)
@@ -176,15 +186,12 @@ CROP = (4, 2, 8, 4)  # (x, y, w, h), aligned to 2x2
     ],
 )
 def test_crop_matches_full_subregion(fmt, backend):
+    _require_backend(backend)
     x, y, w, h = CROP
     buf = _make_buffer(fmt)
     opts = {'backends': [backend]}
 
-    try:
-        full = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts)
-    except NotImplementedError:
-        pytest.skip(f'{backend} unavailable')
-
+    full = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts)
     cropped = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts, crop=CROP)
     np.testing.assert_array_equal(cropped, full[y : y + h, x : x + w])
 
@@ -204,7 +211,7 @@ def test_crop_out_of_bounds_raises():
 
 
 def test_opencv_bows_out_on_cropped_nv12():
-    cv2 = pytest.importorskip('cv2')  # noqa: F841
+    _require_backend('opencv')
     fmt = PixelFormats.NV12
     buf = _make_buffer(fmt)
     # opencv-only on a cropped multi-plane frame should have no usable backend
@@ -216,6 +223,7 @@ def test_opencv_bows_out_on_cropped_nv12():
 
 @pytest.mark.parametrize('fmt', [PixelFormats.SRGGB8, PixelFormats.SRGGB10P])
 def test_raw_crop_matches_full_interior(fmt):
+    _require_backend('numpy')
     x, y, w, h = CROP
     buf = _make_buffer(fmt)
     opts = {'backends': ['numpy']}
