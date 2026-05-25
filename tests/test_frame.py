@@ -139,3 +139,24 @@ def test_from_planes_wrong_count_raises():
     buf = _make_buffer(fmt)
     with pytest.raises(ValueError):
         Frame.from_planes(fmt, WIDTH, HEIGHT, _split_planes(fmt, buf)[:1])
+
+
+@pytest.mark.parametrize('fmt', [PixelFormats.NV12, PixelFormats.YUV420])
+def test_to_bgr888_accepts_sequence_arr(fmt):
+    buf = _make_buffer(fmt)
+    opts = {'backends': ['numpy']}
+    single = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts)
+    seq = to_bgr888(fmt, WIDTH, HEIGHT, 0, _split_planes(fmt, buf), opts)
+    np.testing.assert_array_equal(seq, single)
+
+
+@pytest.mark.parametrize('fmt', [PixelFormats.NV12, PixelFormats.YUV420])
+def test_buffer_to_bgr888_accepts_sequence(fmt):
+    from pixutils.conv import buffer_to_bgr888
+
+    buf = _make_buffer(fmt)
+    opts = {'backends': ['numpy']}
+    single = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, buf.tobytes(), opts)
+    planes = [p.tobytes() for p in _split_planes(fmt, buf)]
+    seq = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, planes, opts)
+    np.testing.assert_array_equal(seq, single)

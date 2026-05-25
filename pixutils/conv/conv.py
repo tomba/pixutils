@@ -22,7 +22,7 @@ def to_bgr888(
     width: int,
     height: int,
     bytesperline: int | Sequence[int],
-    arr: npt.NDArray[np.uint8],
+    arr: npt.NDArray[np.uint8] | Sequence[npt.NDArray[np.uint8]],
     options: None | dict = None,
 ) -> npt.NDArray[np.uint8]:
     """
@@ -69,7 +69,8 @@ def to_bgr888(
               strides of the other planes are extrapolated, preserving the padding
               ratio (matches libcamera convention)
             - a sequence of non-zero ints: one stride per plane
-        arr: Numpy array containing the pixel data
+        arr: Either a single numpy array holding all planes back-to-back, or a
+            sequence of per-plane numpy arrays (one per plane of ``fmt``)
         options: Optional dictionary with conversion options:
             - backends: List of backends in priority order, e.g. ['opencv', 'numba']
             - range: 'limited' or 'full' (for YUV formats)
@@ -81,7 +82,10 @@ def to_bgr888(
         (see "Output layout" above).
     """
 
-    frame = Frame.from_single_buffer(fmt, width, height, bytesperline, arr)
+    if isinstance(arr, np.ndarray):
+        frame = Frame.from_single_buffer(fmt, width, height, bytesperline, arr)
+    else:
+        frame = Frame.from_planes(fmt, width, height, arr, bytesperline)
     return frame_to_bgr888(frame, options)
 
 
@@ -171,7 +175,8 @@ def buffer_to_bgr888(
         bytesperline: Bytes per line. Either 0 (natural strides), a single
             non-zero int (stride of plane 0; other planes extrapolated), or a
             sequence of non-zero ints with one value per plane
-        buffer: Buffer-like object containing the pixel data
+        buffer: A single buffer-like object holding all planes, or a list/tuple
+            of per-plane buffer-like objects (one per plane of ``fmt``)
         options: Optional dictionary with conversion options
 
     Returns:
@@ -182,6 +187,8 @@ def buffer_to_bgr888(
         buffer
     """
 
-    arr = np.frombuffer(buffer, dtype=np.uint8)
-    rgb = to_bgr888(fmt, width, height, bytesperline, arr, options)
-    return rgb
+    if isinstance(buffer, (list, tuple)):
+        arr: npt.NDArray | list = [np.frombuffer(b, dtype=np.uint8) for b in buffer]
+    else:
+        arr = np.frombuffer(buffer, dtype=np.uint8)
+    return to_bgr888(fmt, width, height, bytesperline, arr, options)
