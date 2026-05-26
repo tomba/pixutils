@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-import unittest
 from functools import reduce
 from operator import mul
 from typing import NamedTuple
+
+import pytest
 
 from pixutils.formats.pixelformats import PixelFormat, PixelFormats
 
@@ -85,64 +86,57 @@ TEST_DATA = [
 ]
 
 
-class TestFormats(unittest.TestCase):
-    def test_formats(self):
-        for data in TEST_DATA:
-            self.run_data(data)
+@pytest.mark.parametrize('data', TEST_DATA, ids=lambda d: d.format.name)
+def test_plane_strides_and_sizes(data: FormatTestData):
+    fmt = data.format
+    for idx, _ in enumerate(fmt.planes):
+        stride = fmt.stride(data.width, idx)
+        size = fmt.planesize(stride, data.height, idx)
+        assert stride == data.strides[idx], f'stride failed for {fmt}'
+        assert size == data.sizes[idx], f'size failed for {fmt}'
 
-    def run_data(self, data: FormatTestData):
-        fmt = data.format
-        for idx, _ in enumerate(fmt.planes):
-            stride = fmt.stride(data.width, idx)
-            size = fmt.planesize(stride, data.height, idx)
-            self.assertEqual(stride, data.strides[idx], f'stride failed for {fmt}')
-            self.assertEqual(size, data.sizes[idx], f'size failed for {fmt}')
-
-            dumb_size = reduce(mul, fmt.dumb_size(data.width, data.height, idx)) // 8
-
-            self.assertEqual(size, dumb_size, f'dumb size failed for {fmt}')
+        dumb_size = reduce(mul, fmt.dumb_size(data.width, data.height, idx)) // 8
+        assert size == dumb_size, f'dumb size failed for {fmt}'
 
 
-class TestExtrapolateStride(unittest.TestCase):
-    def test_matches_natural_stride(self):
-        # For every planar/semi-planar format, extrapolating from plane-0's
-        # natural stride must reproduce the natural stride of every other plane.
-        width = 1920
-        for fmt in PixelFormats.get_formats():
-            if len(fmt.planes) < 2:
-                continue
-            s0 = fmt.stride(width, 0)
-            for i in range(len(fmt.planes)):
-                self.assertEqual(
-                    fmt.extrapolate_stride(s0, i),
-                    fmt.stride(width, i),
-                    f'extrapolation mismatch for {fmt.name} plane {i}',
-                )
-
-    def test_preserves_padding_ratio(self):
-        # NV12: chroma stride equals luma stride (ratio 1), padding carries over.
-        nv12 = PixelFormats.NV12
-        self.assertEqual(nv12.extrapolate_stride(1920, 1), 1920)
-        self.assertEqual(nv12.extrapolate_stride(2048, 1), 2048)
-
-        # YUV420: chroma stride is half of luma stride; even padding halves.
-        yuv420 = PixelFormats.YUV420
-        self.assertEqual(yuv420.extrapolate_stride(1920, 1), 960)
-        self.assertEqual(yuv420.extrapolate_stride(2048, 1), 1024)
-        self.assertEqual(yuv420.extrapolate_stride(2048, 2), 1024)
-
-    def test_plane_zero_returns_input(self):
-        self.assertEqual(PixelFormats.NV12.extrapolate_stride(1921, 0), 1921)
-
-    def test_raises_on_non_integer_result(self):
-        # YUV420 chroma has hsub=2, so an odd plane-0 stride cannot be halved.
-        with self.assertRaises(ValueError):
-            PixelFormats.YUV420.extrapolate_stride(1921, 1)
-
-    def test_raises_on_invalid_plane_index(self):
-        with self.assertRaises(RuntimeError):
-            PixelFormats.NV12.extrapolate_stride(1920, 2)
+_MULTIPLANE_FORMATS = [f for f in PixelFormats.get_formats() if len(f.planes) >= 2]
 
 
-if __name__ == '__main__':
-    unittest.main()
+@pytest.mark.parametrize('fmt', _MULTIPLANE_FORMATS)
+def test_extrapolate_matches_natural_stride(fmt: PixelFormat):
+    # For every planar/semi-planar format, extrapolating from plane-0's
+    # natural stride must reproduce the natural stride of every other plane.
+    width = 1920
+    s0 = fmt.stride(width, 0)
+    for i in range(len(fmt.planes)):
+        assert fmt.extrapolate_stride(s0, i) == fmt.stride(width, i), (
+            f'extrapolation mismatch for {fmt.name} plane {i}'
+        )
+
+
+def test_extrapolate_preserves_padding_ratio():
+    # NV12: chroma stride equals luma stride (ratio 1), padding carries over.
+    nv12 = PixelFormats.NV12
+    assert nv12.extrapolate_stride(1920, 1) == 1920
+    assert nv12.extrapolate_stride(2048, 1) == 2048
+
+    # YUV420: chroma stride is half of luma stride; even padding halves.
+    yuv420 = PixelFormats.YUV420
+    assert yuv420.extrapolate_stride(1920, 1) == 960
+    assert yuv420.extrapolate_stride(2048, 1) == 1024
+    assert yuv420.extrapolate_stride(2048, 2) == 1024
+
+
+def test_extrapolate_plane_zero_returns_input():
+    assert PixelFormats.NV12.extrapolate_stride(1921, 0) == 1921
+
+
+def test_extrapolate_raises_on_non_integer_result():
+    # YUV420 chroma has hsub=2, so an odd plane-0 stride cannot be halved.
+    with pytest.raises(ValueError):
+        PixelFormats.YUV420.extrapolate_stride(1921, 1)
+
+
+def test_extrapolate_raises_on_invalid_plane_index():
+    with pytest.raises(RuntimeError):
+        PixelFormats.NV12.extrapolate_stride(1920, 2)
