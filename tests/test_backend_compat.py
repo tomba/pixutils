@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 import itertools
-import unittest
 
 import numpy as np
+import pytest
 from test_conv import HEIGHT, WIDTH, generate_test_buffer  # type: ignore[import-not-found]
 
 from pixutils.conv import buffer_to_bgr888
@@ -107,43 +107,21 @@ def compare_bgr(a: np.ndarray, b: np.ndarray, cat: str) -> str:
     return f'within tolerance ({msg})'
 
 
-class TestBackendCompat(unittest.TestCase):
-    pass
-
-
-def _make_test(fmt: PixelFormat, backends: tuple[str, ...]):
-    cat = _category(fmt)
-    base_opts = _format_options(fmt)
-
-    def test(self):
-        buf = generate_test_buffer(fmt)
-        results = {
-            b: buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, dict(base_opts) | {'backends': [b]})
-            for b in backends
-        }
-        for b1, b2 in itertools.combinations(backends, 2):
-            with self.subTest(pair=f'{b1}_vs_{b2}'):
-                compare_bgr(results[b1], results[b2], cat)
-
-    return test
-
-
-def _create_tests():
+def _compat_cases():
+    """(fmt, b1, b2) for every backend pair that supports the format at the probe size."""
+    cases = []
     for fmt in PixelFormats.get_formats():
         if _category(fmt) == 'OTHER':
             continue
         supported = _probe_backends(fmt, _format_options(fmt))
-        if len(supported) < 2:
-            continue
-        setattr(
-            TestBackendCompat,
-            f'test_compat_{fmt.name}',
-            _make_test(fmt, tuple(supported)),
-        )
+        cases.extend((fmt, b1, b2) for b1, b2 in itertools.combinations(supported, 2))
+    return cases
 
 
-_create_tests()
-
-
-if __name__ == '__main__':
-    unittest.main()
+@pytest.mark.parametrize(('fmt', 'b1', 'b2'), _compat_cases())
+def test_compat(fmt: PixelFormat, b1: str, b2: str):
+    base_opts = _format_options(fmt)
+    buf = generate_test_buffer(fmt)
+    out1 = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, dict(base_opts) | {'backends': [b1]})
+    out2 = buffer_to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, dict(base_opts) | {'backends': [b2]})
+    compare_bgr(out1, out2, _category(fmt))
