@@ -4,9 +4,9 @@ import argparse
 import gzip
 import hashlib
 import sys
-import unittest
 
 import numpy as np
+import pytest
 from test_conv_data import FMTS  # type: ignore[import-not-found]
 
 from pixutils.conv import buffer_to_bgr888
@@ -223,89 +223,61 @@ def _make_padded_buf(fmt: PixelFormat, base_buf: np.ndarray) -> np.ndarray:
     return np.ascontiguousarray(np.concatenate(planes))
 
 
-class TestConv(unittest.TestCase):
-    # Test functions added dynamically below
-    pass
-
-
-def create_test_function(test_case):
-    def test_function(self):
-        src_buf = generate_test_buffer(test_case.pixel_format)
-        try:
-            rgb_buf = buffer_to_bgr888(
-                test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options
-            )
-        except NotImplementedError as e:
-            raise unittest.SkipTest('No backend available') from e
-
-        src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
-        rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
-
-        self.assertEqual(
-            src_sha, test_case.src_sha, f'SHA mismatch for {test_case.description} source'
-        )
-        self.assertEqual(
-            rgb_sha, test_case.rgb_sha, f'SHA mismatch for {test_case.description} RGB'
-        )
-
-    return test_function
-
-
-def create_test_functions():
-    # Create test methods dynamically at module level for unittest discovery
-    for test_case in FMTS:
-        test_name = f'test_conv_{test_case.description}'
-        test_func = create_test_function(test_case)
-        setattr(TestConv, test_name, test_func)
-
-
-create_test_functions()
-
-
-class TestConvStride(unittest.TestCase):
-    # Test functions added dynamically below
-    pass
-
-
-def create_stride_test_function(test_case, padded: bool):
-    def test_function(self):
-        fmt = test_case.pixel_format
-        base_buf = generate_test_buffer(fmt)
-
-        if len(fmt.planes) == 1:
-            stride = fmt.stride(WIDTH, 0)
-            bpl: int | tuple[int, ...] = stride + PADDING_BYTES if padded else stride
+def _case_id(test_case):
+    # Flatten format + options into clean dash-separated tokens, e.g.
+    # 'NV12-numba-bt601-limited', rather than reusing test_case.description
+    # (which embeds option keys and Python list reprs like "backends_['numba']").
+    parts = [test_case.pixel_format.name]
+    for _, value in sorted(test_case.options.items()):
+        if isinstance(value, list):
+            parts.extend(str(v) for v in value)
         else:
-            bpl = (
-                tuple(fmt.stride(WIDTH, i) + PADDING_BYTES for i in range(len(fmt.planes)))
-                if padded
-                else tuple(fmt.stride(WIDTH, i) for i in range(len(fmt.planes)))
-            )
+            parts.append(str(value))
+    return '-'.join(parts)
 
-        test_buf = _make_padded_buf(fmt, base_buf) if padded else base_buf
 
-        try:
-            rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, bpl, test_buf, test_case.options)
-        except NotImplementedError as e:
-            raise unittest.SkipTest('No backend available') from e
+@pytest.mark.parametrize('test_case', FMTS, ids=_case_id)
+def test_conv(test_case):
+    src_buf = generate_test_buffer(test_case.pixel_format)
+    try:
+        rgb_buf = buffer_to_bgr888(
+            test_case.pixel_format, WIDTH, HEIGHT, 0, src_buf, test_case.options
+        )
+    except NotImplementedError:
+        pytest.skip('No backend available')
 
-        rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
-        self.assertEqual(
-            rgb_sha, test_case.rgb_sha, f'SHA mismatch for {test_case.description} stride={bpl}'
+    src_sha = hashlib.sha256(src_buf.tobytes()).hexdigest()
+    rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
+
+    assert src_sha == test_case.src_sha, f'SHA mismatch for {test_case.description} source'
+    assert rgb_sha == test_case.rgb_sha, f'SHA mismatch for {test_case.description} RGB'
+
+
+@pytest.mark.parametrize('padded', [False, True], ids=['exact', 'padded'])
+@pytest.mark.parametrize('test_case', FMTS, ids=_case_id)
+def test_conv_stride(test_case, padded):
+    fmt = test_case.pixel_format
+    base_buf = generate_test_buffer(fmt)
+
+    if len(fmt.planes) == 1:
+        stride = fmt.stride(WIDTH, 0)
+        bpl: int | tuple[int, ...] = stride + PADDING_BYTES if padded else stride
+    else:
+        bpl = (
+            tuple(fmt.stride(WIDTH, i) + PADDING_BYTES for i in range(len(fmt.planes)))
+            if padded
+            else tuple(fmt.stride(WIDTH, i) for i in range(len(fmt.planes)))
         )
 
-    return test_function
+    test_buf = _make_padded_buf(fmt, base_buf) if padded else base_buf
 
+    try:
+        rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, bpl, test_buf, test_case.options)
+    except NotImplementedError:
+        pytest.skip('No backend available')
 
-def create_stride_test_functions():
-    for test_case in FMTS:
-        for padded in [False, True]:
-            suffix = 'padded' if padded else 'exact'
-            name = f'test_conv_stride_{suffix}_{test_case.description}'
-            setattr(TestConvStride, name, create_stride_test_function(test_case, padded))
-
-
-create_stride_test_functions()
+    rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
+    assert rgb_sha == test_case.rgb_sha, f'SHA mismatch for {test_case.description} stride={bpl}'
 
 
 def _make_extrapolated_padded_buf(
@@ -328,71 +300,61 @@ def _make_extrapolated_padded_buf(
     return np.ascontiguousarray(np.concatenate(planes))
 
 
-class TestConvIntStride(unittest.TestCase):
-    # Test functions added dynamically below
-    pass
-
-
-def create_int_stride_test_function(test_case, padded: bool):
-    def test_function(self):
-        fmt = test_case.pixel_format
-        base_buf = generate_test_buffer(fmt)
-
-        plane0_stride = fmt.stride(WIDTH, 0)
-        bpl = plane0_stride + PADDING_BYTES if padded else plane0_stride
-        test_buf = (
-            _make_extrapolated_padded_buf(fmt, base_buf, PADDING_BYTES) if padded else base_buf
-        )
-
-        try:
-            rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, bpl, test_buf, test_case.options)
-        except NotImplementedError as e:
-            raise unittest.SkipTest('No backend available') from e
-
-        rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
-        self.assertEqual(
-            rgb_sha, test_case.rgb_sha, f'SHA mismatch for {test_case.description} int stride={bpl}'
-        )
-
-    return test_function
-
-
-def create_int_stride_test_functions():
+def _int_stride_cases():
     # The int-bytesperline code path only differs from the sequence path for
     # multiplane formats (where it extrapolates non-plane-0 strides). Single-plane
-    # formats are already covered by TestConvStride. Limit to one representative
+    # formats are already covered by test_conv_stride. Limit to one representative
     # test case per multiplane format to keep the matrix small.
     seen_formats = set()
+    cases = []
     for test_case in FMTS:
         fmt = test_case.pixel_format
         if len(fmt.planes) < 2 or fmt.name in seen_formats:
             continue
         seen_formats.add(fmt.name)
-        for padded in [False, True]:
-            suffix = 'padded' if padded else 'exact'
-            name = f'test_conv_int_stride_{suffix}_{test_case.description}'
-            setattr(TestConvIntStride, name, create_int_stride_test_function(test_case, padded))
+        cases.append(test_case)
+    return cases
 
 
-create_int_stride_test_functions()
+@pytest.mark.parametrize('padded', [False, True], ids=['exact', 'padded'])
+@pytest.mark.parametrize('test_case', _int_stride_cases(), ids=_case_id)
+def test_conv_int_stride(test_case, padded):
+    fmt = test_case.pixel_format
+    base_buf = generate_test_buffer(fmt)
+
+    plane0_stride = fmt.stride(WIDTH, 0)
+    bpl = plane0_stride + PADDING_BYTES if padded else plane0_stride
+    test_buf = _make_extrapolated_padded_buf(fmt, base_buf, PADDING_BYTES) if padded else base_buf
+
+    try:
+        rgb_buf = buffer_to_bgr888(fmt, WIDTH, HEIGHT, bpl, test_buf, test_case.options)
+    except NotImplementedError:
+        pytest.skip('No backend available')
+
+    rgb_sha = hashlib.sha256(rgb_buf.tobytes()).hexdigest()
+    assert rgb_sha == test_case.rgb_sha, (
+        f'SHA mismatch for {test_case.description} int stride={bpl}'
+    )
 
 
 def main():
-    parser = argparse.ArgumentParser(add_help=False)
+    parser = argparse.ArgumentParser(
+        description='Test-data tooling for the conversion tests. Run the tests themselves with pytest.'
+    )
     parser.add_argument(
         '--save', action='store_true', help='Generate frames, save to files and exit.'
     )
     parser.add_argument(
         '--generate-data', action='store_true', help='Generate FMTS list, print and exit.'
     )
-    args, _ = parser.parse_known_args()
+    args = parser.parse_args()
 
     if args.save:
         save_test_data()
     elif args.generate_data:
         generate_test_data()
     else:
-        unittest.main()
+        parser.error('nothing to do: pass --save or --generate-data (run the tests with pytest)')
 
 
 if __name__ == '__main__':
