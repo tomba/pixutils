@@ -22,7 +22,7 @@ HEIGHT = 480
 
 SEED = 1234
 
-BACKENDS = ['opencv', 'numba', 'numpy']
+BACKENDS = ['opencv', 'pixpat', 'numba', 'numpy']
 
 
 def get_bit_mask(fmt: PixelFormat):

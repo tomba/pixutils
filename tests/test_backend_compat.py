@@ -13,7 +13,7 @@ from test_conv import HEIGHT, WIDTH, generate_test_buffer  # type: ignore[import
 from pixutils.conv import buffer_to_bgr888
 from pixutils.formats import PixelColorEncoding, PixelFormat, PixelFormats
 
-BACKENDS = ('opencv', 'numba', 'numpy')
+BACKENDS = ('opencv', 'pixpat', 'numba', 'numpy')
 
 # For each backend pair we compute the per-pixel absolute BGR difference and
 # summarize it with three statistics:

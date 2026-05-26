@@ -31,10 +31,19 @@ Repository = 'https://github.com/tomba/pixutils.git'
 
 [project.optional-dependencies]
 conv = ['numpy', 'numba', 'opencv-python']
+pixpat = ['pixpat @ git+https://github.com/tomba/pixpat.git@v1.0']
 qt = ['PyQt6']
 png = ['Pillow']
 test = ['pytest']
-all = ['numpy', 'numba', 'opencv-python', 'PyQt6', 'Pillow', 'pytest']
+all = [
+  'numpy',
+  'numba',
+  'opencv-python',
+  'pixpat @ git+https://github.com/tomba/pixpat.git@v1.0',
+  'PyQt6',
+  'Pillow',
+  'pytest',
+]
 
 [tool.ruff]
 line-length = 100

@@ -139,6 +139,14 @@ def frame_to_bgr888(
                 break
             # opencv couldn't handle this format/options, try next backend
             continue
+        elif backend == 'pixpat':
+            from .pixpat import pixpat_to_bgr888
+
+            result = pixpat_to_bgr888(frame, options)
+            if result is not None:
+                break
+            # pixpat couldn't handle this format/options, try next backend
+            continue
         elif backend == 'numba':
             from .numba import numba_to_bgr888
 
