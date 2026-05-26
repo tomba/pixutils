@@ -739,7 +739,7 @@ FMTS = [
         {'backends': ['numpy'], 'range': 'full', 'encoding': 'bt2020'}),
     ConvTestCase(PixelFormats.Y8,
         '170bae8380e86c8080fa6ae6ac0b9b309ce55dff20a0a986a85142a487503b96',
-        '049ffe7a6db39bd6563ab481afa50b2d5eab4d77a36cf3e80929929e3bdc4673',
+        'e29d288ec5df82a04d77b332c212ca8daee071fd892ac769ea54de6a2c0c47c2',
         {'backends': ['numpy'], 'range': 'limited'}),
     ConvTestCase(PixelFormats.Y8,
         '170bae8380e86c8080fa6ae6ac0b9b309ce55dff20a0a986a85142a487503b96',

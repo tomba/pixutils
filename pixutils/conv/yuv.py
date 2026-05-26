@@ -194,21 +194,19 @@ def y8_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8]:
     h = frame.height
     stride = frame.strides[0]
 
-    color_range = options.get('range', 'full') if options else 'full'
-
     y = as_strided(frame.planes[0], shape=(h, w), strides=(stride, 1), writeable=False)
 
-    if color_range == 'limited':
-        # Convert from limited range (16-235) to full range (0-255)
-        y = np.clip((y.astype(np.float32) - 16) * 255 / 219, 0, 255).astype(np.uint8)
+    # Treat luma-only data as YCbCr with neutral chroma so the result follows
+    # the full YCbCr->RGB path (matrix + range/encoding) like every other YUV
+    # format, instead of a bare Y replication. With U=V=128 the chroma terms
+    # cancel, leaving R=G=B scaled by the luma coefficient for the selected
+    # range (default 'limited', as for the other YUV formats).
+    yuv = np.empty((h, w, 3), dtype=np.uint8)
+    yuv[:, :, 0] = y
+    yuv[:, :, 1] = 128
+    yuv[:, :, 2] = 128
 
-    # Create grayscale RGB (Y becomes R=G=B)
-    rgb = np.empty((h, w, 3), dtype=np.uint8)
-    rgb[:, :, 0] = y  # B
-    rgb[:, :, 1] = y  # G
-    rgb[:, :, 2] = y  # R
-
-    return rgb
+    return ycbcr_to_bgr888(yuv, options)
 
 
 def yuv_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8] | None:
