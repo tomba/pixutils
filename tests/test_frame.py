@@ -25,7 +25,15 @@ def _require_backend(name):
 
 @pytest.mark.parametrize(
     'fmt',
-    [PixelFormats.RGB888, PixelFormats.YUYV, PixelFormats.NV12, PixelFormats.YUV420],
+    [
+        PixelFormats.RGB888,
+        PixelFormats.YUYV,
+        PixelFormats.NV12,
+        PixelFormats.NV16,
+        PixelFormats.YUV420,
+        PixelFormats.YUV422,
+        PixelFormats.SRGGB10P,
+    ],
 )
 def test_natural_strides_split(fmt):
     buf = _make_buffer(fmt)
@@ -103,7 +111,16 @@ def test_zero_stride_in_sequence_raises():
 
 @pytest.mark.parametrize(
     'fmt',
-    [PixelFormats.RGB888, PixelFormats.YUYV, PixelFormats.NV12, PixelFormats.YUV420],
+    [
+        PixelFormats.RGB888,
+        PixelFormats.YUYV,
+        PixelFormats.Y8,
+        PixelFormats.NV12,
+        PixelFormats.NV16,
+        PixelFormats.YUV420,
+        PixelFormats.YUV422,
+        PixelFormats.SRGGB8,
+    ],
 )
 def test_frame_to_bgr888_matches_to_bgr888(fmt):
     buf = _make_buffer(fmt)
@@ -130,7 +147,14 @@ def _split_planes(fmt, buf):
 
 @pytest.mark.parametrize(
     'fmt',
-    [PixelFormats.RGB888, PixelFormats.YUYV, PixelFormats.NV12, PixelFormats.YUV420],
+    [
+        PixelFormats.RGB888,
+        PixelFormats.YUYV,
+        PixelFormats.NV12,
+        PixelFormats.NV16,
+        PixelFormats.YUV420,
+        PixelFormats.YUV422,
+    ],
 )
 def test_from_planes_matches_from_single_buffer(fmt):
     _require_backend('numpy')
@@ -149,7 +173,10 @@ def test_from_planes_wrong_count_raises():
         Frame.from_planes(fmt, WIDTH, HEIGHT, _split_planes(fmt, buf)[:1])
 
 
-@pytest.mark.parametrize('fmt', [PixelFormats.NV12, PixelFormats.YUV420])
+@pytest.mark.parametrize(
+    'fmt',
+    [PixelFormats.NV12, PixelFormats.NV16, PixelFormats.YUV420, PixelFormats.YUV422],
+)
 def test_to_bgr888_accepts_sequence_arr(fmt):
     _require_backend('numpy')
     buf = _make_buffer(fmt)
@@ -159,7 +186,10 @@ def test_to_bgr888_accepts_sequence_arr(fmt):
     np.testing.assert_array_equal(seq, single)
 
 
-@pytest.mark.parametrize('fmt', [PixelFormats.NV12, PixelFormats.YUV420])
+@pytest.mark.parametrize(
+    'fmt',
+    [PixelFormats.NV12, PixelFormats.NV16, PixelFormats.YUV420, PixelFormats.YUV422],
+)
 def test_buffer_to_bgr888_accepts_sequence(fmt):
     from pixutils.conv import buffer_to_bgr888
 
@@ -179,10 +209,16 @@ CROP = (4, 2, 8, 4)  # (x, y, w, h), aligned to 2x2
     ('fmt', 'backend'),
     [
         (PixelFormats.RGB888, 'numpy'),
+        (PixelFormats.RGB888, 'opencv'),
         (PixelFormats.YUYV, 'numpy'),
+        (PixelFormats.YUYV, 'numba'),
+        (PixelFormats.YUYV, 'opencv'),
         (PixelFormats.NV12, 'numpy'),
         (PixelFormats.NV12, 'numba'),
+        (PixelFormats.NV16, 'numpy'),
+        (PixelFormats.NV16, 'numba'),
         (PixelFormats.YUV420, 'numpy'),
+        (PixelFormats.YUV422, 'numpy'),
     ],
 )
 def test_crop_matches_full_subregion(fmt, backend):
@@ -221,12 +257,13 @@ def test_opencv_bows_out_on_cropped_nv12():
     to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, {'backends': ['opencv']})
 
 
+@pytest.mark.parametrize('backend', ['numpy', 'numba'])
 @pytest.mark.parametrize('fmt', [PixelFormats.SRGGB8, PixelFormats.SRGGB10P])
-def test_raw_crop_matches_full_interior(fmt):
-    _require_backend('numpy')
+def test_raw_crop_matches_full_interior(fmt, backend):
+    _require_backend(backend)
     x, y, w, h = CROP
     buf = _make_buffer(fmt)
-    opts = {'backends': ['numpy']}
+    opts = {'backends': [backend]}
 
     full = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts)
     cropped = to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, opts, crop=CROP)
