@@ -24,8 +24,8 @@ jobs:
         pip install .[all]
         pip install pylint ruff
 
-    - name: Test with unittest
-      run: python3 -m unittest discover -v tests/
+    - name: Test with pytest
+      run: python3 -m pytest tests/
 
     - name: Analysing the code with Pyright
       uses: jakebailey/pyright-action@v3
