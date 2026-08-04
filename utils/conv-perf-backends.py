@@ -41,7 +41,7 @@ def run_one(
             buffer_to_bgr888(fmt, width, height, strides, buf, options)
     except NotImplementedError:
         return None
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - see comment above
         return f'{type(e).__name__}: {e}'
 
     min_iter_s = float('inf')
