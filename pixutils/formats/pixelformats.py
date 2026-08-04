@@ -24,7 +24,7 @@ class PixelFormatPlaneInfo(NamedTuple):
 
 
 def _div_round_up(a: int, b: int):
-    return int(ceil(a / b))
+    return ceil(a / b)
 
 
 def _align_up(a: int, b: int):
@@ -1210,8 +1210,7 @@ def dump_c_structs():
 # Validate that the format names match the field names, and that the fourccs are unique
 def validate_formats():
     for f in PixelFormats.get_formats():
-        # pylint: disable=consider-iterating-dictionary
-        assert f.name in PixelFormats.__dict__.keys(), f.name
+        assert f.name in PixelFormats.__dict__, f.name
 
     names = [f.name for f in PixelFormats.get_formats()]
     assert len(names) == len(set(names))
