@@ -3,16 +3,16 @@
 # XXX I have not been able to get PyQt6 imported to pylint
 # pylint: skip-file
 
-import os
 import gzip
+import os
 import sys
 
 import numpy as np
 from PyQt6 import QtWidgets
 
-from pixutils.formats import PixelFormats, str_to_fourcc
 from pixutils.conv import buffer_to_bgr888
 from pixutils.conv.qt import bgr888_to_pix
+from pixutils.formats import PixelFormats, str_to_fourcc
 
 TEST_PATH = os.path.dirname(os.path.abspath(__file__))
 

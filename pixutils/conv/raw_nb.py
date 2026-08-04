@@ -12,7 +12,7 @@ from numba import njit  # type: ignore[import-not-found]
 from pixutils.formats import PixelFormat
 
 # Import shared code from raw.py
-from .raw import BayerPattern, RawFormat, prepare_unpacked_raw, mosaic
+from .raw import BayerPattern, RawFormat, mosaic, prepare_unpacked_raw
 
 __all__ = ['raw_to_bgr888_nb']
 

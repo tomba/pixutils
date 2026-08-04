@@ -7,7 +7,6 @@ import json
 import os
 import sys
 
-
 SHARED_KEYS = ('width', 'height', 'padding', 'backends', 'options')
 
 

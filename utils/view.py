@@ -16,9 +16,9 @@ import typing
 import numpy as np
 from PyQt6 import QtCore, QtWidgets
 
-from pixutils.formats import PixelFormats
 from pixutils.conv import buffer_to_bgr888
 from pixutils.conv.qt import bgr888_to_pix
+from pixutils.formats import PixelFormats
 
 
 class ZoomableImageWidget(QtWidgets.QLabel):
@@ -62,8 +62,7 @@ class ZoomableImageWidget(QtWidgets.QLabel):
     def zoom_out(self, center_point=None):
         old_scale = self.scale_factor
         self.scale_factor /= 1.1
-        if self.scale_factor < 0.01:
-            self.scale_factor = 0.01
+        self.scale_factor = max(self.scale_factor, 0.01)
         self.update_pixmap(center_point, old_scale)
 
     def reset_zoom(self):

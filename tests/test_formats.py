@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
+import unittest
 from functools import reduce
 from operator import mul
 from typing import NamedTuple
-import unittest
 
 from pixutils.formats.pixelformats import PixelFormat, PixelFormats
 

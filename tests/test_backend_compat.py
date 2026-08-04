@@ -8,11 +8,10 @@ import itertools
 import unittest
 
 import numpy as np
+from test_conv import HEIGHT, WIDTH, generate_test_buffer  # type: ignore[import-not-found]
 
-from pixutils.formats import PixelFormat, PixelColorEncoding, PixelFormats
 from pixutils.conv import buffer_to_bgr888
-from test_conv import WIDTH, HEIGHT, generate_test_buffer  # type: ignore[import-not-found]
-
+from pixutils.formats import PixelColorEncoding, PixelFormat, PixelFormats
 
 BACKENDS = ('opencv', 'numba', 'numpy')
 

@@ -6,7 +6,7 @@ from __future__ import annotations
 import numpy as np
 import numpy.typing as npt
 
-from pixutils.formats import PixelFormat, PixelColorEncoding
+from pixutils.formats import PixelColorEncoding, PixelFormat
 
 __all__ = ['opencv_to_bgr888']
 

@@ -6,10 +6,12 @@
 
 from __future__ import annotations
 
-import numpy.typing as npt
 import numpy as np
+import numpy.typing as npt
 from PyQt6 import QtGui
+
 from pixutils.formats import PixelFormat, PixelFormats
+
 from .conv import buffer_to_bgr888
 
 

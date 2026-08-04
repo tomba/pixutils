@@ -1,3 +1,3 @@
-from .pixelformats import *
-from .metaformats import *
 from .fourcc_str import *
+from .metaformats import *
+from .pixelformats import *

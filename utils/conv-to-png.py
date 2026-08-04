@@ -10,8 +10,8 @@ import typing
 import numpy as np
 from PIL import Image
 
-from pixutils.formats import PixelFormats
 from pixutils.conv import buffer_to_bgr888
+from pixutils.formats import PixelFormats
 
 
 def parse_filename_heuristics(filename):

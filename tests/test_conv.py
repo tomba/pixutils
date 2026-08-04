@@ -3,13 +3,14 @@
 import argparse
 import gzip
 import hashlib
-import unittest
-import numpy as np
 import sys
+import unittest
 
-from pixutils.formats import PixelFormat, PixelColorEncoding, PixelFormats
-from pixutils.conv import buffer_to_bgr888
+import numpy as np
 from test_conv_data import FMTS  # type: ignore[import-not-found]
+
+from pixutils.conv import buffer_to_bgr888
+from pixutils.formats import PixelColorEncoding, PixelFormat, PixelFormats
 
 # 636 is the nearest multiple of 12 to 640. 12 is the LCM of the width
 # pixel_align values across all defined formats (driven by P030/P230 which

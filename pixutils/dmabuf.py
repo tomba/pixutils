@@ -1,6 +1,5 @@
 import ctypes
 import fcntl
-
 from enum import IntFlag
 
 from pixutils.ioctl import IOW

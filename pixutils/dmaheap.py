@@ -1,5 +1,4 @@
 import ctypes
-
 import fcntl
 import os
 import weakref
@@ -11,7 +10,7 @@ __all__ = ['DMAHeap', 'DMAHeapBuffer']
 
 # pylint: disable=invalid-name
 class struct_dma_heap_allocation_data(ctypes.Structure):
-    __slots__ = ['len', 'fd', 'fd_flags', 'heap_flags']
+    __slots__ = ['fd', 'fd_flags', 'heap_flags', 'len']
     _fields_ = [
         ('len', ctypes.c_uint64),
         ('fd', ctypes.c_uint32),

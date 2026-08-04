@@ -13,8 +13,8 @@ from datetime import datetime, timezone
 
 import numpy as np
 
-from pixutils.formats import PixelFormats
 from pixutils.conv import buffer_to_bgr888
+from pixutils.formats import PixelFormats
 
 
 def run_one(
@@ -43,8 +43,7 @@ def run_one(
             iters += 1
             t_now = time.perf_counter()
             dt = t_now - t_prev
-            if dt < min_iter_s:
-                min_iter_s = dt
+            min_iter_s = min(min_iter_s, dt)
             t_prev = t_now
             elapsed = t_now - t_start
             if elapsed >= args.time:

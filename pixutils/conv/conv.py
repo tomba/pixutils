@@ -8,12 +8,12 @@ from collections.abc import Sequence
 import numpy as np
 import numpy.typing as npt
 
-from pixutils.formats import PixelFormat, PixelColorEncoding
+from pixutils.formats import PixelColorEncoding, PixelFormat
 
-from .yuv import yuv_to_bgr888
-from .rgb import rgb_to_bgr888
-from .raw import raw_to_bgr888
 from .backends import get_backends
+from .raw import raw_to_bgr888
+from .rgb import rgb_to_bgr888
+from .yuv import yuv_to_bgr888
 
 
 def to_bgr888(

@@ -10,7 +10,8 @@ import numpy as np
 import numpy.typing as npt
 from numpy.lib.stride_tricks import as_strided
 
-from pixutils.formats import PixelFormat, PixelFormats, PixelColorEncoding
+from pixutils.formats import PixelColorEncoding, PixelFormat, PixelFormats
+
 from .utils import strip_padding
 
 __all__ = ['opencv_convert']

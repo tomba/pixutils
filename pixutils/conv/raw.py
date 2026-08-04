@@ -10,7 +10,7 @@ import numpy.typing as npt
 
 from pixutils.formats import PixelFormat
 
-__all__ = ['raw_to_bgr888', 'BayerPattern', 'RawFormat']
+__all__ = ['BayerPattern', 'RawFormat', 'raw_to_bgr888']
 
 
 @dataclass
