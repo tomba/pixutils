@@ -192,13 +192,17 @@ def save_test_data():
         src_file = f'{base_name}.bin.gz'
         rgb_file = f'{base_name}-BGR888.bin.gz'
 
-        with open(src_file, 'wb') as raw:
-            with gzip.GzipFile(fileobj=raw, mode='wb', mtime=0) as gz:
-                gz.write(src_buf.tobytes())
+        with (
+            open(src_file, 'wb') as raw,
+            gzip.GzipFile(fileobj=raw, mode='wb', mtime=0) as gz,
+        ):
+            gz.write(src_buf.tobytes())
 
-        with open(rgb_file, 'wb') as raw:
-            with gzip.GzipFile(fileobj=raw, mode='wb', mtime=0) as gz:
-                gz.write(rgb_buf.tobytes())
+        with (
+            open(rgb_file, 'wb') as raw,
+            gzip.GzipFile(fileobj=raw, mode='wb', mtime=0) as gz,
+        ):
+            gz.write(rgb_buf.tobytes())
 
 
 PADDING_BYTES = 128
