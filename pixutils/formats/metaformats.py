@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import ClassVar
+
 from .fourcc_str import str_to_fourcc
 
 __all__ = ['MetaFormat', 'MetaFormats']
@@ -36,7 +38,7 @@ class MetaFormat:
 
 
 class MetaFormats:
-    __FMT_LIST: list[MetaFormat] = []
+    __FMT_LIST: ClassVar[list[MetaFormat]] = []
 
     @staticmethod
     def __init_fmt_list():

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from enum import Enum
 from math import ceil
-from typing import NamedTuple
+from typing import ClassVar, NamedTuple
 
 from .fourcc_str import fourcc_to_str, str_to_fourcc
 
@@ -177,7 +177,7 @@ class PixelFormat:
 
 
 class PixelFormats:
-    __FMT_LIST: list[PixelFormat] = []
+    __FMT_LIST: ClassVar[list[PixelFormat]] = []
 
     @staticmethod
     def __init_fmt_list():
