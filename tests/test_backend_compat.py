@@ -34,13 +34,17 @@ BACKENDS = ('opencv', 'pixpat', 'numba', 'numpy')
 #   * YUV — all backends share BT.601 limited-range coefficients, but opencv
 #     interpolates chroma at subsampling boundaries while numba/numpy do
 #     nearest-neighbor, so a handful of LSBs of disagreement is expected.
-#   * RAW — opencv, numba and numpy each use a different demosaic algorithm,
-#     so per-pixel differences are routinely large (just not channel-swap
-#     large).
+#   * RAW — opencv, pixpat, numba and numpy each use a different demosaic
+#     algorithm, so per-pixel differences are routinely large (just not
+#     channel-swap large). On random uniform data the worst pair currently
+#     sits at ch_mean 28.1, p99 117, max 198. ch_mean and p99 carry the
+#     signal here: a one-pixel channel displacement in one backend's demosaic
+#     took them to 48.2 and 134, while max barely moved (196), so the max
+#     threshold is only a backstop.
 TOLERANCES = {
     'RGB': {'ch_mean': 0.0, 'p99': 0, 'max': 0},
     'YUV': {'ch_mean': 3.0, 'p99': 15, 'max': 25},
-    'RAW': {'ch_mean': 55.0, 'p99': 140, 'max': 210},
+    'RAW': {'ch_mean': 32.0, 'p99': 125, 'max': 205},
 }
 
 
