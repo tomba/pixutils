@@ -261,6 +261,30 @@ def test_crop_misaligned_raises():
         frame.crop(1, 0, 8, 4)  # odd x, NV12 requires multiples of 2
 
 
+@pytest.mark.parametrize(
+    ('fmt', 'rect'),
+    [
+        # Y210 packs two pixels into one 8-byte block, but declares
+        # pixel_align (1, 1), so an odd x or w has no byte representation.
+        (PixelFormats.Y210, (1, 0, 8, 4)),
+        (PixelFormats.Y210, (0, 0, 7, 4)),
+        # YUV420 declares pixel_align (1, 1) as well, but its chroma planes
+        # are subsampled by 2 in both directions.
+        (PixelFormats.YUV420, (1, 0, 8, 4)),
+        (PixelFormats.YUV420, (0, 1, 8, 4)),
+        (PixelFormats.YUV420, (0, 0, 7, 4)),
+        (PixelFormats.YUV420, (0, 0, 8, 3)),
+        # YUV422 subsamples chroma horizontally only.
+        (PixelFormats.YUV422, (1, 0, 8, 4)),
+        (PixelFormats.YUV422, (0, 0, 7, 4)),
+    ],
+)
+def test_crop_macropixel_misaligned_raises(fmt, rect):
+    frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, _make_buffer(fmt))
+    with pytest.raises(ValueError):
+        frame.crop(*rect)
+
+
 def test_crop_out_of_bounds_raises():
     fmt = PixelFormats.RGB888
     frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, _make_buffer(fmt))
