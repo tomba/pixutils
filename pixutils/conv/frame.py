@@ -195,6 +195,10 @@ class Frame:
         be multiples of ``crop_align()[0]`` and ``y``/``h`` of
         ``crop_align()[1]``, and the region must lie within the frame;
         otherwise ``ValueError`` is raised.
+
+        Each plane view ends at the last byte the crop covers, so the plane
+        sizes stay consistent with the crop size and :meth:`combined` keeps
+        working.
         """
         fmt = self.fmt
         ax, ay = self.crop_align()
@@ -214,6 +218,11 @@ class Frame:
             stride = self.strides[i]
             x_bytes = (x // pi.pixels_per_block) * pi.bytes_per_block // pi.hsub
             start = (y // pi.vsub) * stride + x_bytes
-            new_planes.append(self.planes[i][start:])
+            # Full rows for all but the last one, which is only as wide as the
+            # crop. Trimming here keeps the plane in step with the crop size,
+            # so a full-width crop is a plain frame again and combined() stays
+            # meaningful.
+            size = (h // pi.vsub - 1) * stride + fmt.stride(w, i)
+            new_planes.append(self.planes[i][start : start + size])
 
         return Frame(fmt, w, h, tuple(new_planes), self.strides)
