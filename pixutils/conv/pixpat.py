@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 import pixpat as _pixpat
 
-from pixutils.formats import PixelFormat
+from pixutils.formats import PixelColorEncoding, PixelFormat
 
 from .frame import Frame
 
@@ -34,6 +34,13 @@ def _can_use_pixpat(fmt: PixelFormat, options: dict | None) -> bool:
             return False
         if options.get('range', 'limited') not in _RANGE_MAP:
             return False
+        # pixpat decodes Bayer sources with its own built-in demosaic and
+        # offers no way to select another one, so only answer to 'pixpat' (and
+        # to no request at all).
+        if fmt.color == PixelColorEncoding.RAW:
+            demosaic = options.get('demosaic_method')
+            if demosaic is not None and demosaic != 'pixpat':
+                return False
 
     return True
 

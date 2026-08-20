@@ -260,6 +260,9 @@ class InfoPanel(QtWidgets.QWidget):
         if 'opencv' in backends:
             methods.append('opencv')
 
+        if 'pixpat' in backends:
+            methods.append('pixpat')
+
         if 'numba' in backends:
             if '3x3' not in methods:
                 methods.append('3x3')

@@ -77,7 +77,10 @@ def to_bgr888(
             - backends: List of backends in priority order, e.g. ['opencv', 'numba']
             - range: 'limited' or 'full' (for YUV formats)
             - encoding: 'bt601' (for YUV formats)
-            - demosaic_method: '3x3', 'bilinear', 'mosaic', or 'opencv' (for RAW formats)
+            - demosaic_method: '3x3', 'bilinear', 'mosaic', 'opencv', or
+              'pixpat' (for RAW formats). 'opencv' and 'pixpat' name the
+              built-in demosaic of the backend of the same name; the others
+              are provided by the numba and numpy backends
         crop: Optional ``(x, y, w, h)`` sub-region to convert. ``width``/``height``
             still describe the full source buffer; ``crop`` selects the output
             region. See :meth:`Frame.crop` for alignment requirements.
