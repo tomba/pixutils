@@ -109,6 +109,28 @@ def test_zero_stride_in_sequence_raises():
         Frame.from_single_buffer(fmt, WIDTH, HEIGHT, [fmt.stride(WIDTH, 0), 0], buf)
 
 
+def test_frame_equality_is_identity():
+    fmt = PixelFormats.NV12
+    buf = _make_buffer(fmt)
+    f1 = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, buf)
+    f2 = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, buf)
+
+    # The planes are ndarrays, so field-wise comparison cannot work. Frame
+    # therefore uses identity semantics rather than raising.
+    alias = f1
+    assert f1 == alias
+    assert f1 != f2
+
+
+def test_frame_is_hashable():
+    fmt = PixelFormats.NV12
+    buf = _make_buffer(fmt)
+    f1 = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, buf)
+    f2 = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, buf)
+
+    assert len({f1, f2, f1}) == 2
+
+
 @pytest.mark.parametrize(
     'fmt',
     [
