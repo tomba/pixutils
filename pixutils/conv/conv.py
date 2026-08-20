@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import os
+import sys
 from collections.abc import Sequence
 
 import numpy as np
@@ -15,6 +17,22 @@ from .frame import Frame
 from .raw import raw_to_bgr888
 from .rgb import rgb_to_bgr888
 from .yuv import yuv_to_bgr888
+
+_backend_debug = 'PIXUTILS_BACKEND_DEBUG' in os.environ
+_backend_debug_seen: set[str] = set()
+
+
+def _backend_debug_print(fmt: PixelFormat, backends: list[str], chosen: str) -> None:
+    """Print the backends tried, with the chosen one in brackets.
+
+    Conversions happen per frame, so each distinct line is printed only once.
+    Remembering every line rather than just the last one keeps concurrent
+    streams of differing formats from re-printing on every frame.
+    """
+    line = f'{fmt.name}: ' + ' '.join(f'[{b}]' if b == chosen else b for b in backends)
+    if line not in _backend_debug_seen:
+        _backend_debug_seen.add(line)
+        print(f'pixutils: {line}', file=sys.stderr)
 
 
 def to_bgr888(
@@ -88,6 +106,13 @@ def to_bgr888(
     Returns:
         ``(height, width, 3)`` uint8 array with per-pixel bytes (R, G, B)
         (see "Output layout" above).
+
+    Environment:
+        PIXUTILS_BACKENDS: Comma separated list of backends to make available,
+            overriding the built-in priority order.
+        PIXUTILS_BACKEND_DEBUG: If set, print the backends tried and the one
+            chosen to stderr, e.g. ``pixutils: SRGGB10: opencv [pixpat] numba
+            numpy``. Each distinct line is printed only once.
     """
 
     if isinstance(arr, np.ndarray):
@@ -131,8 +156,9 @@ def frame_to_bgr888(
     if not backends:
         raise NotImplementedError('No backends available')
 
-    # Try backends in priority order
+    # Try backends in priority order. On success 'backend' names the winner.
     result = None
+    backend = ''
     for backend in backends:
         if backend == 'opencv':
             from .opencv import opencv_to_bgr888
@@ -172,6 +198,9 @@ def frame_to_bgr888(
 
     if result is None:
         raise NotImplementedError(f'No backend could handle {fmt.name} with given options')
+
+    if _backend_debug:
+        _backend_debug_print(fmt, backends, backend)
 
     # Backends may return a view; guarantee only that it doesn't alias the
     # input buffer. Callers that need a specific layout can contiguify
