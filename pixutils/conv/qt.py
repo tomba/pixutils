@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
-# XXX I have not been able to get PyQt6 imported to pylint
-# pylint: skip-file
-
 from __future__ import annotations
 
 import numpy as np
@@ -21,7 +18,7 @@ def bgr888_to_pix(rgb: npt.NDArray[np.uint8]) -> QtGui.QPixmap:
 
     w = rgb.shape[1]
     h = rgb.shape[0]
-    qim = QtGui.QImage(rgb, w, h, QtGui.QImage.Format.Format_RGB888)  # pylint: disable=no-member # type: ignore
+    qim = QtGui.QImage(rgb, w, h, QtGui.QImage.Format.Format_RGB888)  # type: ignore
     pix = QtGui.QPixmap.fromImage(qim)
     return pix
 

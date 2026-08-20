@@ -7,7 +7,6 @@ from pixutils.ioctl import IOW
 __all__ = ['DmaBufSyncFlags', 'dmabuf_sync']
 
 
-# pylint: disable=invalid-name
 class struct_dma_buf_sync(ctypes.Structure):
     __slots__ = ['flags']
     _fields_ = [('flags', ctypes.c_uint64)]

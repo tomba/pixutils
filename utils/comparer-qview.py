@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# XXX I have not been able to get PyQt6 imported to pylint
-# pylint: skip-file
-
 import gzip
 import os
 import sys

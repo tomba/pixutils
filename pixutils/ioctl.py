@@ -13,23 +13,23 @@ _IOC_WRITE = 1
 _IOC_READ = 2
 
 
-def _IOC(iodir, iotype, nr, size):  # pylint: disable=invalid-name
+def _IOC(iodir, iotype, nr, size):
     return (((iodir << _IOC_DIRSHIFT) | (ord(iotype) << _IOC_TYPESHIFT)) | (nr << _IOC_NRSHIFT)) | (
         size << _IOC_SIZESHIFT
     )
 
 
-def IO(iotype, nr):  # pylint: disable=invalid-name
+def IO(iotype, nr):
     return _IOC(_IOC_NONE, iotype, nr, 0)
 
 
-def IOR(iotype, nr, size):  # pylint: disable=invalid-name
+def IOR(iotype, nr, size):
     return _IOC(_IOC_READ, iotype, nr, sizeof(size))
 
 
-def IOW(iotype, nr, size):  # pylint: disable=invalid-name
+def IOW(iotype, nr, size):
     return _IOC(_IOC_WRITE, iotype, nr, sizeof(size))
 
 
-def IOWR(iotype, nr, size):  # pylint: disable=invalid-name
+def IOWR(iotype, nr, size):
     return _IOC((_IOC_READ | _IOC_WRITE), iotype, nr, sizeof(size))

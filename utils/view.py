@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
 
-# XXX I have not been able to get PyQt6 imported to pylint
-# pylint: skip-file
-
 # Qt methods give false positives about incompatible overrides
 # pyright: reportIncompatibleMethodOverride=false
 
