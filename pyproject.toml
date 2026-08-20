@@ -35,16 +35,7 @@ pixpat = ['pixpat @ git+https://github.com/tomba/pixpat.git@v1.0']
 qt = ['PyQt6', 'pyqtgraph']
 png = ['Pillow']
 test = ['pytest']
-all = [
-  'numpy',
-  'numba',
-  'opencv-python',
-  'pixpat @ git+https://github.com/tomba/pixpat.git@v1.0',
-  'PyQt6',
-  'Pillow',
-  'pytest',
-  'pyqtgraph'
-]
+all = ['pixutils[conv,pixpat,png,qt,test]']
 
 [tool.pytest.ini_options]
 testpaths = ['tests']
