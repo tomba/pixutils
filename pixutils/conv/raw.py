@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LGPL-3.0-only
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 #
 # The 3x3 window debayering code is derived from the PiCamera documentation

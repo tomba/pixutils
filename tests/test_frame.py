@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LGPL-3.0-only
 
 import numpy as np
 import pytest

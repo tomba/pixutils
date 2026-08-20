@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LGPL-3.0-only
 
 """Tests for how frame_to_bgr888() picks a backend from options['backends']."""
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LGPL-3.0-only
 
 from __future__ import annotations
 

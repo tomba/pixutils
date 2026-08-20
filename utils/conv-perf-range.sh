@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LGPL-3.0-only
 #
 # Run utils/conv-perf-test.py at each commit in a git range, then compare.
 

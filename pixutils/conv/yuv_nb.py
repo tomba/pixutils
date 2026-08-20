@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: BSD-3-Clause
+# SPDX-License-Identifier: LGPL-3.0-only
 # Copyright (C) 2025, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
 """Numba-optimized implementations for YUV pixel format conversions"""
