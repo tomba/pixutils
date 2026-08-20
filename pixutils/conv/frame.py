@@ -38,7 +38,7 @@ def _normalize_strides(
     return tuple(bytesperline)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, eq=False)
 class Frame:
     """A (possibly multi-plane) framebuffer: pixel format, dimensions, and one
     independent buffer + row stride per plane.
@@ -46,6 +46,12 @@ class Frame:
     Each plane is a standalone 1-D ``uint8`` array whose byte 0 is that plane's
     top-left pixel, with its own row pitch in ``strides``. Planes may be
     independent allocations or views into a shared buffer.
+
+    ``frozen`` makes the attributes read-only, but the planes it points at are
+    mutable ndarrays, so a Frame has reference rather than value semantics:
+    ``eq=False`` keeps the identity-based ``__eq__``/``__hash__`` inherited from
+    ``object`` instead of the field-wise ones a dataclass would generate (which
+    would raise on the ndarray fields).
 
     Attributes:
         fmt: The pixel format.
