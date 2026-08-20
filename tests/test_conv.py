@@ -24,6 +24,13 @@ SEED = 1234
 
 BACKENDS = ['opencv', 'pixpat', 'numba', 'numpy']
 
+# demosaic_method values worth pinning for RAW formats. None means "not
+# specified". 'opencv' and 'pixpat' are left out: they just name the built-in
+# demosaic of the backend of the same name, so they duplicate the None case for
+# that backend and are declined by everyone else. Combinations no backend
+# implements (e.g. 'bilinear' on numpy) are skipped by generate_test_case().
+DEMOSAIC_METHODS = [None, '3x3', 'bilinear', 'mosaic']
+
 
 def get_bit_mask(fmt: PixelFormat):
     """Returns (dtype, mask) tuple for masking padding bits, or None if no masking needed."""
@@ -126,14 +133,17 @@ def generate_test_data_raw(raw_formats):
     print('    # Bayer formats')
     for pixel_format in raw_formats:
         for backend in BACKENDS:
-            options = {'backends': [backend]}
-            result = generate_test_case(pixel_format, options)
-            if result:
-                src_sha, rgb_sha = result
-                print(f'    ConvTestCase(PixelFormats.{pixel_format.name},')
-                print(f"        '{src_sha}',")
-                print(f"        '{rgb_sha}',")
-                print(f'        {options}),')
+            for method in DEMOSAIC_METHODS:
+                options = {'backends': [backend]}
+                if method is not None:
+                    options |= {'demosaic_method': method}
+                result = generate_test_case(pixel_format, options)
+                if result:
+                    src_sha, rgb_sha = result
+                    print(f'    ConvTestCase(PixelFormats.{pixel_format.name},')
+                    print(f"        '{src_sha}',")
+                    print(f"        '{rgb_sha}',")
+                    print(f'        {options}),')
 
 
 def generate_test_data_other(other_formats):

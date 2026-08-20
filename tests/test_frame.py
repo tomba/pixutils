@@ -232,15 +232,24 @@ CROP = (4, 2, 8, 4)  # (x, y, w, h), aligned to 2x2
     [
         (PixelFormats.RGB888, 'numpy'),
         (PixelFormats.RGB888, 'opencv'),
+        (PixelFormats.RGB888, 'pixpat'),
         (PixelFormats.YUYV, 'numpy'),
         (PixelFormats.YUYV, 'numba'),
         (PixelFormats.YUYV, 'opencv'),
+        (PixelFormats.YUYV, 'pixpat'),
         (PixelFormats.NV12, 'numpy'),
         (PixelFormats.NV12, 'numba'),
+        (PixelFormats.NV12, 'pixpat'),
         (PixelFormats.NV16, 'numpy'),
         (PixelFormats.NV16, 'numba'),
+        (PixelFormats.NV16, 'pixpat'),
         (PixelFormats.YUV420, 'numpy'),
+        (PixelFormats.YUV420, 'pixpat'),
         (PixelFormats.YUV422, 'numpy'),
+        (PixelFormats.YUV422, 'pixpat'),
+        # Y210 packs two pixels per block, so its crop origin has to be
+        # translated into whole blocks. pixpat is the only backend for it.
+        (PixelFormats.Y210, 'pixpat'),
     ],
 )
 def test_crop_matches_full_subregion(fmt, backend):
@@ -347,7 +356,7 @@ def test_opencv_bows_out_on_cropped_nv12():
     to_bgr888(fmt, WIDTH, HEIGHT, 0, buf, {'backends': ['opencv']})
 
 
-@pytest.mark.parametrize('backend', ['numpy', 'numba'])
+@pytest.mark.parametrize('backend', ['numpy', 'numba', 'pixpat'])
 @pytest.mark.parametrize('fmt', [PixelFormats.SRGGB8, PixelFormats.SRGGB10P])
 def test_raw_crop_matches_full_interior(fmt, backend):
     _require_backend(backend)
