@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (C) 2023, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+#
+# The 3x3 window debayering code is derived from the PiCamera documentation
 
 from __future__ import annotations
 
@@ -174,6 +176,8 @@ def _demosaic_3x3_window(
     data: npt.NDArray[np.uint16], pattern: BayerPattern, h: int, w: int
 ) -> npt.NDArray[np.uint16]:
     """3x3 window demosaic algorithm using pure numpy"""
+    # Debayering code from PiCamera documentation
+
     # Separate the components from the Bayer data to RGB planes. Each sample
     # stays at the position it was read from, so the output grid follows the
     # input Bayer pattern.

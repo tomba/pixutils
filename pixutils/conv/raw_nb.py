@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 # Copyright (C) 2025, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+#
+# The 3x3 window debayering code is derived from the PiCamera documentation
 
 """Numba-optimized implementations for raw pixel format conversions"""
 
@@ -298,6 +300,8 @@ def _demosaic_3x3_window_nb(
     data: npt.NDArray[np.uint16], pattern: BayerPattern, h: int, w: int
 ) -> npt.NDArray[np.uint16]:
     """3x3 window demosaic using numba."""
+    # Debayering code from PiCamera documentation
+
     # Separate the components from the Bayer data to RGB planes. Each sample
     # stays at the position it was read from, so the output grid follows the
     # input Bayer pattern.
