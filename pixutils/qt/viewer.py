@@ -13,7 +13,7 @@ import numpy as np
 from PyQt6 import QtCore, QtGui, QtWidgets
 from pyqtgraph.parametertree import Parameter, ParameterTree
 
-from pixutils.formats import fourcc_to_str, PixelFormat
+from pixutils.formats import PixelFormat, fourcc_to_str
 
 
 class ZoomableGraphicsView(QtWidgets.QGraphicsView):
@@ -777,14 +777,16 @@ class ImageViewerWidget(QtWidgets.QWidget):
                 self._update_infopanel_for_stream(self.active_stream_index)
 
         # Mouse click: make this stream active
-        elif event_type == QtCore.QEvent.Type.MouseButtonPress:
-            if stream_index != self.active_stream_index:
-                # Disconnect old active stream
-                self._disconnect_stream_signals(self.active_stream_index)
-                # Set new active stream
-                self._set_active_stream(stream_index)
-                # Connect new active stream
-                self._connect_stream_signals(stream_index)
+        elif (
+            event_type == QtCore.QEvent.Type.MouseButtonPress
+            and stream_index != self.active_stream_index
+        ):
+            # Disconnect old active stream
+            self._disconnect_stream_signals(self.active_stream_index)
+            # Set new active stream
+            self._set_active_stream(stream_index)
+            # Connect new active stream
+            self._connect_stream_signals(stream_index)
 
         return super().eventFilter(obj, event)
 
@@ -889,7 +891,8 @@ class ImageViewerWidget(QtWidgets.QWidget):
         try:
             demosaic_param = self.info_panel.params.child('Conversion Options', 'Demosaic')
             demosaic_param.setOpts(enabled=False)
-        except Exception:
+        except KeyError:
+            # The panel has no demosaic parameter for this format
             pass
 
         try:
@@ -905,12 +908,12 @@ class ImageViewerWidget(QtWidgets.QWidget):
             if active_stream.bgr888_buffer is not None:
                 self.info_panel.update_bgr888_buffer(active_stream.bgr888_buffer)
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - any conversion failure is reported to the user
             # Show error dialog
             QtWidgets.QMessageBox.critical(
                 self,
                 'Conversion Error',
-                f'Failed to convert image with demosaic method "{new_method}":\n\n{str(e)}',
+                f'Failed to convert image with demosaic method "{new_method}":\n\n{e!s}',
             )
 
             # Revert to old method
@@ -921,7 +924,8 @@ class ImageViewerWidget(QtWidgets.QWidget):
             try:
                 demosaic_param = self.info_panel.params.child('Conversion Options', 'Demosaic')
                 demosaic_param.setValue(old_method if old_method else '-')
-            except Exception:
+            except KeyError:
+                # The panel has no demosaic parameter for this format
                 pass
 
         finally:
@@ -930,7 +934,8 @@ class ImageViewerWidget(QtWidgets.QWidget):
             try:
                 demosaic_param = self.info_panel.params.child('Conversion Options', 'Demosaic')
                 demosaic_param.setOpts(enabled=True)
-            except Exception:
+            except KeyError:
+                # The panel has no demosaic parameter for this format
                 pass
 
     def _on_panel_collapsed(self, is_collapsed: bool) -> None:
