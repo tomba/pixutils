@@ -254,6 +254,50 @@ def test_crop_matches_full_subregion(fmt, backend):
     np.testing.assert_array_equal(cropped, full[y : y + h, x : x + w])
 
 
+def test_crop_planes_do_not_run_past_the_crop():
+    # 16x8 NV12 has a 16-byte stride in both planes. Cropping to (4, 2, 8, 4)
+    # leaves 4 luma rows and 2 chroma rows, and the last row of each holds only
+    # the 8 bytes the crop asked for.
+    fmt = PixelFormats.NV12
+    frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, _make_buffer(fmt))
+    cropped = frame.crop(*CROP)
+
+    assert [p.size for p in cropped.planes] == [3 * 16 + 8, 1 * 16 + 8]
+    assert cropped.combined().size == (3 * 16 + 8) + (1 * 16 + 8)
+
+
+@pytest.mark.parametrize(
+    'fmt',
+    [
+        PixelFormats.RGB888,
+        PixelFormats.YUYV,
+        PixelFormats.NV12,
+        PixelFormats.NV16,
+        PixelFormats.YUV420,
+        PixelFormats.YUV422,
+        PixelFormats.SRGGB10P,
+    ],
+)
+def test_crop_full_width_combined_is_a_tight_frame(fmt):
+    # A full-width crop keeps the natural strides, so its planes are complete
+    # and combined() must be exactly the frame a WIDTHx4 buffer would be.
+    _require_backend('numpy')
+    frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, _make_buffer(fmt))
+    cropped = frame.crop(0, 2, WIDTH, 4)
+
+    combined = cropped.combined()
+    assert combined.size == fmt.framesize(WIDTH, 4)
+
+    # ...and it really is that frame: re-splitting it must convert identically.
+    opts = {'backends': ['numpy']}
+    rebuilt = Frame.from_single_buffer(fmt, WIDTH, 4, 0, combined)
+    try:
+        expected = frame_to_bgr888(cropped, opts)
+    except NotImplementedError:
+        pytest.skip('No backend available')
+    np.testing.assert_array_equal(frame_to_bgr888(rebuilt, opts), expected)
+
+
 def test_crop_misaligned_raises():
     fmt = PixelFormats.NV12
     frame = Frame.from_single_buffer(fmt, WIDTH, HEIGHT, 0, _make_buffer(fmt))
