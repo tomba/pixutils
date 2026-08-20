@@ -298,18 +298,28 @@ def _demosaic_3x3_window_nb(
     data: npt.NDArray[np.uint16], pattern: BayerPattern, h: int, w: int
 ) -> npt.NDArray[np.uint16]:
     """3x3 window demosaic using numba."""
-    # Separate the components from the Bayer data to RGB planes
+    # Separate the components from the Bayer data to RGB planes. Each sample
+    # stays at the position it was read from, so the output grid follows the
+    # input Bayer pattern.
     rgb = np.zeros((h, w, 3), dtype=data.dtype)
-    rgb[1::2, 0::2, 0] = data[pattern.r0[1] :: 2, pattern.r0[0] :: 2]  # Red
-    rgb[0::2, 0::2, 1] = data[pattern.g0[1] :: 2, pattern.g0[0] :: 2]  # Green
-    rgb[1::2, 1::2, 1] = data[pattern.g1[1] :: 2, pattern.g1[0] :: 2]  # Green
-    rgb[0::2, 1::2, 2] = data[pattern.b0[1] :: 2, pattern.b0[0] :: 2]  # Blue
+    rgb[pattern.r0[1] :: 2, pattern.r0[0] :: 2, 0] = data[
+        pattern.r0[1] :: 2, pattern.r0[0] :: 2
+    ]  # Red
+    rgb[pattern.g0[1] :: 2, pattern.g0[0] :: 2, 1] = data[
+        pattern.g0[1] :: 2, pattern.g0[0] :: 2
+    ]  # Green
+    rgb[pattern.g1[1] :: 2, pattern.g1[0] :: 2, 1] = data[
+        pattern.g1[1] :: 2, pattern.g1[0] :: 2
+    ]  # Green
+    rgb[pattern.b0[1] :: 2, pattern.b0[0] :: 2, 2] = data[
+        pattern.b0[1] :: 2, pattern.b0[0] :: 2
+    ]  # Blue
 
     bayer = np.zeros(rgb.shape, dtype=np.uint8)
-    bayer[1::2, 0::2, 0] = 1  # Red
-    bayer[0::2, 0::2, 1] = 1  # Green
-    bayer[1::2, 1::2, 1] = 1  # Green
-    bayer[0::2, 1::2, 2] = 1  # Blue
+    bayer[pattern.r0[1] :: 2, pattern.r0[0] :: 2, 0] = 1  # Red
+    bayer[pattern.g0[1] :: 2, pattern.g0[0] :: 2, 1] = 1  # Green
+    bayer[pattern.g1[1] :: 2, pattern.g1[0] :: 2, 1] = 1  # Green
+    bayer[pattern.b0[1] :: 2, pattern.b0[0] :: 2, 2] = 1  # Blue
 
     window = (3, 3)
     borders = (window[0] - 1, window[1] - 1)
