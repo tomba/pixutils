@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Sequence
 from dataclasses import dataclass, field
 
@@ -168,23 +169,40 @@ class Frame:
             return self.planes[0]
         return np.concatenate(self.planes)
 
+    def crop_align(self) -> tuple[int, int]:
+        """Return the ``(x, y)`` pixel alignment that :meth:`crop` requires.
+
+        This is ``fmt.pixel_align`` widened by what the plane layout needs: a
+        crop origin has to land on a whole macropixel block of every plane, and
+        on a whole chroma sample of every subsampled plane. Most formats
+        declare that in ``pixel_align`` already, but a few do not --
+        Y210/Y212/Y216 pack two pixels into one block while declaring
+        ``pixel_align (1, 1)``, and YUV420/YUV422 (plus their VU twins) declare
+        ``(1, 1)`` with 2x-subsampled chroma planes.
+        """
+        fmt = self.fmt
+        ax, ay = fmt.pixel_align
+        for pi in fmt.planes:
+            ax = math.lcm(ax, pi.pixels_per_block * pi.hsub)
+            ay = math.lcm(ay, pi.vsub)
+        return (ax, ay)
+
     def crop(self, x: int, y: int, w: int, h: int) -> Frame:
         """Return a new Frame for the sub-region ``(x, y, w, h)``.
 
         Each plane view is offset to the crop origin and keeps its original
         stride; the new Frame's width/height are the crop size. ``x``/``w`` must
-        be multiples of ``fmt.pixel_align[0]`` and ``y``/``h`` of
-        ``fmt.pixel_align[1]`` (which encode macropixel and chroma-subsampling
-        alignment), and the region must lie within the frame; otherwise
-        ``ValueError`` is raised.
+        be multiples of ``crop_align()[0]`` and ``y``/``h`` of
+        ``crop_align()[1]``, and the region must lie within the frame;
+        otherwise ``ValueError`` is raised.
         """
         fmt = self.fmt
-        ax, ay = fmt.pixel_align
+        ax, ay = self.crop_align()
 
         if x % ax or w % ax or y % ay or h % ay:
             raise ValueError(
                 f'Crop ({x}, {y}, {w}, {h}) is not aligned to {fmt.name} '
-                f'pixel_align {fmt.pixel_align}'
+                f'crop alignment ({ax}, {ay})'
             )
         if x < 0 or y < 0 or w <= 0 or h <= 0 or x + w > self.width or y + h > self.height:
             raise ValueError(
