@@ -162,7 +162,10 @@ def frame_to_bgr888(
                 result = rgb_to_bgr888(frame, options)
             else:
                 raise NotImplementedError(f'Unsupported format {fmt}')
-            break
+            if result is not None:
+                break
+            # numpy couldn't handle this format/options, try next backend
+            continue
 
     if result is None:
         raise NotImplementedError(f'No backend could handle {fmt.name} with given options')
