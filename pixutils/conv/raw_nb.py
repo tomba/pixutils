@@ -77,11 +77,17 @@ def _demosaic_bilinear_nb(
     """JIT-compiled bilinear interpolation demosaic - structured processing"""
     output = np.zeros((h, w, 3), dtype=data.dtype)
 
-    # Extract Bayer pattern positions
-    r_y, r_x = r0
-    g0_y, g0_x = g0
-    g1_y, g1_x = g1
-    b_y, b_x = b0
+    # The pattern positions are (x, y) pairs
+    r_x, r_y = r0
+    g0_x, g0_y = g0
+    g1_x, g1_y = g1
+    b_x, b_y = b0
+
+    # The green loops below expect g0 to share a row with red and g1 to share
+    # a row with blue. The pattern lists the greens in string order, which
+    # puts the blue-row green first for BGGR and GBRG.
+    if g0_y != r_y:
+        g0_x, g0_y, g1_x, g1_y = g1_x, g1_y, g0_x, g0_y
 
     # Copy known pixel values to their respective channels
     for y in range(r_y, h, 2):
