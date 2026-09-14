@@ -39,10 +39,10 @@ def _unpack_10bit_nb(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
             packed = arr16[row, base_col + 4]
 
             # Distribute the 2 LSBs from packed byte
-            result[row, out_col + 0] = p0 | ((packed >> 6) & 0b11)
-            result[row, out_col + 1] = p1 | ((packed >> 4) & 0b11)
-            result[row, out_col + 2] = p2 | ((packed >> 2) & 0b11)
-            result[row, out_col + 3] = p3 | ((packed >> 0) & 0b11)
+            result[row, out_col + 0] = p0 | ((packed >> 0) & 0b11)
+            result[row, out_col + 1] = p1 | ((packed >> 2) & 0b11)
+            result[row, out_col + 2] = p2 | ((packed >> 4) & 0b11)
+            result[row, out_col + 3] = p3 | ((packed >> 6) & 0b11)
 
     return result
 
@@ -64,8 +64,8 @@ def _unpack_12bit_nb(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
             packed = arr16[row, base_col + 2]
 
             # Distribute the 4 LSBs from packed byte
-            result[row, out_col + 0] = p0 | ((packed >> 4) & 0b1111)
-            result[row, out_col + 1] = p1 | ((packed >> 0) & 0b1111)
+            result[row, out_col + 0] = p0 | ((packed >> 0) & 0b1111)
+            result[row, out_col + 1] = p1 | ((packed >> 4) & 0b1111)
 
     return result
 

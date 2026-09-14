@@ -94,7 +94,7 @@ def _unpack_10bit(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
     """Pure numpy implementation for 10-bit unpacking"""
     arr16_shifted = arr16 << np.uint16(2)
     for byte in range(4):
-        arr16_shifted[:, byte::5] |= (arr16_shifted[:, 4::5] >> ((4 - byte) * 2)) & 0b11
+        arr16_shifted[:, byte::5] |= (arr16[:, 4::5] >> (byte * 2)) & 0b11
     return np.delete(arr16_shifted, np.s_[4::5], 1)
 
 
@@ -102,7 +102,7 @@ def _unpack_12bit(arr16: npt.NDArray[np.uint16]) -> npt.NDArray[np.uint16]:
     """Pure numpy implementation for 12-bit unpacking"""
     arr16_shifted = arr16 << np.uint16(4)
     for byte in range(2):
-        arr16_shifted[:, byte::3] |= (arr16_shifted[:, 2::3] >> ((2 - byte) * 4)) & 0b1111
+        arr16_shifted[:, byte::3] |= (arr16[:, 2::3] >> (byte * 4)) & 0b1111
     return np.delete(arr16_shifted, np.s_[2::3], 1)
 
 
