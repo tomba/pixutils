@@ -897,10 +897,10 @@ class PixelFormats:
         None, None,
         PixelColorEncoding.YUV,
         False,
-        ( 1, 1 ),
-        ( ( 4, ),
-          ( 4, ),
-          ( 4, ) ),
+        ( 3, 1 ),
+        ( ( 4, 3 ),
+          ( 4, 3 ),
+          ( 4, 3 ) ),
     )
 
     # YUV 64-bit, alpha
