@@ -30,7 +30,7 @@ Repository = 'https://github.com/tomba/pixutils.git'
 'Bug Tracker' = 'https://github.com/tomba/pixutils/issues'
 
 [project.optional-dependencies]
-conv = ['numpy', 'numba', 'opencv-python']
+conv = ['numpy', 'opencv-python']
 pixpat = ['pixpat @ git+https://github.com/tomba/pixpat.git@v1.2.2']
 qt = ['PyQt6', 'pyqtgraph']
 png = ['Pillow']

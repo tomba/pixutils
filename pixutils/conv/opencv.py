@@ -79,7 +79,7 @@ def opencv_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8
             return None
         # OpenCV's multi-plane (NV12/NV21) path needs a tightly-laid-out
         # contiguous buffer and can't consume cropped/offset planes. Bow out so
-        # numba/numpy handle those.
+        # the other backends handle those.
         if len(fmt.planes) > 1 and not _planes_are_full(frame):
             return None
     elif fmt.color == PixelColorEncoding.RAW:

@@ -29,7 +29,7 @@ def _raw_buffer():
     return _make_buffer(RAW_FMT)
 
 
-@pytest.mark.parametrize('method', ['3x3', 'bilinear', 'mosaic', 'opencv'])
+@pytest.mark.parametrize('method', ['3x3', 'mosaic', 'opencv'])
 def test_pixpat_declines_foreign_demosaic_methods(method):
     # pixpat has one built-in demosaic and no way to select another, so it must
     # bow out rather than silently ignore the request.
@@ -58,15 +58,13 @@ def test_pixpat_accepts_its_own_demosaic_method():
 def test_demosaic_methods_give_distinct_results():
     # Whatever backends are installed, asking for a specific demosaic method
     # has to reach a backend that implements it.
-    _require_backends('numba')
+    _require_backends('numpy')
     buf = _raw_buffer()
     outs = [
         to_bgr888(RAW_FMT, WIDTH, HEIGHT, 0, buf, {'demosaic_method': method})
-        for method in ('3x3', 'bilinear', 'mosaic')
+        for method in ('3x3', 'mosaic')
     ]
     assert not np.array_equal(outs[0], outs[1])
-    assert not np.array_equal(outs[0], outs[2])
-    assert not np.array_equal(outs[1], outs[2])
 
 
 def test_unknown_demosaic_method_raises():

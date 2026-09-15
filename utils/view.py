@@ -90,7 +90,7 @@ def main():
     )
     parser.add_argument('--range', choices=['full', 'limited'], help='Color range')
     parser.add_argument('--encoding', choices=['bt601', 'bt709', 'bt2020'], help='Color encoding')
-    parser.add_argument('--demosaic', choices=['3x3', 'bilinear', 'mosaic'], help='Demosaic method')
+    parser.add_argument('--demosaic', choices=['3x3', 'mosaic'], help='Demosaic method')
     parser.add_argument(
         '--backends',
         type=str,

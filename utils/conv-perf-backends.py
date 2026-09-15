@@ -112,15 +112,15 @@ def main():
     parser.add_argument(
         '--demosaic',
         type=str,
-        choices=['3x3', 'bilinear', 'mosaic', 'opencv'],
+        choices=['3x3', 'mosaic', 'opencv'],
         default=None,
-        help='Demosaic algorithm: 3x3, bilinear, mosaic (no demosaic), or opencv',
+        help='Demosaic algorithm: 3x3, mosaic (no demosaic), or opencv',
     )
     parser.add_argument(
         '--backends',
         type=str,
-        default='opencv,pixpat,numba,numpy',
-        help='Comma-separated list of backends to compare (default: all four)',
+        default='opencv,pixpat,numpy',
+        help='Comma-separated list of backends to compare (default: all three)',
     )
     args = parser.parse_args()
 

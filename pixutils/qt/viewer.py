@@ -260,13 +260,6 @@ class InfoPanel(QtWidgets.QWidget):
         if 'pixpat' in backends:
             methods.append('pixpat')
 
-        if 'numba' in backends:
-            if '3x3' not in methods:
-                methods.append('3x3')
-            methods.append('bilinear')
-            if 'mosaic' not in methods:
-                methods.append('mosaic')
-
         if 'numpy' in backends:
             if '3x3' not in methods:
                 methods.append('3x3')

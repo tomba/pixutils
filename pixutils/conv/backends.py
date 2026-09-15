@@ -16,15 +16,12 @@ def _get_available_backends() -> list[str]:
     if env:
         backends = [b.strip() for b in env.split(',')]
     else:
-        backends = ['opencv', 'pixpat', 'numba', 'numpy']
+        backends = ['opencv', 'pixpat', 'numpy']
 
     available = []
     for backend in backends:
         if backend == 'numpy':
             available.append('numpy')
-        elif backend == 'numba':
-            if importlib.util.find_spec('numba'):
-                available.append('numba')
         elif backend == 'opencv':
             if importlib.util.find_spec('cv2'):
                 available.append('opencv')

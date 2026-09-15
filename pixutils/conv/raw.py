@@ -164,8 +164,6 @@ def demosaic(
 
     if method == 'mosaic':
         return mosaic(data, pattern)
-    elif method == 'bilinear':
-        raise NotImplementedError('Bilinear demosaic requires numba backend')
     elif method == '3x3':
         return _demosaic_3x3_window(data, pattern, h, w)
     else:

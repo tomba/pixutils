@@ -22,14 +22,14 @@ HEIGHT = 480
 
 SEED = 1234
 
-BACKENDS = ['opencv', 'pixpat', 'numba', 'numpy']
+BACKENDS = ['opencv', 'pixpat', 'numpy']
 
 # demosaic_method values worth pinning for RAW formats. None means "not
 # specified". 'opencv' and 'pixpat' are left out: they just name the built-in
 # demosaic of the backend of the same name, so they duplicate the None case for
 # that backend and are declined by everyone else. Combinations no backend
-# implements (e.g. 'bilinear' on numpy) are skipped by generate_test_case().
-DEMOSAIC_METHODS = [None, '3x3', 'bilinear', 'mosaic']
+# implements (e.g. '3x3' on opencv) are skipped by generate_test_case().
+DEMOSAIC_METHODS = [None, '3x3', 'mosaic']
 
 
 def get_bit_mask(fmt: PixelFormat):
@@ -235,8 +235,8 @@ def _make_padded_buf(fmt: PixelFormat, base_buf: np.ndarray) -> np.ndarray:
 
 def _case_id(test_case):
     # Flatten format + options into clean dash-separated tokens, e.g.
-    # 'NV12-numba-bt601-limited', rather than reusing test_case.description
-    # (which embeds option keys and Python list reprs like "backends_['numba']").
+    # 'NV12-numpy-bt601-limited', rather than reusing test_case.description
+    # (which embeds option keys and Python list reprs like "backends_['numpy']").
     parts = [test_case.pixel_format.name]
     for _, value in sorted(test_case.options.items()):
         if isinstance(value, list):

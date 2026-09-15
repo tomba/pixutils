@@ -13,7 +13,7 @@ from test_conv import HEIGHT, WIDTH, generate_test_buffer  # type: ignore[import
 from pixutils.conv import buffer_to_bgr888
 from pixutils.formats import PixelColorEncoding, PixelFormat, PixelFormats
 
-BACKENDS = ('opencv', 'pixpat', 'numba', 'numpy')
+BACKENDS = ('opencv', 'pixpat', 'numpy')
 
 # For each backend pair we compute the per-pixel absolute BGR difference and
 # summarize it with three statistics:
@@ -32,9 +32,9 @@ BACKENDS = ('opencv', 'pixpat', 'numba', 'numpy')
 # degrees:
 #   * RGB — every backend just reorders bytes, so outputs must be identical.
 #   * YUV — all backends share BT.601 limited-range coefficients, but opencv
-#     interpolates chroma at subsampling boundaries while numba/numpy do
+#     interpolates chroma at subsampling boundaries while numpy does
 #     nearest-neighbor, so a handful of LSBs of disagreement is expected.
-#   * RAW — opencv, pixpat, numba and numpy each use a different demosaic
+#   * RAW — opencv, pixpat and numpy each use a different demosaic
 #     algorithm, so per-pixel differences are routinely large (just not
 #     channel-swap large). On random uniform data the worst pair currently
 #     sits at ch_mean 28.1, p99 117, max 198. ch_mean and p99 carry the
@@ -60,9 +60,9 @@ def _category(fmt: PixelFormat) -> str:
 
 def _format_options(fmt: PixelFormat) -> dict:
     if fmt.color == PixelColorEncoding.YUV and fmt != PixelFormats.Y8:
-        # Only range='limited' + encoding='bt601' is accepted by opencv; numba
+        # Only range='limited' + encoding='bt601' is accepted by opencv; pixpat
         # and numpy accept it too, so this enables 3-way comparison where
-        # possible and still allows 2-way (numba+numpy) for the rest.
+        # possible and still allows 2-way (pixpat+numpy) for the rest.
         return {'range': 'limited', 'encoding': 'bt601'}
     return {}
 

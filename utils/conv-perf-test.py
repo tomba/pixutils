@@ -32,12 +32,6 @@ def pin_thread_count(n: int) -> None:
         cv2.setNumThreads(n)
     except ImportError:
         pass
-    try:
-        import numba
-
-        numba.set_num_threads(min(n, numba.config.NUMBA_NUM_THREADS))  # type: ignore[attr-defined]
-    except ImportError:
-        pass
 
 
 def run_one(
@@ -140,7 +134,7 @@ def main():
         '--threads',
         type=int,
         default=4,
-        help='Pin threaded backends (opencv, numba) to this many threads for '
+        help='Pin threaded backends (opencv) to this many threads for '
         'repeatable cross-commit comparison; 0 leaves backend defaults',
     )
     parser.add_argument(
@@ -152,9 +146,9 @@ def main():
     parser.add_argument(
         '--demosaic',
         type=str,
-        choices=['3x3', 'bilinear', 'mosaic', 'opencv'],
+        choices=['3x3', 'mosaic', 'opencv'],
         default=None,
-        help='Demosaic algorithm: 3x3, bilinear, mosaic (no demosaic), or opencv',
+        help='Demosaic algorithm: 3x3, mosaic (no demosaic), or opencv',
     )
     parser.add_argument(
         '--backends',

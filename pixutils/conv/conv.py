@@ -92,13 +92,13 @@ def to_bgr888(
         arr: Either a single numpy array holding all planes back-to-back, or a
             sequence of per-plane numpy arrays (one per plane of ``fmt``)
         options: Optional dictionary with conversion options:
-            - backends: List of backends in priority order, e.g. ['opencv', 'numba']
+            - backends: List of backends in priority order, e.g. ['opencv', 'numpy']
             - range: 'limited' or 'full' (for YUV formats)
             - encoding: 'bt601' (for YUV formats)
-            - demosaic_method: '3x3', 'bilinear', 'mosaic', 'opencv', or
-              'pixpat' (for RAW formats). 'opencv' and 'pixpat' name the
-              built-in demosaic of the backend of the same name; the others
-              are provided by the numba and numpy backends
+            - demosaic_method: '3x3', 'mosaic', 'opencv', or 'pixpat' (for RAW
+              formats). 'opencv' and 'pixpat' name the built-in demosaic of
+              the backend of the same name; the others are provided by the
+              numpy backend
         crop: Optional ``(x, y, w, h)`` sub-region to convert. ``width``/``height``
             still describe the full source buffer; ``crop`` selects the output
             region. See :meth:`Frame.crop` for alignment requirements.
@@ -111,8 +111,8 @@ def to_bgr888(
         PIXUTILS_BACKENDS: Comma separated list of backends to make available,
             overriding the built-in priority order.
         PIXUTILS_BACKEND_DEBUG: If set, print the backends tried and the one
-            chosen to stderr, e.g. ``pixutils: SRGGB10: opencv [pixpat] numba
-            numpy``. Each distinct line is printed only once.
+            chosen to stderr, e.g. ``pixutils: SRGGB10: opencv [pixpat] numpy``.
+            Each distinct line is printed only once.
     """
 
     if isinstance(arr, np.ndarray):
@@ -176,12 +176,6 @@ def frame_to_bgr888(
                 break
             # pixpat couldn't handle this format/options, try next backend
             continue
-        elif backend == 'numba':
-            from .numba import numba_to_bgr888
-
-            result = numba_to_bgr888(frame, options)
-            if result is not None:
-                break
         elif backend == 'numpy':
             if fmt.color == PixelColorEncoding.YUV:
                 result = yuv_to_bgr888(frame, options)
