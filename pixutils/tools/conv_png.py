@@ -10,10 +10,6 @@ import re
 import sys
 import typing
 
-import numpy as np
-from PIL import Image
-
-from pixutils.conv import buffer_to_bgr888
 from pixutils.formats import PixelFormats
 
 
@@ -94,6 +90,17 @@ def main():
     )
     parser.add_argument('--output', '-o', required=True, help='Output PNG filename')
     args = parser.parse_args()
+
+    try:
+        import numpy as np
+        from PIL import Image
+
+        from pixutils.conv import buffer_to_bgr888
+    except ModuleNotFoundError as e:
+        sys.exit(
+            f"{parser.prog}: cannot import '{e.name}'; "
+            "install pixutils with the 'tools' extra (pixutils[tools])"
+        )
 
     if args.width and args.height and args.format:
         format = PixelFormats.find_by_name(args.format)

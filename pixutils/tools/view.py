@@ -13,11 +13,7 @@ import re
 import sys
 import typing
 
-import numpy as np
-from PyQt6 import QtCore, QtWidgets
-
 from pixutils.formats import PixelFormats
-from pixutils.qt import ImageViewerWidget
 
 
 def parse_filename_heuristics(filename):
@@ -99,6 +95,17 @@ def main():
         help='Comma-separated list of backends in priority order',
     )
     args = parser.parse_args()
+
+    try:
+        import numpy as np
+        from PyQt6 import QtCore, QtWidgets
+
+        from pixutils.qt import ImageViewerWidget
+    except ModuleNotFoundError as e:
+        sys.exit(
+            f"{parser.prog}: cannot import '{e.name}'; "
+            "install pixutils with the 'tools' extra (pixutils[tools])"
+        )
 
     if args.width and args.height and args.format:
         format = PixelFormats.find_by_name(args.format)
