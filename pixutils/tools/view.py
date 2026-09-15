@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+# SPDX-License-Identifier: LGPL-3.0-only
+# Copyright (C) 2024, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
 
 # Qt methods give false positives about incompatible overrides
 # pyright: reportIncompatibleMethodOverride=false

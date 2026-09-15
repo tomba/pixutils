@@ -1,4 +1,7 @@
-#!/usr/bin/env python3
+# SPDX-License-Identifier: LGPL-3.0-only
+# Copyright (C) 2026, Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+
+from __future__ import annotations
 
 import argparse
 import gzip
