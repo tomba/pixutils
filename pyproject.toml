@@ -29,6 +29,10 @@ Homepage = 'https://github.com/tomba/pixutils'
 Repository = 'https://github.com/tomba/pixutils.git'
 'Bug Tracker' = 'https://github.com/tomba/pixutils/issues'
 
+[project.scripts]
+pixutils-view = 'pixutils.tools.view:main'
+pixutils-conv-png = 'pixutils.tools.conv_png:main'
+
 [project.optional-dependencies]
 conv = ['numpy', 'opencv-python']
 pixpat = ['pixpat @ git+https://github.com/tomba/pixpat.git@v1.2.2']
