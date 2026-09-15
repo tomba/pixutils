@@ -35,7 +35,7 @@ pixutils-conv-png = 'pixutils.tools.conv_png:main'
 
 [project.optional-dependencies]
 conv = ['numpy', 'opencv-python']
-pixpat = ['pixpat @ git+https://github.com/tomba/pixpat.git@v1.2.2']
+pixpat = ['pixpat @ git+https://github.com/tomba/pixpat.git@v2.0.0']
 qt = ['PyQt6', 'pyqtgraph']
 png = ['Pillow']
 tools = ['pixutils[conv,png,qt]']

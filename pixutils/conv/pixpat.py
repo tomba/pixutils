@@ -52,9 +52,6 @@ def pixpat_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8
     if not _can_use_pixpat(fmt, options):
         return None
 
-    encoding = (options or {}).get('encoding', 'bt601')
-    color_range = (options or {}).get('range', 'limited')
-
     src = _pixpat.Buffer(
         planes=list(frame.planes),
         fmt=fmt.name,
@@ -62,6 +59,11 @@ def pixpat_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8
         height=frame.height,
         strides=list(frame.strides),
     )
+    # The color spec describes the source buffer's samples, so pixpat
+    # takes it from the buffer. An RGB or raw source has none.
+    if fmt.color == PixelColorEncoding.YUV:
+        src.rec = _REC_MAP[(options or {}).get('encoding', 'bt601')]
+        src.color_range = _RANGE_MAP[(options or {}).get('range', 'limited')]
 
     dst_arr = np.empty((frame.height, frame.width, 3), dtype=np.uint8)
     dst = _pixpat.Buffer(
@@ -73,12 +75,7 @@ def pixpat_to_bgr888(frame: Frame, options: dict | None) -> npt.NDArray[np.uint8
     )
 
     try:
-        _pixpat.convert(
-            dst,
-            src,
-            rec=_REC_MAP[encoding],
-            color_range=_RANGE_MAP[color_range],
-        )
+        _pixpat.convert(dst, src)
     except _pixpat.PixpatError:
         return None
 
